@@ -42,7 +42,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.timer_10ms.timeout.connect(self.timeCount)
         # 开了高精度反而精度降低
         self.timer_10ms.setTimerType(Qt.PreciseTimer)
-        self.mineUnFlagedNum = self.mineNum  # 没有标出的雷，显示在左上角
+        self.mineUnFlagedNum = self.minenum  # 没有标出的雷，显示在左上角
         self.showMineNum(self.mineUnFlagedNum)    # 在左上角画雷数
 
         # 绑定菜单栏事件
@@ -80,11 +80,11 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         # config = configparser.ConfigParser()
         # config.read(self.game_setting_path, encoding='utf-8')
 
-        if (self.row, self.column, self.mineNum) == (8, 8, 10):
+        if (self.row, self.column, self.minenum) == (8, 8, 10):
             self.actionChecked('B')
-        elif (self.row, self.column, self.mineNum) == (16, 16, 40):
+        elif (self.row, self.column, self.minenum) == (16, 16, 40):
             self.actionChecked('I')
-        elif (self.row, self.column, self.mineNum) == (16, 30, 99):
+        elif (self.row, self.column, self.minenum) == (16, 30, 99):
             self.actionChecked('E')
         else:
             self.actionChecked('C')
@@ -124,7 +124,10 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             "mode": self.gameMode,
             "checksum_ok": "--",
             "is_official": "--",
-            "is_fair": "--"
+            "is_fair": "--",
+            "row": self.row,
+            "column": self.column,
+            "minenum": self.minenum,
         })
         self.score_board_manager.reshow(self.label.ms_board, index_type=1)
         self.score_board_manager.visible()
@@ -153,21 +156,21 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             return
         self.label.set_rcp(self.row, self.column, pixSize)
         self.label.reloadCellPic(pixSize)
-        if (self.row, self.column, self.mineNum) == (8, 8, 10):
+        if (self.row, self.column, self.minenum) == (8, 8, 10):
             self.predefinedBoardPara[1]['pixsize'] = pixSize
-        elif (self.row, self.column, self.mineNum) == (16, 16, 40):
+        elif (self.row, self.column, self.minenum) == (16, 16, 40):
             self.predefinedBoardPara[2]['pixsize'] = pixSize
-        elif (self.row, self.column, self.mineNum) == (16, 30, 99):
+        elif (self.row, self.column, self.minenum) == (16, 30, 99):
             self.predefinedBoardPara[3]['pixsize'] = pixSize
-        elif (self.row, self.column, self.mineNum) == (self.predefinedBoardPara[4]['row'],
+        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[4]['row'],
                                                        self.predefinedBoardPara[4]['column'],
                                                        self.predefinedBoardPara[4]['mine_num']):
             self.predefinedBoardPara[4]['pixsize'] = pixSize
-        elif (self.row, self.column, self.mineNum) == (self.predefinedBoardPara[5]['row'],
+        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[5]['row'],
                                                        self.predefinedBoardPara[5]['column'],
                                                        self.predefinedBoardPara[5]['mine_num']):
             self.predefinedBoardPara[5]['pixsize'] = pixSize
-        elif (self.row, self.column, self.mineNum) == (self.predefinedBoardPara[6]['row'],
+        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[6]['row'],
                                                        self.predefinedBoardPara[6]['column'],
                                                        self.predefinedBoardPara[6]['mine_num']):
             self.predefinedBoardPara[6]['pixsize'] = pixSize
@@ -223,17 +226,55 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                 "is_official": "--",
                 "is_fair": "--",
                 "mode": self.gameMode,
+                "row": self.row,
+                "column": self.column,
+                "minenum": self.minenum,
             })
             self.score_board_manager.show(self.label.ms_board, index_type=1)
 
         elif self._game_state == 'study':
             self.num_bar_ui.QWidget.close()
         self._game_state = game_state
+        
+        
+    @property
+    def row(self):
+        return self._row
+
+    @row.setter
+    def row(self, row):
+        self.score_board_manager.with_namespace({
+            "row": row,
+        })
+        self._row = row
+            
+    @property
+    def column(self):
+        return self._column
+
+    @column.setter
+    def column(self, column):
+        self.score_board_manager.with_namespace({
+            "column": column,
+        })
+        self._column = column
+         
+    @property
+    def minenum(self):
+        return self._minenum
+
+    @minenum.setter
+    def minenum(self, minenum):
+        self.score_board_manager.with_namespace({
+            "minenum": minenum,
+        })
+        self._minenum = minenum
+        
 
     def layMine(self, i, j):
         xx = self.row
         yy = self.column
-        num = self.mineNum
+        num = self.minenum
         # 0，4, 5, 6, 7, 8, 9, 10代表：标准0、win74、经典无猜5、强无猜6、
         # 弱无猜7、准无猜8、强可猜9、弱可猜10
         if self.gameMode == 5 or self.gameMode == 6 or self.gameMode == 9:
@@ -572,26 +613,28 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.render_poss_on_board()
 
     def mineNumWheel(self, i):
-        # 在雷上滚轮，调雷数
+        '''
+        在雷上滚轮，调雷数
+        '''
         if self.game_state == 'ready':
             if i > 0:
-                if self.mineNum < self.row * self.column - 1:
-                    self.mineNum += 1
+                if self.minenum < self.row * self.column - 1:
+                    self.minenum += 1
                     self.mineUnFlagedNum += 1
-                    self.showMineNum(self.mineUnFlagedNum)
             elif i < 0:
-                if self.mineNum > 1:
-                    self.mineNum -= 1
+                if self.minenum > 1:
+                    self.minenum -= 1
                     self.mineUnFlagedNum -= 1
-                    self.showMineNum(self.mineUnFlagedNum)
-            self.timer_mine_num = QTimer()
+            self.showMineNum(self.mineUnFlagedNum)
+            self.score_board_manager.show(self.label.ms_board, index_type=1)
+            # self.timer_mine_num = QTimer()
             # self.timer_mine_num.timeout.connect(self.refreshSettingsDefault)
-            self.timer_mine_num.setSingleShot(True)
-            self.timer_mine_num.start(3000)
+            # self.timer_mine_num.setSingleShot(True)
+            # self.timer_mine_num.start(3000)
 
     def gameStart(self):
         # 画界面，但是不埋雷
-        self.mineUnFlagedNum = self.mineNum  # 没有标出的雷，显示在左上角
+        self.mineUnFlagedNum = self.minenum  # 没有标出的雷，显示在左上角
         self.showMineNum(self.mineUnFlagedNum)    # 在左上角画雷数
         # pixmap = QPixmap(self.pixmapNum[14])
         # self.label_2.setPixmap(self.pixmapNum[14])
@@ -645,7 +688,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
 
         self.time_10ms = 0
         self.showTime(self.time_10ms)
-        self.mineUnFlagedNum = self.mineNum
+        self.mineUnFlagedNum = self.minenum
         self.showMineNum(self.mineUnFlagedNum)
         self.set_face(14)
 
@@ -671,7 +714,10 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.timeCount()
         self.score_board_manager.with_namespace({
             "is_official": self.is_official(),
-            "is_fair": self.is_fair()
+            "is_fair": self.is_fair(),
+            "row": self.row,
+            "column": self.column,
+            "minenum": self.minenum,
         })
         self.score_board_manager.show(self.label.ms_board, index_type=2)
         self.enable_screenshot()
@@ -1019,6 +1065,9 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.gameMode = self.predefinedBoardPara[k]['gamemode']
         self.score_board_manager.with_namespace({
             "mode": self.gameMode,
+            # "row": self.row,
+            # "column": self.column,
+            # "minenum": self.minenum,
         })
         self.score_board_manager.show(self.label.ms_board, index_type=1)
         self.board_constraint = self.predefinedBoardPara[k]['board_constraint']
@@ -1041,38 +1090,43 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         # 点击菜单栏的自定义后回调
         self.actionChecked('C')
         ui = gameDefinedParameter.ui_Form(self.r_path, self.row, self.column,
-                                          self.mineNum, self.mainWindow)
+                                          self.minenum, self.mainWindow)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
-            self.setBoard_and_start(ui.row, ui.column, ui.mineNum)
+            self.setBoard_and_start(ui.row, ui.column, ui.minenum)
+            # self.score_board_manager.with_namespace({
+            #     "row": self.row,
+            #     "column": self.column,
+            #     "minenum": self.minenum,
+            # })
 
-    def setBoard(self, row, column, mineNum):
-        # 把局面设置成(row, column, mineNum)，同时提取配套参数
+    def setBoard(self, row, column, minenum):
+        # 把局面设置成(row, column, minenum)，同时提取配套参数
         # 打开录像时、改级别时用
         self.row = row
         self.column = column
-        self.mineNum = mineNum
-        if (row, column, mineNum) == (8, 8, 10):
+        self.minenum = minenum
+        if (row, column, minenum) == (8, 8, 10):
             self.actionChecked('B')
             self.pixSize = self.predefinedBoardPara[1]['pixsize']
             self.gameMode = self.predefinedBoardPara[1]['gamemode']
             self.board_constraint = self.predefinedBoardPara[1]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[1]['attempt_times_limit']
-        elif (row, column, mineNum) == (16, 16, 40):
+        elif (row, column, minenum) == (16, 16, 40):
             self.actionChecked('I')
             self.pixSize = self.predefinedBoardPara[2]['pixsize']
             self.gameMode = self.predefinedBoardPara[2]['gamemode']
             self.board_constraint = self.predefinedBoardPara[2]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[2]['attempt_times_limit']
-        elif (row, column, mineNum) == (16, 30, 99):
+        elif (row, column, minenum) == (16, 30, 99):
             self.actionChecked('E')
             self.pixSize = self.predefinedBoardPara[3]['pixsize']
             self.gameMode = self.predefinedBoardPara[3]['gamemode']
             self.board_constraint = self.predefinedBoardPara[3]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[3]['attempt_times_limit']
-        elif (row, column, mineNum) == (self.predefinedBoardPara[4]['row'],
+        elif (row, column, minenum) == (self.predefinedBoardPara[4]['row'],
                                         self.predefinedBoardPara[4]['column'],
                                         self.predefinedBoardPara[4]['mine_num']):
             self.actionChecked('C')
@@ -1080,7 +1134,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.gameMode = self.predefinedBoardPara[4]['gamemode']
             self.board_constraint = self.predefinedBoardPara[4]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[4]['attempt_times_limit']
-        elif (row, column, mineNum) == (self.predefinedBoardPara[5]['row'],
+        elif (row, column, minenum) == (self.predefinedBoardPara[5]['row'],
                                         self.predefinedBoardPara[5]['column'],
                                         self.predefinedBoardPara[5]['mine_num']):
             self.actionChecked('C')
@@ -1088,7 +1142,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.gameMode = self.predefinedBoardPara[5]['gamemode']
             self.board_constraint = self.predefinedBoardPara[5]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[5]['attempt_times_limit']
-        elif (row, column, mineNum) == (self.predefinedBoardPara[6]['row'],
+        elif (row, column, minenum) == (self.predefinedBoardPara[6]['row'],
                                         self.predefinedBoardPara[6]['column'],
                                         self.predefinedBoardPara[6]['mine_num']):
             self.actionChecked('C')
@@ -1103,13 +1157,13 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.board_constraint = self.predefinedBoardPara[0]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[0]['attempt_times_limit']
 
-    def setBoard_and_start(self, row, column, mineNum):
-        # 把局面设置成(row, column, mineNum)，把3BV的限制设置成min3BV, max3BV
+    def setBoard_and_start(self, row, column, minenum):
+        # 把局面设置成(row, column, minenum)，把3BV的限制设置成min3BV, max3BV
         # 比gameStart更高级
         if self.game_state == 'display' or self.game_state == 'showdisplay':
             self.label.paintProbability = False
-        if (self.row, self.column, self.mineNum) != (row, column, mineNum):
-            self.setBoard(row, column, mineNum)
+        if (self.row, self.column, self.minenum) != (row, column, minenum):
+            self.setBoard(row, column, minenum)
             self.gameStart()
         else:
             self.gameRestart()
@@ -1141,15 +1195,15 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
 
             self.board_constraint = ui.board_constraint
             self.attempt_times_limit = ui.attempt_times_limit
-            if (self.row, self.column, self.mineNum) == (8, 8, 10):
+            if (self.row, self.column, self.minenum) == (8, 8, 10):
                 self.predefinedBoardPara[1]['attempt_times_limit'] = self.attempt_times_limit
                 self.predefinedBoardPara[1]['board_constraint'] = self.board_constraint
                 self.predefinedBoardPara[1]['gamemode'] = ui.gameMode
-            elif (self.row, self.column, self.mineNum) == (16, 16, 40):
+            elif (self.row, self.column, self.minenum) == (16, 16, 40):
                 self.predefinedBoardPara[2]['attempt_times_limit'] = self.attempt_times_limit
                 self.predefinedBoardPara[2]['board_constraint'] = self.board_constraint
                 self.predefinedBoardPara[2]['gamemode'] = ui.gameMode
-            elif (self.row, self.column, self.mineNum) == (16, 30, 99):
+            elif (self.row, self.column, self.minenum) == (16, 30, 99):
                 self.predefinedBoardPara[3]['attempt_times_limit'] = self.attempt_times_limit
                 self.predefinedBoardPara[3]['board_constraint'] = self.board_constraint
                 self.predefinedBoardPara[3]['gamemode'] = ui.gameMode
@@ -1166,6 +1220,9 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.score_board_manager.with_namespace({
                 "race_identifier": ui.race_identifier,
                 "mode": self.gameMode,
+                # "row": self.row,
+                # "column": self.column,
+                # "minenum": self.minenum,
             })
             self.score_board_manager.show(self.label.ms_board, index_type=1)
 
@@ -1347,12 +1404,12 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.game_state = 'show'
             self.label.paintProbability = True
             # self.label.setMouseTracking(True)
-            mineNum = self.mineNum
+            minenum = self.minenum
             # 删去用户标的雷，因为可能标错
             # game_board = list(map(lambda x: list(map(lambda y: min(y, 10), x)),
             #                  self.label.ms_board.game_board))
             ans = ms.cal_probability_onboard(
-                self.label.ms_board.game_board, mineNum)
+                self.label.ms_board.game_board, minenum)
             self.label.boardProbability = ans[0]
             self.label.update()
 
@@ -1437,6 +1494,9 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             "is_official": video.is_official,
             "is_fair": video.is_fair,
             "mode": video.mode,
+            "row": video.row,
+            "column": video.column,
+            "minenum": video.minenum,
         })
         video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
                                     "mouse_trace", "vision_transfer", "survive_poss"])
@@ -1636,18 +1696,18 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             "DEFAULT/mainWinLeft", str(self.mainWindow.x()))
         self.game_setting.set_value("DEFAULT/row", str(self.row))
         self.game_setting.set_value("DEFAULT/column", str(self.column))
-        self.game_setting.set_value("DEFAULT/mineNum", str(self.mineNum))
+        self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
 
-        if (self.row, self.column, self.mineNum) == (8, 8, 10):
+        if (self.row, self.column, self.minenum) == (8, 8, 10):
             self.game_setting.set_value(
                 "BEGINNER/gamemode", str(self.gameMode))
             self.game_setting.set_value("BEGINNER/pixsize", str(self.pixSize))
-        elif (self.row, self.column, self.mineNum) == (16, 16, 40):
+        elif (self.row, self.column, self.minenum) == (16, 16, 40):
             self.game_setting.set_value(
                 "INTERMEDIATE/gamemode", str(self.gameMode))
             self.game_setting.set_value(
                 "INTERMEDIATE/pixsize", str(self.pixSize))
-        elif (self.row, self.column, self.mineNum) == (16, 30, 99):
+        elif (self.row, self.column, self.minenum) == (16, 30, 99):
             self.game_setting.set_value("EXPERT/gamemode", str(self.gameMode))
             self.game_setting.set_value("EXPERT/pixsize", str(self.pixSize))
         else:

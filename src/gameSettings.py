@@ -19,7 +19,7 @@ class ui_Form(Ui_Form):
         self.pixSize = mainWindow.pixSize
         self.row = mainWindow.row
         self.column = mainWindow.column
-        self.mineNum = mainWindow.mineNum
+        self.minenum = mainWindow.minenum
         
         self.auto_replay = self.game_setting.value('DEFAULT/auto_replay', None, int)
         self.auto_notification = self.game_setting.value('DEFAULT/auto_notification', None, bool)
@@ -143,22 +143,22 @@ class ui_Form(Ui_Form):
         self.game_setting.set_value("DEFAULT/race_identifier", self.race_identifier)
         self.game_setting.set_value("DEFAULT/unique_identifier", self.unique_identifier)
         self.game_setting.set_value("DEFAULT/country", self.country)
-        if (self.row, self.column, self.mineNum) == (8, 8, 10):
+        if (self.row, self.column, self.minenum) == (8, 8, 10):
             self.game_setting.set_value("BEGINNER/gamemode", self.gameMode)
             self.game_setting.set_value("BEGINNER/board_constraint", self.board_constraint)
             self.game_setting.set_value("BEGINNER/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("BEGINNER/pixsize", self.pixSize)
-        elif (self.row, self.column, self.mineNum) == (16, 16, 40):
+        elif (self.row, self.column, self.minenum) == (16, 16, 40):
             self.game_setting.set_value("INTERMEDIATE/gamemode", self.gameMode)
             self.game_setting.set_value("INTERMEDIATE/board_constraint", self.board_constraint)
             self.game_setting.set_value("INTERMEDIATE/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("INTERMEDIATE/pixsize", self.pixSize)
-        elif (self.row, self.column, self.mineNum) == (16, 30, 99):
+        elif (self.row, self.column, self.minenum) == (16, 30, 99):
             self.game_setting.set_value("EXPERT/gamemode", self.gameMode)
             self.game_setting.set_value("EXPERT/board_constraint", self.board_constraint)
             self.game_setting.set_value("EXPERT/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("EXPERT/pixsize", self.pixSize)
-        elif (self.row, self.column, self.mineNum) ==\
+        elif (self.row, self.column, self.minenum) ==\
             (self.game_setting.value("CUSTOM_PRESET_4/row", None, int),
              self.game_setting.value("CUSTOM_PRESET_4/column", None, int),
              self.game_setting.value("CUSTOM_PRESET_4/mine_num", None, int)):
@@ -166,7 +166,7 @@ class ui_Form(Ui_Form):
             self.game_setting.set_value("CUSTOM_PRESET_4/board_constraint", self.board_constraint)
             self.game_setting.set_value("CUSTOM_PRESET_4/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("CUSTOM_PRESET_4/pixsize", self.pixSize)
-        elif (self.row, self.column, self.mineNum) ==\
+        elif (self.row, self.column, self.minenum) ==\
             (self.game_setting.value("CUSTOM_PRESET_5/row", None, int),
              self.game_setting.value("CUSTOM_PRESET_5/column", None, int),
              self.game_setting.value("CUSTOM_PRESET_5/mine_num", None, int)):
@@ -174,7 +174,7 @@ class ui_Form(Ui_Form):
             self.game_setting.set_value("CUSTOM_PRESET_5/board_constraint", self.board_constraint)
             self.game_setting.set_value("CUSTOM_PRESET_5/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("CUSTOM_PRESET_5/pixsize", self.pixSize)
-        elif (self.row, self.column, self.mineNum) ==\
+        elif (self.row, self.column, self.minenum) ==\
             (self.game_setting.value("CUSTOM_PRESET_6/row", None, int),
              self.game_setting.value("CUSTOM_PRESET_6/column", None, int),
              self.game_setting.value("CUSTOM_PRESET_6/mine_num", None, int)):

@@ -11,7 +11,7 @@ class ui_Form(Ui_Form):
     def __init__(self, r_path, row, column, num, parent):
         self.row = row
         self.column = column
-        self.mineNum = num
+        self.minenum = num
         # self.maxRow = 1e6
         # self.maxColumn = 1e6
         self.alter = False
@@ -33,7 +33,7 @@ class ui_Form(Ui_Form):
     def setParameter(self):
         self.spinBox.setValue (self.row)
         self.spinBox_2.setValue (self.column)
-        self.spinBox_3.setValue (self.mineNum)
+        self.spinBox_3.setValue (self.minenum)
         self.change_minenum_limit()
         self.spinBox.valueChanged.connect(self.change_minenum_limit)
         self.spinBox_2.valueChanged.connect(self.change_minenum_limit)
@@ -47,11 +47,11 @@ class ui_Form(Ui_Form):
         r = self.spinBox.value ()
         c = self.spinBox_2.value ()
         n = self.spinBox_3.value ()
-        if r != self.row or c != self.column or n != self.mineNum:
+        if r != self.row or c != self.column or n != self.minenum:
             self.alter = True
             self.row = r
             self.column = c
-            self.mineNum = min (max (n, 1), r * c - 1)
+            self.minenum = min (max (n, 1), r * c - 1)
         self.Dialog.close ()
 
 

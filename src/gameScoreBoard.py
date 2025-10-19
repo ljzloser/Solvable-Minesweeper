@@ -140,9 +140,9 @@ class gameScoreBoardManager():
                 self.score_board_items_type.append(1)
 
     def with_namespace(self, namespace: dict):
-        # 埋雷结束后调用，固化参数
-        # self.pix_size = pix_size
-        # self.board = board
+        '''
+        给计数器添加变量和值。非覆盖，而是可以叠加。
+        '''
         if "mode" in namespace:
             self._game_mode_code: int = namespace["mode"]
             namespace["mode"] = mm.trans_game_mode(namespace["mode"])

@@ -170,7 +170,7 @@ class Ui_MainWindow(Ui_MainWindow):
         r_path = Path(args[0])
         # 检查是否有写入权限
         if self._can_write_to(r_path.with_name('gameSetting.ini')):
-            self.setting_path = r_path
+            self.setting_path = r_path.parent
         else:
             # 没权限，改用 %APPDATA%\你的程序名\
             self.setting_path = Path(os.environ['APPDATA']) / ('MetaMineSweeper' + version[1:])
@@ -486,10 +486,10 @@ class Ui_MainWindow(Ui_MainWindow):
         # 画局面，因此尺寸较完全初始化后偏小，仍有可能有半个窗口在屏幕外，当然这不影响使用。
         self.mainWindow.move(mainWinLeft, mainWinTop)
         
-        self.row = self.game_setting.get_or_set_value("DEFAULT/row", 16, int)
-        self.column = self.game_setting.get_or_set_value("DEFAULT/column", 30, int)
-        self.mineNum = self.game_setting.get_or_set_value("DEFAULT/mineNum", 99, int)
-        self.mineUnFlagedNum = self.mineNum
+        self._row = self.game_setting.get_or_set_value("DEFAULT/row", 16, int)
+        self._column = self.game_setting.get_or_set_value("DEFAULT/column", 30, int)
+        self._minenum = self.game_setting.get_or_set_value("DEFAULT/minenum", 99, int)
+        self.mineUnFlagedNum = self.minenum
         # “自动重开比例”，大于等于该比例时，不自动重开。负数表示禁用。0相当于禁用，但可以编辑。
         self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", 30, int)
         # self.allow_auto_replay = self.game_setting.get_or_set_value("DEFAULT/allow_auto_replay", True, bool)
@@ -503,7 +503,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self.language = self.game_setting.get_or_set_value("DEFAULT/language", "en_US", str)
         self.end_then_flag = self.game_setting.get_or_set_value("DEFAULT/end_then_flag", True, bool)
         self.cursor_limit = self.game_setting.get_or_set_value("DEFAULT/cursor_limit", False, bool)
-        match (self.row, self.column, self.mineNum):
+        match (self.row, self.column, self.minenum):
             case (8, 8, 10):
                 level = "BEGINNER"
             case (16, 16, 40):
