@@ -5,6 +5,8 @@ from ui.uiComponents import RoundQDialog
 from country_name import country_name
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSortFilterProxyModel
+
 
 class ui_Form(Ui_Form):
     def __init__(self, mainWindow):
@@ -43,9 +45,12 @@ class ui_Form(Ui_Form):
         self.pushButton_yes.clicked.connect(self.processParameter)
         self.pushButton_no.clicked.connect(self.Dialog.close)
         # self.comboBox_country.activated['QString'].connect(lambda x: self.onchange_combobox_country(x))
-        self.comboBox_country.editTextChanged.connect(self.onchange_combobox_country)
-        self.comboBox_country.lineEdit().setAlignment(Qt.AlignCenter)
         self.country_name = list(country_name.keys())
+        self.comboBox_country.lineEdit().setAlignment(Qt.AlignCenter)
+        self.comboBox_country.editTextChanged.connect(self.onchange_combobox_country)
+        self.comboBox_country.lineEdit().setText(self.country)
+
+        
         self.setParameter()
 
     def set_country_flag(self, flag_name):
@@ -66,12 +71,17 @@ class ui_Form(Ui_Form):
         # 记录光标位置
         line_edit = self.comboBox_country.lineEdit()
         cursor_position = line_edit.cursorPosition()
-        self.comboBox_country.editTextChanged.disconnect(self.onchange_combobox_country)
+        
+        self.comboBox_country.blockSignals(True)  # 避免清空时再次触发信号
         self.comboBox_country.clear()
-        self.comboBox_country.addItems(filter(lambda x: qtext in x, self.country_name))
-        self.comboBox_country.setCurrentText(qtext)
+        # 过滤逻辑：只保留包含输入的国家（不区分大小写）
+        filtered = [c for c in self.country_name if qtext.lower() in c.lower()]
+        # 重新填充
+        self.comboBox_country.addItems(filtered)
+        # 恢复用户已输入的文本
+        self.comboBox_country.setEditText(qtext)
         line_edit.setCursorPosition(cursor_position)
-        self.comboBox_country.editTextChanged.connect(self.onchange_combobox_country)
+        self.comboBox_country.blockSignals(False)
         self.set_country_flag(qtext)
 
     def setParameter(self):
@@ -190,6 +200,8 @@ class ui_Form(Ui_Form):
 
         self.game_setting.sync()
         self.Dialog.close ()
+
+
 
 
 

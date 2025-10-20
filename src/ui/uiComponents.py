@@ -12,9 +12,9 @@ from PyQt5.QtGui import QPainter, QPainterPath
 # from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QImage, QPainterPath
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtGui import QPixmap
-import configparser
-from PyQt5.QtCore import pyqtSignal 
-from PyQt5.QtCore import QEvent
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QVBoxLayout, QCompleter, QLineEdit
+from PyQt5.QtCore import QStringListModel, QSortFilterProxyModel, QRegExp
 # ui相关的小组件，非窗口
 
 class RoundQDialog(QDialog):
@@ -239,29 +239,57 @@ class CommentLabel(QtWidgets.QLabel):
 class ScoreTable(QtWidgets.QTableWidget):
     ...
 
-# 可编辑、阻止输入框部分点击事件冒泡
-class BetterQCombox(QComboBox):
-    resize = pyqtSignal()
-    def __init__(self, parent=None):
-        super(BetterQCombox, self).__init__(parent)
-        
-    def mousePressEvent(self, event):
-        # 拦截鼠标按下事件，阻止事件冒泡
-        super().mousePressEvent(event)
-        event.accept()
 
-    def mouseReleaseEvent(self, event):
-        # 拦截鼠标释放事件，阻止事件冒泡
-        super().mouseReleaseEvent(event)
-        event.accept()
+class CountryComboBox(QComboBox):
+    def __init__(self, countries, parent=None):
+        super().__init__(parent)
 
-    def resizeEvent(self, e):
-        self.resize.emit()
+        # 1. 基础设置
+        self.setEditable(True)
+        self.lineEdit().setAlignment(Qt.AlignCenter)
+        self.setInsertPolicy(QComboBox.NoInsert)
+        self.view().setTextElideMode(Qt.ElideNone)
+        self.view().setSpacing(2)
+        self.view().setLayoutDirection(Qt.LeftToRight)
 
+        # 2. 设置 model
+        self._model = QStringListModel(countries)
+        self._proxy_model = QSortFilterProxyModel(self)
+        self._proxy_model.setSourceModel(self._model)
+        self._proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self._proxy_model.setFilterKeyColumn(0)
 
+        self.setModel(self._model)
 
+        # 3. 设置补全器
+        self._completer = QCompleter(self._proxy_model, self)
+        self._completer.setCompletionMode(QCompleter.PopupCompletion)
+        self._completer.setFilterMode(Qt.MatchContains)  # 包含搜索
+        self._completer.popup().setTextElideMode(Qt.ElideNone)
+        self._completer.popup().setLayoutDirection(Qt.LeftToRight)
+        self._completer.popup().setStyleSheet("QListView { text-align: center; color: #3d3d3d; font: 12pt '微软雅黑';}")
+        self.setCompleter(self._completer)
 
+        # 4. 居中补全框中的文字
+        self._completer.popup().setUniformItemSizes(True)
+        self._completer.popup().setWordWrap(False)
 
+        # 5. 信号绑定：输入时过滤
+        self.lineEdit().textEdited.connect(self._on_text_edited)
+
+        # 6. 居中下拉框中的文字
+        self.setStyleSheet("""
+            QComboBox QAbstractItemView {
+                text-align: center;
+            }
+            QComboBox {
+                qproperty-alignment: 'AlignCenter';
+            }
+        """)
+
+    def _on_text_edited(self, text):
+        self._proxy_model.setFilterFixedString(text)
+        self._completer.complete()  # 打开补全框
 
 
 
