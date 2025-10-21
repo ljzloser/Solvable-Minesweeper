@@ -1212,11 +1212,6 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                 self.predefinedBoardPara[0]['board_constraint'] = self.board_constraint
                 self.predefinedBoardPara[0]['gamemode'] = ui.gameMode
 
-            self.mainWindow.setWindowOpacity(ui.transparency / 100)
-            for child in self.mainWindow.findChildren(QWidget):
-                # 设置子窗口的透明度
-                child.setWindowOpacity(ui.transparency / 100)
-
             self.score_board_manager.with_namespace({
                 "race_identifier": ui.race_identifier,
                 "mode": self.gameMode,

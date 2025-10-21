@@ -237,7 +237,6 @@ class Ui_MainWindow(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.menu.setFont(font)
-        self.menu.setStyleSheet("")
         self.menu.setObjectName("menu")
         self.menu_2 = QtWidgets.QMenu(self.menubar)
         font = QtGui.QFont()

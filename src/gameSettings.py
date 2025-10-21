@@ -16,8 +16,6 @@ class ui_Form(Ui_Form):
         # config = configparser.ConfigParser()
         # config.read(self.game_setting_path, encoding='utf-8')
         self.gameMode = mainWindow.gameMode
-        self.transparency = self.game_setting.value('DEFAULT/transparency', None, int)
-        # self.transparency = config.getint('DEFAULT','transparency')
         self.pixSize = mainWindow.pixSize
         self.row = mainWindow.row
         self.column = mainWindow.column
@@ -101,8 +99,6 @@ class ui_Form(Ui_Form):
         self.comboBox_country.setCurrentText(self.country)
         self.checkBox_end_then_flag.setChecked(self.end_then_flag)
         self.checkBox_cursor_limit.setChecked(self.cursor_limit)
-        self.horizontalSlider_transparency.setValue (self.transparency)
-        self.label_transparency_percent_value.setText(str(self.transparency))
         
         if not self.checkBox_auto_replay.isChecked():
             self.spinBox_auto_replay.setEnabled(False)
@@ -122,7 +118,6 @@ class ui_Form(Ui_Form):
         #只有点确定才能进来
 
         self.alter = True
-        self.transparency = self.horizontalSlider_transparency.value()
         self.pixSize = self.spinBox_pixsize.value()
         v = self.spinBox_auto_replay.value()
         self.auto_replay = v if self.checkBox_auto_replay.isChecked() else -v
@@ -142,7 +137,6 @@ class ui_Form(Ui_Form):
         # 标准、win7、经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
         
         
-        self.game_setting.set_value("DEFAULT/transparency", self.transparency)
         self.game_setting.set_value("DEFAULT/auto_replay", self.auto_replay)
         self.game_setting.set_value("DEFAULT/end_then_flag", self.end_then_flag)
         self.game_setting.set_value("DEFAULT/cursor_limit", self.cursor_limit)
