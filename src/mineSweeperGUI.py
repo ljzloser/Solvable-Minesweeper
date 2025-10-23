@@ -299,10 +299,17 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.showTime(self.time_10ms // 100)
             since_time_unix_2 = QtCore.QDateTime.currentDateTime().\
                 toMSecsSinceEpoch() - self.start_time_unix_2
-            if abs(t * 1000 - since_time_unix_2) > 100 and\
+            # 防CE作弊。
+            # 假如标识不以"[lag]"开头，则误差大于100ms时重开。
+            # 假如标识以"[lag]"开头，则误差大于1000ms、或误差大于50ms且大于10%时重开。
+            gap_ms = abs(t * 1000 - since_time_unix_2)
+            if gap_ms > 100 and\
                     (self.game_state == "playing" or self.game_state == "joking"):
-                # 防CE作弊
-                self.gameRestart()
+                if self.player_identifier[:5] != "[lag]":
+                    self.gameRestart()
+                elif gap_ms > 1000 or gap_ms > 50 and\
+                        gap_ms / min(t * 1000, since_time_unix_2) > 0.1:
+                    self.gameRestart()
 
         if self.time_10ms % 1 == 0:
             # 计数器用100Hz的刷新率
@@ -768,8 +775,8 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.label.ms_board.player_identifier = self.player_identifier
             self.label.ms_board.race_identifier = self.race_identifier
             self.label.ms_board.uniqueness_identifier = self.unique_identifier
-            self.label.ms_board.country = "XX" if not self.country else country_name[self.country].upper(
-            )
+            self.label.ms_board.country = "XX" if not self.country else\
+                country_name[self.country].upper()
             self.label.ms_board.device_uuid = hashlib.md5(
                 bytes(str(uuid.getnode()).encode())).hexdigest().encode("UTF-8")
 
