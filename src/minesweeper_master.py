@@ -32,12 +32,7 @@ def choose_3BV(board_constraint, attempt_times_limit, params):
             else:
                 success_flag = True
                 
-            constraints = {
-                "sin": math.sin,
-                "tan": math.tan,
-                "cos": math.cos,
-                "log": math.log,
-                } # 也许还要加row, column, mine_num, level, mode
+            constraints = {}
             wrapper_b = ms.Board(b)
             if "bbbv" in board_constraint:
                 constraints.update({"bbbv": wrapper_b.bbbv})
@@ -522,11 +517,7 @@ def main():
     
     # print2(enumerateChangeBoard2(board, game_board, [(2, 3), (3, 2), (2, 2)])[0])
     
-    constraints = {
-        "sin": math.sin,
-        "tan": math.tan,
-        "cos": math.cos,
-        } # 也许还要加row, column, mine_num, level, mode
+    constraints = {}
     board_constraint="all([1,2,3])"
     if "bbbv" in board_constraint:
         constraints.update({"bbbv": 120})

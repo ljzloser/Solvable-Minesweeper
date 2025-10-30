@@ -16,7 +16,7 @@ class ui_Form(QWidget, Ui_Form):
     # time_current = 0.0
     
     def __init__(self, r_path, video, comments, game_setting, parent):
-        super (ui_Form, self).__init__ ()
+        super (ui_Form, self).__init__()
         
         self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
@@ -55,6 +55,7 @@ class ui_Form(QWidget, Ui_Form):
 "color: #50A6EA;")
         self.QWidget.move(game_setting.value("DEFAULT/videocontroltop", 100, int),
                           game_setting.value("DEFAULT/videocontrolleft", 300, int))
+        self.tabWidget.tabCloseRequested.connect(self.close_tab)
 
     def set_double_spin_box_time(self, int_time):
         self.doubleSpinBox_time.setValue(int_time / 1000)
@@ -72,6 +73,10 @@ class ui_Form(QWidget, Ui_Form):
         self.videoSetTime.emit(int(float_time * 1000))
         # self.time_current = float_time
 
+    def close_tab(self, index):
+        # 使用 removeTab 方法移除指定索引的选项卡
+        self.tabWidget.removeTab(index)
+    
     def close(self):
         self.game_setting.set_value("DEFAULT/videocontroltop", self.QWidget.x())
         self.game_setting.set_value("DEFAULT/videocontrolleft", self.QWidget.y())

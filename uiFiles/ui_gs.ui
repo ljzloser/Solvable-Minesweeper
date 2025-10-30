@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>554</width>
-    <height>605</height>
+    <height>644</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -814,6 +814,31 @@ font: 12pt &quot;微软雅黑&quot;;
            </property>
            <property name="text">
             <string>自动保存录像（推荐）</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autosave_video_set">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>自动保存录像集</string>
            </property>
           </widget>
          </item>

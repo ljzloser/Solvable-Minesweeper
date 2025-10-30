@@ -31,26 +31,32 @@
   <property name="windowTitle">
    <string notr="true"/>
   </property>
-  <property name="windowOpacity">
-   <double>10.000000000000000</double>
-  </property>
-  <widget class="QSlider" name="horizontalSlider_time">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>40</y>
-     <width>481</width>
-     <height>31</height>
-    </rect>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
    </property>
-   <property name="focusPolicy">
-    <enum>Qt::StrongFocus</enum>
+   <property name="leftMargin">
+    <number>20</number>
    </property>
-   <property name="autoFillBackground">
-    <bool>false</bool>
+   <property name="topMargin">
+    <number>30</number>
    </property>
-   <property name="styleSheet">
-    <string notr="true">QSlider::groove {
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
+   <item>
+    <widget class="QSlider" name="horizontalSlider_time">
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QSlider::groove {
     border: 0px solid #bbbbbb;
     background-color: #50A6EA;
     border-radius: 4px;
@@ -99,282 +105,450 @@ QSlider::sub-page:vertical {
 QSlider::add-page:horizontal:disabled, QSlider::sub-page:horizontal:disabled, QSlider::add-page:vertical:disabled, QSlider::sub-page:vertical:disabled {
     background: #b9b9b9;
 }</string>
-   </property>
-   <property name="maximum">
-    <number>1000</number>
-   </property>
-   <property name="singleStep">
-    <number>0</number>
-   </property>
-   <property name="pageStep">
-    <number>10</number>
-   </property>
-   <property name="sliderPosition">
-    <number>0</number>
-   </property>
-   <property name="tracking">
-    <bool>true</bool>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="invertedAppearance">
-    <bool>false</bool>
-   </property>
-   <property name="invertedControls">
-    <bool>false</bool>
-   </property>
-   <property name="tickPosition">
-    <enum>QSlider::NoTicks</enum>
-   </property>
-   <property name="tickInterval">
-    <number>0</number>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_replay">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>41</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>重播</string>
-   </property>
-   <property name="toolTipDuration">
-    <number>0</number>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">border-image: url(media/replay.svg);
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="singleStep">
+      <number>0</number>
+     </property>
+     <property name="pageStep">
+      <number>10</number>
+     </property>
+     <property name="sliderPosition">
+      <number>0</number>
+     </property>
+     <property name="tracking">
+      <bool>true</bool>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+     <property name="invertedControls">
+      <bool>false</bool>
+     </property>
+     <property name="tickPosition">
+      <enum>QSlider::NoTicks</enum>
+     </property>
+     <property name="tickInterval">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton_replay">
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>重播</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>0</number>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border-image: url(media/replay.svg);
 QPushButton::hover{
 	background-color: rgb(170, 255, 255);
 }</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_play">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>90</y>
-     <width>41</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>播放/暂停</string>
-   </property>
-   <property name="toolTipDuration">
-    <number>0</number>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">border-image: url(media/play.svg);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="SpeedLabel" name="label_speed">
-   <property name="geometry">
-    <rect>
-     <x>142</x>
-     <y>90</y>
-     <width>51</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>滑动滚轮修改播放速度</string>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QLabel {border-image: url(media/speed.svg);
-font: 12pt &quot;微软雅黑&quot;;
-color: #50A6EA;}</string>
-   </property>
-   <property name="text">
-    <string notr="true">1</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>102</y>
-     <width>16</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">border-image: url(media/mul.svg);
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_play">
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>播放/暂停</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>0</number>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border-image: url(media/play.svg);</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="minimumSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border-image: url(media/mul.svg);
 font: 12pt &quot;微软雅黑&quot;;
 color: #50A6EA;</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBox_time">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>80</y>
-     <width>221</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>微软雅黑</family>
-     <pointsize>20</pointsize>
-     <weight>50</weight>
-     <italic>false</italic>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">font: 20pt &quot;微软雅黑&quot;;
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="SpeedLabel" name="label_speed">
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>微软雅黑</family>
+          <pointsize>16</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>滑动滚轮修改播放速度</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {border-image: url(media/speed.svg);
+font: 16pt &quot;微软雅黑&quot;;
+color: #50A6EA;}</string>
+        </property>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_time">
+        <property name="font">
+         <font>
+          <family>微软雅黑</family>
+          <pointsize>20</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 20pt &quot;微软雅黑&quot;;
 color: #50A6EA;
 background-color: rgb(240, 240, 240);</string>
-   </property>
-   <property name="wrapping">
-    <bool>false</bool>
-   </property>
-   <property name="frame">
-    <bool>false</bool>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-   <property name="decimals">
-    <number>3</number>
-   </property>
-   <property name="minimum">
-    <double>-999.990000000000009</double>
-   </property>
-   <property name="maximum">
-    <double>999.990000000000009</double>
-   </property>
-   <property name="singleStep">
-    <double>0.001000000000000</double>
-   </property>
-   <property name="stepType">
-    <enum>QAbstractSpinBox::DefaultStepType</enum>
-   </property>
-  </widget>
-  <widget class="QScrollArea" name="scrollArea">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>150</y>
-     <width>481</width>
-     <height>471</height>
-    </rect>
-   </property>
-   <property name="verticalScrollBarPolicy">
-    <enum>Qt::ScrollBarAlwaysOn</enum>
-   </property>
-   <property name="horizontalScrollBarPolicy">
-    <enum>Qt::ScrollBarAlwaysOff</enum>
-   </property>
-   <property name="sizeAdjustPolicy">
-    <enum>QAbstractScrollArea::AdjustToContents</enum>
-   </property>
-   <property name="widgetResizable">
-    <bool>true</bool>
-   </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>458</width>
-      <height>500</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>500</height>
-     </size>
-    </property>
-    <widget class="QLabel" name="label_time">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>68</width>
-       <height>42</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>时间</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
+        </property>
+        <property name="wrapping">
+         <bool>false</bool>
+        </property>
+        <property name="frame">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>-999.990000000000009</double>
+        </property>
+        <property name="maximum">
+         <double>999.990000000000009</double>
+        </property>
+        <property name="singleStep">
+         <double>0.001000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
-    <widget class="QLabel" name="label_tag">
-     <property name="geometry">
-      <rect>
-       <x>158</x>
-       <y>0</y>
-       <width>300</width>
-       <height>42</height>
-      </rect>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="styleSheet">
+      <string notr="true">QTabWidget::pane { margin: 0px; border: 0px; }
+</string>
      </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>12</pointsize>
-      </font>
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <property name="text">
-      <string>标签</string>
+     <property name="tabsClosable">
+      <bool>true</bool>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
+     <property name="movable">
+      <bool>true</bool>
      </property>
+     <property name="tabBarAutoHide">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>录像</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOn</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>457</width>
+            <height>459</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <widget class="QLabel" name="label_time">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>68</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>时间</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_tag">
+           <property name="geometry">
+            <rect>
+             <x>158</x>
+             <y>0</y>
+             <width>300</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>标签</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_event">
+           <property name="geometry">
+            <rect>
+             <x>68</x>
+             <y>0</y>
+             <width>90</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>事件</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Tab 2</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QScrollArea" name="scrollArea_2">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOn</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_2">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>457</width>
+            <height>459</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <widget class="QLabel" name="label_video">
+           <property name="geometry">
+            <rect>
+             <x>120</x>
+             <y>0</y>
+             <width>271</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>录像</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBox_choose">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>0</y>
+             <width>91</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>选择</string>
+           </property>
+          </widget>
+          <zorder>checkBox_choose</zorder>
+          <zorder>label_video</zorder>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+      <zorder>stackedWidget</zorder>
+      <zorder>scrollArea_2</zorder>
+     </widget>
     </widget>
-    <widget class="QLabel" name="label_event">
-     <property name="geometry">
-      <rect>
-       <x>68</x>
-       <y>0</y>
-       <width>90</width>
-       <height>42</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>事件</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </widget>
-  </widget>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>

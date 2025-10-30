@@ -499,6 +499,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self.unique_identifier = self.game_setting.get_or_set_value("DEFAULT/unique_identifier", "", str)
         self.country = self.game_setting.get_or_set_value("DEFAULT/country", "", str)
         self.autosave_video = self.game_setting.get_or_set_value("DEFAULT/autosave_video", True, bool)
+        self.autosave_video_set = self.game_setting.get_or_set_value("DEFAULT/autosave_video_set", True, bool)
         self.filter_forever = self.game_setting.get_or_set_value("DEFAULT/filter_forever", False, bool)
         self.language = self.game_setting.get_or_set_value("DEFAULT/language", "en_US", str)
         self.end_then_flag = self.game_setting.get_or_set_value("DEFAULT/end_then_flag", True, bool)

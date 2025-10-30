@@ -24,6 +24,7 @@ import uuid
 from country_name import country_name
 import metaminesweeper_checksum
 from mainWindowGUI import MainWindow
+from datetime import datetime
 
 
 class MineSweeperGUI(superGUI.Ui_MainWindow):
@@ -211,29 +212,33 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
     @game_state.setter
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
-        if self._game_state in ("playing", "show", "joking") and\
-                game_state not in ("playing", "show", "joking"):
-            self.timer_10ms.stop()
-            self.unlimit_cursor()
-        elif self._game_state in ("display", "showdisplay") and\
-                game_state not in ("display", "showdisplay"):
-            self.timer_video.stop()
-            self.ui_video_control.QWidget.close()
-            self.label.paint_cursor = False
-            self.set_country_flag()
-            self.score_board_manager.with_namespace({
-                "checksum_ok": "--",
-                "is_official": "--",
-                "is_fair": "--",
-                "mode": self.gameMode,
-                "row": self.row,
-                "column": self.column,
-                "minenum": self.minenum,
-            })
-            self.score_board_manager.show(self.label.ms_board, index_type=1)
-
-        elif self._game_state == 'study':
-            self.num_bar_ui.QWidget.close()
+        match self._game_state:
+            case "playing" | "joking":
+                if game_state not in ("playing", "show", "joking"):
+                    self.timer_10ms.stop()
+                    self.unlimit_cursor()
+            case "show":
+                if game_state not in ("playing", "show", "joking"):
+                    self.timer_10ms.stop()
+                    self.unlimit_cursor()
+            case "display" | "showdisplay":
+                if game_state not in ("display", "showdisplay"):
+                    self.timer_video.stop()
+                    self.ui_video_control.QWidget.close()
+                    self.label.paint_cursor = False
+                    self.set_country_flag()
+                    self.score_board_manager.with_namespace({
+                        "checksum_ok": "--",
+                        "is_official": "--",
+                        "is_fair": "--",
+                        "mode": self.gameMode,
+                        "row": self.row,
+                        "column": self.column,
+                        "minenum": self.minenum,
+                    })
+                    self.score_board_manager.show(self.label.ms_board, index_type=1)
+            case "study":
+                self.num_bar_ui.QWidget.close()
         self._game_state = game_state
         
         
@@ -709,7 +714,6 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
 
     # 游戏结束画残局，改状态
-
     def gameFinished(self):
         if self.label.ms_board.game_board_state == 3 and self.end_then_flag:
             self.label.ms_board.win_then_flag_all_mine()
@@ -722,11 +726,15 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.score_board_manager.with_namespace({
             "is_official": self.is_official(),
             "is_fair": self.is_fair(),
-            "row": self.row,
-            "column": self.column,
-            "minenum": self.minenum,
+            # "row": self.row,
+            # "column": self.column,
+            # "minenum": self.minenum,
         })
-        self.score_board_manager.show(self.label.ms_board, index_type=2)
+        self.label.ms_board.analyse_for_features(["high_risk_guess", "jump_judge",
+                                                  "needless_guess","mouse_trace",
+                                                  "vision_transfer", "survive_poss"])
+
+        self.score_board_manager.show(self.label.ms_board, index_type=3)
         self.enable_screenshot()
         self.unlimit_cursor()
 
@@ -745,7 +753,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         if self.autosave_video and self.checksum_module_ok():
             self.dump_evf_file_data()
             self.save_evf_file()
-
+            
         self.gameFinished()
 
         # 尝试弹窗，没有破纪录则不弹
@@ -760,7 +768,6 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         #     '590028493bb58a25ffc76e2e2ad490df839a1f449435c35789d3119ca69e5d4f'
 
     # 搜集数据，生成evf文件的二进制数据，但是不保存
-
     def dump_evf_file_data(self):
         if isinstance(self.label.ms_board, ms.BaseVideo):
             self.label.ms_board.use_question = False  # 禁用问号是共识
@@ -801,7 +808,6 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
     # 将evf数据存成evf文件
     # 调试的时候不会自动存录像，见checksum_module_ok
     # 菜单保存的回调。以及游戏结束自动保存。
-
     def save_evf_file(self):
         if not os.path.exists(self.replay_path):
             os.mkdir(self.replay_path)
@@ -833,6 +839,19 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             file_name += "_fake"
 
         self.label.ms_board.save_to_evf_file(file_name)
+        
+    # 保存evfs文件。先保存后一个文件，再删除前一个文件。
+    def save_evfs_file(self):
+        now = datetime.now()
+        date_str = now.strftime("%Y%m%d")
+        file_name = self.replay_path + '\\' + self.label.ms_board.player_identifier +\
+            "_" + date_str + "_" + str(self.evfs.len())
+        self.evfs.save_evfs_file(file_name)
+        try:
+            os.remove(self.old_evfs_filename)
+        except Exception as e:
+            ...
+        self.old_evfs_filename = file_name
 
     def gameFailed(self):  # 失败后改脸和状态变量
         self.timer_10ms.stop()
@@ -1013,6 +1032,12 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             ui.label_16.setText(mode_text)
             ui.Dialog.show()
             ui.Dialog.exec_()
+            
+            
+    # 根据条件是否满足，尝试追加evfs文件
+    def try_append_evfs(self):
+        ...
+    
 
     def showMineNum(self, n):
         # 显示剩余雷数，雷数大于等于0，小于等于999，整数
@@ -1198,6 +1223,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             self.country = ui.country
             self.set_country_flag()
             self.autosave_video = ui.autosave_video
+            self.autosave_video_set = ui.autosave_video_set
             self.filter_forever = ui.filter_forever
 
             self.board_constraint = ui.board_constraint
@@ -1220,7 +1246,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                 self.predefinedBoardPara[0]['gamemode'] = ui.gameMode
 
             self.score_board_manager.with_namespace({
-                "race_identifier": ui.race_identifier,
+                # "race_identifier": ui.race_identifier,
                 "mode": self.gameMode,
                 # "row": self.row,
                 # "column": self.column,
@@ -1352,6 +1378,8 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.label.boardProbability = ans[0]
 
         self.label.update()
+        self.evfs = ms.Evfs()
+        self.old_evfs_filename = ""
         # self.label.setMouseTracking(True)
 
         self.minimumWindow()
@@ -1421,18 +1449,16 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             if self.game_state == 'show':
                 self.game_state = 'joking'
                 self.label.paintProbability = False
-                # self.label.setMouseTracking(False)
                 self.label_info.setText(self.player_identifier)
                 self.label.update()
             elif self.game_state == 'display':
                 self.game_state = 'showdisplay'
                 self.label.paintProbability = True
-                # self.label.setMouseTracking(True)
                 self.label.update()
             elif self.game_state == 'showdisplay':
                 self.game_state = 'display'
                 self.label.paintProbability = False
-                # self.label.setMouseTracking(False)
+                self.label_info.setText(self.player_identifier)
                 self.label.update()
 
     def refreshSettingsDefault(self):
@@ -1451,7 +1477,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         if not openfile_name:
             openfile_name = QFileDialog.\
                 getOpenFileName(self.mainWindow, '打开文件', str(self.setting_path / 'replay'),
-                                'All(*.avf *.evf *.rmv *.mvf);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf)')
+                                'All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)')
             openfile_name = openfile_name[0]
         # 实例化
         if not openfile_name:
@@ -1464,10 +1490,11 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             elif openfile_name[-3:] == "rmv":
                 video = ms.RmvVideo(openfile_name)
             elif openfile_name[-3:] == "evf":
-                # evf版本过时以后会引发异常
                 video = ms.EvfVideo(openfile_name)
             elif openfile_name[-3:] == "mvf":
                 video = ms.MvfVideo(openfile_name)
+            elif openfile_name[-3:] == "evfs":
+                video = ms.Evfs(openfile_name)
             else:
                 return
         except:
@@ -1498,7 +1525,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             "mode": video.mode,
             "row": video.row,
             "column": video.column,
-            "minenum": video.minenum,
+            "minenum": video.mine_num,
         })
         video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
                                     "mouse_trace", "vision_transfer", "survive_poss"])
