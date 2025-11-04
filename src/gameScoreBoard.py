@@ -228,11 +228,12 @@ class gameScoreBoardManager():
                 "rce": ms_board.rce,
                 "lce": ms_board.lce,
                 "dce": ms_board.dce,
-                })
-        if index_type >= 3:
-            self.namespace.update({
                 "pluck": ms_board.pluck,
                 })
+        # if index_type >= 3:
+        #     self.namespace.update({
+        #         "pluck": ms_board.pluck,
+        #         })
         
         
     def show(self, ms_board, index_type):
@@ -256,9 +257,12 @@ class gameScoreBoardManager():
                 or self.ms_board.game_board_state == 2\
                     or self.ms_board.game_board_state == 5:
                 index_type = 1
-            else:
+            elif self.ms_board.game_board_state == 3\
+                or self.ms_board.game_board_state == 4:
                 # 3、4为win和loss
                 index_type = 2
+            elif self.ms_board.game_board_state == 6:
+                index_type = 3
             
         # 指标数量有变。增删指标用。游戏开始前。index_type是2
         self.ms_board = ms_board

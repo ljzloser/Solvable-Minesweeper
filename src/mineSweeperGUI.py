@@ -11,7 +11,7 @@ import gameSettingShortcuts
 import captureScreen, mine_num_bar, videoControl, gameRecordPop
 from CheckUpdateGui import CheckUpdateGui
 from githubApi import GitHub, SourceManager
-import minesweeper_master as mm
+import utils
 import ms_toollib as ms
 # import configparser
 # from pathlib import Path
@@ -213,11 +213,12 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
         match self._game_state:
-            case "playing" | "joking":
+            case "playing":
                 if game_state not in ("playing", "show", "joking"):
                     self.timer_10ms.stop()
                     self.unlimit_cursor()
-            case "show":
+                # if game_state in ("study", "joking", "jowin", "jofail", "show"):
+            case "joking" | "show":
                 if game_state not in ("playing", "show", "joking"):
                     self.timer_10ms.stop()
                     self.unlimit_cursor()
@@ -284,13 +285,13 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         # 弱无猜7、准无猜8、强可猜9、弱可猜10
         if self.gameMode == 5 or self.gameMode == 6 or self.gameMode == 9:
             # 根据模式生成局面
-            Board, _ = mm.laymine_solvable(self.board_constraint,
+            Board, _ = utils.laymine_solvable(self.board_constraint,
                                            self.attempt_times_limit, (xx, yy, num, i, j))
         elif self.gameMode == 0 or self.gameMode == 7 or self.gameMode == 8 or self.gameMode == 10:
-            Board, _ = mm.laymine(self.board_constraint,
+            Board, _ = utils.laymine(self.board_constraint,
                                   self.attempt_times_limit, (xx, yy, num, i, j))
         elif self.gameMode == 4:
-            Board, _ = mm.laymine_op(self.board_constraint,
+            Board, _ = utils.laymine_op(self.board_constraint,
                                      self.attempt_times_limit, (xx, yy, num, i, j))
 
         self.label.ms_board.board = Board
@@ -345,7 +346,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                 board[i][j] = -1
                 self.label.ms_board.board = board
             elif code == 2:
-                board, flag = mm.enumerateChangeBoard(self.label.ms_board.board,
+                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
                                                       self.label.ms_board.game_board, [(i, j)])
                 self.label.ms_board.board = board
             return
@@ -353,14 +354,14 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             code = ms.is_guess_while_needless(
                 self.label.ms_board.game_board, (i, j))
             if code == 2:
-                board, flag = mm.enumerateChangeBoard(self.label.ms_board.board,
+                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
                                                       self.label.ms_board.game_board, [(i, j)])
                 self.label.ms_board.board = board
             return
         elif self.gameMode == 9 or self.gameMode == 10:
             if self.label.ms_board.board[i][j] == -1:
                 # 可猜调整的核心逻辑
-                board, flag = mm.enumerateChangeBoard(self.label.ms_board.board,
+                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
                                                       self.label.ms_board.game_board, [(i, j)])
 
                 self.label.ms_board.board = board
@@ -418,7 +419,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                     must_guess = False
                     break
             if must_guess:
-                board, flag = mm.enumerateChangeBoard(board,
+                board, flag = utils.enumerateChangeBoard(board,
                                                       self.label.ms_board.game_board,
                                                       not_mine_round + is_mine_round)
                 self.label.ms_board.board = board
@@ -435,12 +436,12 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                     must_guess = False
                     break
             if must_guess:
-                board, flag = mm.enumerateChangeBoard(board,
+                board, flag = utils.enumerateChangeBoard(board,
                                                       self.label.ms_board.game_board,
                                                       not_mine_round + is_mine_round)
                 self.label.ms_board.board = board
         elif self.gameMode == 9 or self.gameMode == 10:
-            board, flag = mm.enumerateChangeBoard(board,
+            board, flag = utils.enumerateChangeBoard(board,
                                                   self.label.ms_board.game_board,
                                                   not_mine_round + is_mine_round)
             self.label.ms_board.board = board
@@ -681,7 +682,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             # 点脸周围时，会传入一个e参数
             if not (self.MinenumTimeWigdet.width() >= e.localPos().x() >= 0 and 0 <= e.localPos().y() <= self.MinenumTimeWigdet.height()):
                 return
-        # 此时self.label.ms_board是mm.abstract_game_board的实例
+        # 此时self.label.ms_board是utils.abstract_game_board的实例
         if self.game_state == 'display' or self.game_state == 'showdisplay':
             # self.timer_video.stop()
             # self.ui_video_control.QWidget.close()
@@ -730,11 +731,8 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             # "column": self.column,
             # "minenum": self.minenum,
         })
-        self.label.ms_board.analyse_for_features(["high_risk_guess", "jump_judge",
-                                                  "needless_guess","mouse_trace",
-                                                  "vision_transfer", "survive_poss"])
 
-        self.score_board_manager.show(self.label.ms_board, index_type=3)
+        self.score_board_manager.show(self.label.ms_board, index_type=2)
         self.enable_screenshot()
         self.unlimit_cursor()
 
@@ -857,17 +855,15 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.timer_10ms.stop()
         self.score_board_manager.editing_row = -1
 
-        if self.game_state == 'joking':
-            self.game_state = 'jofail'
-        else:
-            self.game_state = 'fail'
-
-        self.set_face(16)
-
         # “自动重开比例”，大于等于该比例时，不自动重开。负数表示禁用。0相当于禁用，但可以编辑。
         if self.label.ms_board.bbbv_solved / self.label.ms_board.bbbv * 100 < self.auto_replay:
             self.gameRestart()
         else:
+            if self.game_state == 'joking':
+                self.game_state = 'jofail'
+            else:
+                self.game_state = 'fail'
+            self.set_face(16)
             self.gameFinished()
 
     def try_record_pop(self):
@@ -1337,7 +1333,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.timer_10ms.stop()
         self.score_board_manager.invisible()
 
-        # self.label.ms_board = mm.abstract_game_board()
+        # self.label.ms_board = utils.abstract_game_board()
         # self.label.ms_board.mouse_state = 1
         # self.label.ms_board.game_board_state = 1
         # self.label.ms_board.game_board = ui.board
@@ -1528,7 +1524,8 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             "minenum": video.mine_num,
         })
         video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                    "mouse_trace", "vision_transfer", "survive_poss"])
+                                    "mouse_trace", "vision_transfer", "pluck",
+                                    "super_fl_local"])
 
         # 组织录像评论
         comments = []
