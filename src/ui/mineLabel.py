@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath
 import ms_toollib as ms
 from PyQt5.QtCore import QPoint, Qt
 # from PyQt5.QtSvg import QSvgWidget
-import minesweeper_master as mm
+import utils
 
 
 class mineLabel(QtWidgets.QLabel):
@@ -54,11 +54,11 @@ class mineLabel(QtWidgets.QLabel):
         self.row = row
         self.column = column
         if self.paintProbability:
-            # self.ms_board = mm.abstract_game_board()
-            self.ms_board = mm.CoreBaseVideo([[0] * column for _ in range(row)], pixSize)
+            # self.ms_board = utils.abstract_game_board()
+            self.ms_board = utils.CoreBaseVideo([[0] * column for _ in range(row)], pixSize)
         else:
             if hasattr(self, "ms_board"):
-                if isinstance(self.ms_board, mm.CoreBaseVideo) or\
+                if isinstance(self.ms_board, utils.CoreBaseVideo) or\
                     not isinstance(self.ms_board, ms.BaseVideo):
                     self.ms_board = ms.BaseVideo([[0] * column for _ in range(row)], pixSize)
                 else:

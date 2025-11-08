@@ -25,9 +25,10 @@ from country_name import country_name
 import metaminesweeper_checksum
 from mainWindowGUI import MainWindow
 from datetime import datetime
+from mineSweeperVideoPlayer import MineSweeperVideoPlayer
 
 
-class MineSweeperGUI(superGUI.Ui_MainWindow):
+class MineSweeperGUI(MineSweeperVideoPlayer):
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
         self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
@@ -142,6 +143,9 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         # 因此同样是UpDown，在数字和空上双击黄脸应该张嘴，但是双击后抬起时则
         # 不应该张嘴。工具箱缺少两种鼠标状态的区分，导致黄脸无法准确动作。
         self.last_mouse_state_video_playing_step = 1
+        # evfs模块
+        self.evfs = ms.Evfs()
+        self.old_evfs_filename = ""
 
     @property
     def pixSize(self):
@@ -209,11 +213,14 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
     def game_state(self):
         return self._game_state
 
+    # 游戏状态的状态转移
+    # 只有ready有可能发生ready->ready
     @game_state.setter
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
         match self._game_state:
             case "playing":
+                self.try_append_evfs(game_state)
                 if game_state not in ("playing", "show", "joking"):
                     self.timer_10ms.stop()
                     self.unlimit_cursor()
@@ -446,184 +453,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
                                                   not_mine_round + is_mine_round)
             self.label.ms_board.board = board
 
-    def mineAreaLeftPressed(self, i, j):
-        if self.game_state == 'ready' or self.game_state == 'playing' or\
-                self.game_state == 'joking':
-            self.label.ms_board.step('lc', (i, j))
-            self.label.update()
 
-            self.set_face(15)
-
-        elif self.game_state == 'show':
-            # 看概率时，所有操作都移出局面外
-            self.label.ms_board.step(
-                'lc', (self.row * self.pixSize, self.column * self.pixSize))
-            self.set_face(15)
-
-    def mineAreaLeftRelease(self, i, j):
-        if self.game_state == 'ready':
-            if not self.pos_is_in_board(i, j):
-                self.label.ms_board.step('lr', (i, j))
-            else:
-                if self.label.ms_board.mouse_state == 4 and\
-                        self.label.ms_board.game_board[i // self.pixSize][j // self.pixSize] == 10:
-                    # 正式埋雷开始
-                    self.layMine(i // self.pixSize, j // self.pixSize)
-
-                    # 只有没有“局面约束”时，录像才可能是“official”的
-                    if self.board_constraint:
-                        self.game_state = 'joking'
-                    else:
-                        self.game_state = 'playing'
-
-                    # 假如未开启“直播模式”，禁用代码截图
-                    if self.player_identifier[:6] != "[live]":
-                        self.disable_screenshot()
-                    else:
-                        self.enable_screenshot()
-
-                    if self.cursor_limit:
-                        self.limit_cursor()
-
-                    # 核实用的时间，防变速齿轮
-                    self.start_time_unix_2 = QtCore.QDateTime.currentDateTime().\
-                        toMSecsSinceEpoch()
-                    self.timer_10ms.start()
-                    # 禁用双击修改指标名称公式
-                    self.score_board_manager.editing_row = -2
-
-                self.label.ms_board.step('lr', (i, j))
-
-                if self.label.ms_board.game_board_state == 3:
-                    # 点一下可能获胜
-                    self.gameWin()
-                    self.label.update()
-                    return
-                elif self.label.ms_board.game_board_state == 4:
-                    # 点一下不可能踩雷，但为完整性需要这样写
-                    self.gameFailed()
-                    self.label.update()
-                    return
-                else:
-                    self.label.update()
-            self.set_face(14)
-        elif self.game_state == 'playing' or self.game_state == 'joking':
-            # 如果是游戏中，且是左键抬起（不是双击），且是在10上，且在局面内，则用ai劫持、处理下
-            if self.pos_is_in_board(i, j):
-                if self.label.ms_board.game_board[i // self.pixSize][j // self.pixSize] == 10 \
-                        and self.label.ms_board.mouse_state == 4:
-                    self.ai(i // self.pixSize, j // self.pixSize)
-                self.chording_ai(i // self.pixSize, j // self.pixSize)
-
-            self.label.ms_board.step('lr', (i, j))
-
-            if self.label.ms_board.game_board_state == 3:
-                self.gameWin()
-                self.label.update()
-                return
-            elif self.label.ms_board.game_board_state == 4:
-                self.gameFailed()
-                self.label.update()
-                return
-            self.label.update()
-            self.set_face(14)
-
-        elif self.game_state == 'show':
-            # 看概率时，所有操作都移出局面外
-            self.label.ms_board.step(
-                'lr', (self.row * self.pixSize, self.column * self.pixSize))
-            self.set_face(14)
-
-    def mineAreaRightPressed(self, i, j):
-        if self.game_state == 'ready' or self.game_state == 'playing' or self.game_state == 'joking':
-            if i < self.pixSize * self.row and j < self.pixSize * self.column:
-                # 计算左上角显示的雷数用。必须校验：当前格的状态、鼠标状态为双键都抬起。
-                # 假如按下左键，再切屏（比如快捷键截图），再左键抬起，再切回来，再右键按下，
-                # 就会导致DownUp状态下右键按下。此时不应该标雷，左上角雷数也应该不变
-                if self.label.ms_board.game_board[i//self.pixSize][j//self.pixSize] == 11 and\
-                        self.label.ms_board.mouse_state == 1:
-                    self.mineUnFlagedNum += 1
-                    self.showMineNum(self.mineUnFlagedNum)
-                elif self.label.ms_board.game_board[i//self.pixSize][j//self.pixSize] == 10 and\
-                        self.label.ms_board.mouse_state == 1:
-                    self.mineUnFlagedNum -= 1
-                    self.showMineNum(self.mineUnFlagedNum)
-            self.label.ms_board.step('rc', (i, j))
-            self.label.update()
-            self.set_face(15)
-
-    def mineAreaRightRelease(self, i, j):
-        if self.game_state == 'ready' or self.game_state == 'playing' or self.game_state == 'joking':
-            self.chording_ai(i // self.pixSize, j // self.pixSize)
-            self.label.ms_board.step('rr', (i, j))
-            self.label.update()
-            self.set_face(14)
-        elif self.game_state == 'show':
-            # 看概率时，所有操作都移出局面外
-            self.label.ms_board.step(
-                'rr', (self.row * self.pixSize, self.column * self.pixSize))
-            self.set_face(14)
-
-    def mineAreaLeftAndRightPressed(self, i, j):
-        if self.game_state == 'ready' or self.game_state == 'playing' or\
-                self.game_state == 'joking':
-            self.label.ms_board.step('cc', (i, j))
-            self.label.update()
-
-            self.set_face(15)
-
-    def mineMouseMove(self, i, j):
-        # 正常情况的鼠标移动事件，与高亮的显示有关
-        if self.game_state == 'playing' or self.game_state == 'joking' or self.game_state == 'ready':
-            self.label.ms_board.step('mv', (i, j))
-            self.label.update()
-        # 按住空格后的鼠标移动事件，与概率的显示有关
-        elif self.game_state == 'show' or self.game_state == 'study':
-            if not self.pos_is_in_board(i, j):
-                self.label_info.setText('(是雷的概率)')
-            else:
-                text4 = '{:.3f}'.format(
-                    max(0, self.label.boardProbability[i//self.pixSize][j//self.pixSize]))
-                self.label_info.setText(text4)
-        # 播放录像时的鼠标移动事件
-        elif self.game_state == 'showdisplay':
-            if not self.pos_is_in_board(i, j):
-                self.label_info.setText('(是雷的概率)')
-            else:
-                text4 = '{:.3f}'.format(
-                    max(0, self.label.ms_board.game_board_poss[i//self.pixSize][j//self.pixSize]))
-                self.label_info.setText(text4)
-
-    def resizeWheel(self, i, x, y):
-        # 按住ctrl滚轮，调整局面大小
-        # study状态下，滚轮修改局面
-        # 函数名要改了
-        if QApplication.keyboardModifiers() == Qt.ControlModifier and\
-                self.game_state == 'ready' and self.label.ms_board.game_board_state == 1:
-            # 调整局面大小需要满足：ui端是ready且状态机是ready
-            if i > 0:
-                self.pixSize += 1
-            elif i < 0:
-                self.pixSize -= 1
-
-        elif self.game_state == 'study':
-            if x < 0 or x >= self.row or y < 0 or y >= self.column:
-                return
-            v = self.label.ms_board.game_board[x][y]
-            if i > 0:
-                v += 1
-                if v == 9:
-                    v = 10
-                elif v >= 10:
-                    v = 0
-            elif i < 0:
-                v -= 1
-                if v == 9:
-                    v = 8
-                elif v <= -1:
-                    v = 10
-            self.label.ms_board.game_board[x][y] = v
-            self.render_poss_on_board()
 
     def mineNumWheel(self, i):
         '''
@@ -768,28 +598,29 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
     # 搜集数据，生成evf文件的二进制数据，但是不保存
     def dump_evf_file_data(self):
         if isinstance(self.label.ms_board, ms.BaseVideo):
-            self.label.ms_board.use_question = False  # 禁用问号是共识
-            self.label.ms_board.use_cursor_pos_lim = self.cursor_limit
-            self.label.ms_board.use_auto_replay = self.auto_replay > 0
-
-            self.label.ms_board.is_fair = self.is_fair()
-            self.label.ms_board.is_official = self.is_official()
-
-            self.label.ms_board.software = superGUI.version
-            self.label.ms_board.mode = self.gameMode
-            self.label.ms_board.player_identifier = self.player_identifier
-            self.label.ms_board.race_identifier = self.race_identifier
-            self.label.ms_board.uniqueness_identifier = self.unique_identifier
-            self.label.ms_board.country = "XX" if not self.country else\
-                country_name[self.country].upper()
-            self.label.ms_board.device_uuid = hashlib.md5(
-                bytes(str(uuid.getnode()).encode())).hexdigest().encode("UTF-8")
-
-            self.label.ms_board.generate_evf_v4_raw_data()
-            # 补上校验值
-            checksum = self.checksum_guard.get_checksum(
-                self.label.ms_board.raw_data[:-1])
-            self.label.ms_board.checksum_evf_v4 = checksum
+            if not self.label.ms_board.raw_data:
+                self.label.ms_board.use_question = False  # 禁用问号是共识
+                self.label.ms_board.use_cursor_pos_lim = self.cursor_limit
+                self.label.ms_board.use_auto_replay = self.auto_replay > 0
+    
+                self.label.ms_board.is_fair = self.is_fair()
+                self.label.ms_board.is_official = self.is_official()
+    
+                self.label.ms_board.software = superGUI.version
+                self.label.ms_board.mode = self.gameMode
+                self.label.ms_board.player_identifier = self.player_identifier
+                self.label.ms_board.race_identifier = self.race_identifier
+                self.label.ms_board.uniqueness_identifier = self.unique_identifier
+                self.label.ms_board.country = "XX" if not self.country else\
+                    country_name[self.country].upper()
+                self.label.ms_board.device_uuid = hashlib.md5(
+                    bytes(str(uuid.getnode()).encode())).hexdigest().encode("UTF-8")
+    
+                self.label.ms_board.generate_evf_v4_raw_data()
+                # 补上校验值
+                checksum = self.checksum_guard.get_checksum(
+                    self.label.ms_board.raw_data[:-1])
+                self.label.ms_board.checksum_evf_v4 = checksum
             return
         elif isinstance(self.label.ms_board, ms.EvfVideo):
             return
@@ -1031,7 +862,43 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
             
             
     # 根据条件是否满足，尝试追加evfs文件
-    def try_append_evfs(self):
+    # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）
+    # 加入evfs是空的，且当前游戏状态不是"win"，则不追加
+    def try_append_evfs(self, new_game_state):
+        if not self.autosave_video_set:
+            return
+        if new_game_state != "win" and self.evfs.is_empty():
+            return
+        # 存在以下断言
+        # assert isinstance(self.label.ms_board, ms.BaseVideo)
+        # assert self.label.ms_board.game_board_state in (2, 3, 4)
+        if self.label.ms_board.game_board_state == 2:
+            self.label.ms_board.step_game_state("replay")
+        
+        if not self.label.ms_board.raw_data:
+            self.label.ms_board.use_question = False  # 禁用问号是共识
+            self.label.ms_board.use_cursor_pos_lim = self.cursor_limit
+            self.label.ms_board.use_auto_replay = self.auto_replay > 0
+    
+            self.label.ms_board.is_fair = self.is_fair()
+            self.label.ms_board.is_official = self.is_official()
+    
+            self.label.ms_board.software = superGUI.version
+            self.label.ms_board.mode = self.gameMode
+            self.label.ms_board.player_identifier = self.player_identifier
+            self.label.ms_board.race_identifier = self.race_identifier
+            self.label.ms_board.uniqueness_identifier = self.unique_identifier
+            self.label.ms_board.country = "XX" if not self.country else\
+                country_name[self.country].upper()
+            self.label.ms_board.device_uuid = hashlib.md5(
+                bytes(str(uuid.getnode()).encode())).hexdigest().encode("UTF-8")
+    
+            self.label.ms_board.generate_evf_v4_raw_data()
+            # 补上校验值
+            checksum = self.checksum_guard.get_checksum(
+                self.label.ms_board.raw_data[:-1])
+            self.label.ms_board.checksum_evf_v4 = checksum
+        
         ...
     
 
@@ -1374,8 +1241,6 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.label.boardProbability = ans[0]
 
         self.label.update()
-        self.evfs = ms.Evfs()
-        self.old_evfs_filename = ""
         # self.label.setMouseTracking(True)
 
         self.minimumWindow()
@@ -1467,186 +1332,7 @@ class MineSweeperGUI(superGUI.Ui_MainWindow):
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
         self.game_setting.sync()
 
-    # 打开录像文件的回调
-    def action_OpenFile(self, openfile_name=None):
-        self.setting_path / 'replay'
-        if not openfile_name:
-            openfile_name = QFileDialog.\
-                getOpenFileName(self.mainWindow, '打开文件', str(self.setting_path / 'replay'),
-                                'All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)')
-            openfile_name = openfile_name[0]
-        # 实例化
-        if not openfile_name:
-            return
-        self.set_face(14)
 
-        try:
-            if openfile_name[-3:] == "avf":
-                video = ms.AvfVideo(openfile_name)
-            elif openfile_name[-3:] == "rmv":
-                video = ms.RmvVideo(openfile_name)
-            elif openfile_name[-3:] == "evf":
-                video = ms.EvfVideo(openfile_name)
-            elif openfile_name[-3:] == "mvf":
-                video = ms.MvfVideo(openfile_name)
-            elif openfile_name[-3:] == "evfs":
-                video = ms.Evfs(openfile_name)
-            else:
-                return
-        except:
-            return
-        self.play_video(video)
-
-    # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
-    def play_video(self, video):
-        if self.game_state == 'display':
-            self.ui_video_control.QWidget.close()
-        self.game_state = 'display'
-
-        video.parse_video()
-        video.analyse()
-        # 检查evf的checksum，其余录像没有鉴定能力
-        if isinstance(video, ms.EvfVideo):
-            self.score_board_manager.with_namespace({
-                "checksum_ok": self.checksum_guard.
-                valid_checksum(video.raw_data[:-33], video.checksum),
-            })
-        else:
-            self.score_board_manager.with_namespace({
-                "checksum_ok": False,
-            })
-        self.score_board_manager.with_namespace({
-            "is_official": video.is_official,
-            "is_fair": video.is_fair,
-            "mode": video.mode,
-            "row": video.row,
-            "column": video.column,
-            "minenum": video.mine_num,
-        })
-        video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                    "mouse_trace", "vision_transfer", "pluck",
-                                    "super_fl_local"])
-
-        # 组织录像评论
-        comments = []
-        for event in video.events:
-            t = event.time
-            comment = event.comments
-            if comment:
-                comments.append((t, [i.split(': ')
-                                for i in comment.split(';')[:-1]]))
-        # 调整窗口
-        if (video.row, video.column) != (self.row, self.column):
-            self.setBoard(video.row, video.column, video.mine_num)
-            self.label.paintProbability = False
-            self.label.set_rcp(self.row, self.column, self.pixSize)
-            # self.label.reloadCellPic(self.pixSize)
-            self.label.setMinimumSize(QtCore.QSize(
-                self.pixSize*self.column + 8, self.pixSize*self.row + 8))
-            self.label.setMaximumSize(QtCore.QSize(
-                self.pixSize*self.column + 8, self.pixSize*self.row + 8))
-            self.label_2.reloadFace(self.pixSize)
-            self.minimumWindow()
-
-        self.timer_video = QTimer()
-        self.timer_video.timeout.connect(self.video_playing_step)
-        self.ui_video_control = videoControl.ui_Form(self.r_path, video, comments,
-                                                     self.game_setting, self.mainWindow)
-        # self.mainWindow.closeEvent_.connect(self.ui_video_control.QWidget.close)
-        self.ui_video_control.pushButton_play.clicked.connect(self.video_play)
-        self.ui_video_control.pushButton_replay.clicked.connect(
-            self.video_replay)
-        self.ui_video_control.videoSetTime.connect(self.video_set_time)
-        self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
-        for labels in self.ui_video_control.comments_labels:
-            labels[0].Release.connect(self.video_set_a_time)
-            labels[1].Release.connect(self.video_set_a_time)
-            labels[2].Release.connect(self.video_set_a_time)
-        self.ui_video_control.QWidget.show()
-
-        self.video_time = video.video_start_time  # 录像当前时间
-        self.video_stop_time = video.video_end_time  # 录像停止时间
-        self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
-        self.label.paint_cursor = True
-        self.video_playing = True  # 录像正在播放
-        # 禁用双击修改指标名称公式
-        self.score_board_manager.editing_row = -2
-
-        video.video_playing_pix_size = self.label.pixSize
-        self.label.ms_board = video
-        # 改成录像的标识
-        # print(self.label.ms_board.player_identifier)
-        self.label_info.setText(self.label.ms_board.player_identifier)
-        # 改成录像的国旗
-        self.set_country_flag(self.label.ms_board.country)
-
-        self.timer_video.start(10)
-
-    def video_playing_step(self):
-        # 播放录像时定时器的回调
-        self.label.ms_board.current_time = self.video_time
-        if self.video_time >= self.video_stop_time:
-            self.timer_video.stop()
-            self.video_playing = False
-        self.label.update()
-        
-        # 回放时修改小黄脸，使用了一个变量做工具箱的补丁
-        match self.label.ms_board.mouse_state:
-            case 1 | 7:
-                self.set_face(14)
-            case 2 | 4 | 5 | 6:
-                self.set_face(15)
-            case 3:
-                if self.last_mouse_state_video_playing_step in {5, 6}:
-                    self.set_face(14)
-                else:
-                    self.set_face(15)
-        self.last_mouse_state_video_playing_step = self.label.ms_board.mouse_state
-        
-        self.score_board_manager.show(self.label.ms_board, index_type=3)
-        self.video_time += self.video_time_step
-        self.showTime(int(self.video_time))
-        self.ui_video_control.horizontalSlider_time.blockSignals(True)
-        self.ui_video_control.horizontalSlider_time.setValue(
-            int(self.video_time * 1000))
-        self.ui_video_control.horizontalSlider_time.blockSignals(False)
-        self.ui_video_control.doubleSpinBox_time.blockSignals(True)
-        self.ui_video_control.doubleSpinBox_time.setValue(
-            self.label.ms_board.time)
-        self.ui_video_control.doubleSpinBox_time.blockSignals(False)
-
-    def video_play(self):
-        # 点播放、暂停键的回调
-        if self.video_playing:
-            self.video_playing = False
-            self.timer_video.stop()
-        else:
-            self.video_playing = True
-            self.timer_video.start(10)
-            self.video_stop_time = self.label.ms_board.video_end_time
-
-    def video_replay(self):
-        self.video_playing = True
-        self.video_time = self.label.ms_board.video_start_time
-        self.timer_video.start(10)
-        self.video_stop_time = self.label.ms_board.video_end_time
-
-    def video_set_speed(self, speed):
-        self.video_time_step = speed * 0.01
-
-    def video_set_time(self, t):
-        # 把录像定位到某一个时刻。是拖动进度条的回调
-        self.video_time = t / 1000
-        self.label.ms_board.current_time = self.video_time
-        self.label.update()
-        self.score_board_manager.show(self.label.ms_board, index_type=3)
-
-    def video_set_a_time(self, t):
-        # 把录像定位到某一段时间，默认前后一秒，自动播放。是点录像事件的回调
-        self.video_time = (t - 1000) / 1000
-        self.video_stop_time = (t + 1000) / 1000  # 大了也没关系，ms_toollib自动处理
-        self.timer_video.start()
-        self.video_playing = True
 
     def is_official(self) -> bool:
         # 局面开始时，判断一下局面是设置是否正式。

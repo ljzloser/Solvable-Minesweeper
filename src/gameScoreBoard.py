@@ -1,5 +1,5 @@
 # 左侧计时器
-import minesweeper_master as mm
+import utils
 from ui.ui_score_board import Ui_Form
 from ui.uiComponents import RoundQWidget
 from safe_eval import safe_eval
@@ -145,7 +145,7 @@ class gameScoreBoardManager():
         '''
         if "mode" in namespace:
             self._game_mode_code: int = namespace["mode"]
-            namespace["mode"] = mm.trans_game_mode(namespace["mode"])
+            namespace["mode"] = utils.trans_game_mode(namespace["mode"])
         self.namespace.update(namespace)
         # race_designator, mode .etc
         # self.ms_board = ms.BaseVideo(board, pix_size)
