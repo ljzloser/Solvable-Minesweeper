@@ -26,6 +26,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             return
         self.set_face(14)
 
+        video_set = None
         try:
             if openfile_name[-3:] == "avf":
                 video = ms.AvfVideo(openfile_name)
@@ -35,21 +36,29 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                 video = ms.EvfVideo(openfile_name)
             elif openfile_name[-3:] == "mvf":
                 video = ms.MvfVideo(openfile_name)
-            elif openfile_name[-3:] == "evfs":
-                video = ms.Evfs(openfile_name)
+            elif openfile_name[-4:] == "evfs":
+                video_set = ms.Evfs(openfile_name)
+                # 包含对每个evf的parse
+                video_set.parse()
+                video = video_set[0].evf_video
             else:
                 return
         except:
             return
-        self.play_video(video)
+        self.play_video(video, video_set)
+        
 
+    # 录像播放控制器关闭时，播放新文件
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
-    def play_video(self, video):
-        if self.game_state == 'display':
-            self.ui_video_control.QWidget.close()
-        self.game_state = 'display'
+    def play_video(self, video, video_set):
+        # if self.game_state == 'display':
+        #     self.ui_video_control.QWidget.close()
+        # self.game_state = 'display'
+        if self.game_state != 'display':
+            self.game_state = 'display'
 
-        video.parse_video()
+        if not video_set:
+            video.parse_video()
         video.analyse()
         # 检查evf的checksum，其余录像没有鉴定能力
         if isinstance(video, ms.EvfVideo):
@@ -96,7 +105,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
-        self.ui_video_control = videoControl.ui_Form(self.r_path, video, comments,
+        self.ui_video_control = videoControl.ui_Form(self.r_path, video, video_set, comments,
                                                      self.game_setting, self.mainWindow)
         # self.mainWindow.closeEvent_.connect(self.ui_video_control.QWidget.close)
         self.ui_video_control.pushButton_play.clicked.connect(self.video_play)

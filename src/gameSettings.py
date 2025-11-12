@@ -145,6 +145,7 @@ class ui_Form(Ui_Form):
         self.game_setting.set_value("DEFAULT/cursor_limit", self.cursor_limit)
         self.game_setting.set_value("DEFAULT/auto_notification", self.auto_notification)
         self.game_setting.set_value("DEFAULT/autosave_video", self.autosave_video)
+        self.game_setting.set_value("DEFAULT/autosave_video_set", self.autosave_video_set)
         self.game_setting.set_value("DEFAULT/filter_forever", self.filter_forever)
         self.game_setting.set_value("DEFAULT/player_identifier", self.player_identifier)
         self.game_setting.set_value("DEFAULT/race_identifier", self.race_identifier)

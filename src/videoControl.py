@@ -15,7 +15,7 @@ class ui_Form(QWidget, Ui_Form):
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
-    def __init__(self, r_path, video, comments, game_setting, parent):
+    def __init__(self, r_path, video, video_set, comments, game_setting, parent):
         super (ui_Form, self).__init__()
         
         self.QWidget = RoundQWidget(parent)
@@ -45,9 +45,15 @@ class ui_Form(QWidget, Ui_Form):
                 self.comments_labels.append([c1, c2, c3])
                 comment_row += 1
         self.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
-        self.pushButton_replay.setStyleSheet("QPushButton{border-image: url(" + str(r_path.with_name('media').joinpath('replay.svg')).replace("\\", "/") + ");}")
-        self.pushButton_play.setStyleSheet("QPushButton{border-image: url(" + str(r_path.with_name('media').joinpath('play.svg')).replace("\\", "/") + ");}")
-        self.label_speed.setStyleSheet("QLabel{border-image: url(" + str(r_path.with_name('media').joinpath('speed.svg')).replace("\\", "/") + ");\n"
+        self.pushButton_replay.setStyleSheet("QPushButton{border-image: url(" +\
+                                             str(r_path.with_name('media').\
+                                                 joinpath('replay.svg')).replace("\\", "/") + ");}")
+        self.pushButton_play.setStyleSheet("QPushButton{border-image: url(" +\
+                                           str(r_path.with_name('media').\
+                                               joinpath('play.svg')).replace("\\", "/") + ");}")
+        self.label_speed.setStyleSheet("QLabel{border-image: url(" +\
+                                       str(r_path.with_name('media').\
+                                           joinpath('speed.svg')).replace("\\", "/") + ");\n"
 "font: 12pt \"微软雅黑\";\n"
 "color: #50A6EA;}")
         self.label_2.setStyleSheet("border-image: url(" + str(r_path.with_name('media').joinpath('mul.svg')).replace("\\", "/") + ");\n"

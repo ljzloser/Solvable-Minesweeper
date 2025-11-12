@@ -316,7 +316,7 @@ background-color: rgb(240, 240, 240);</string>
 </string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="tabsClosable">
       <bool>true</bool>
@@ -327,11 +327,11 @@ background-color: rgb(240, 240, 240);</string>
      <property name="tabBarAutoHide">
       <bool>true</bool>
      </property>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tab_0">
       <attribute name="title">
-       <string>录像</string>
+       <string>目录</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -345,6 +345,100 @@ background-color: rgb(240, 240, 240);</string>
         <number>0</number>
        </property>
        <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QScrollArea" name="scrollArea_0">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOn</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_0">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>457</width>
+            <height>459</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <widget class="QLabel" name="label_video">
+           <property name="geometry">
+            <rect>
+             <x>120</x>
+             <y>0</y>
+             <width>271</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>录像</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBox_choose">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>0</y>
+             <width>91</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>微软雅黑</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>选择</string>
+           </property>
+          </widget>
+          <zorder>checkBox_choose</zorder>
+          <zorder>label_video</zorder>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>录像1</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
         <number>0</number>
        </property>
        <item>
@@ -367,7 +461,7 @@ background-color: rgb(240, 240, 240);</string>
             <x>0</x>
             <y>0</y>
             <width>457</width>
-            <height>459</height>
+            <height>448</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -446,105 +540,6 @@ background-color: rgb(240, 240, 240);</string>
         </widget>
        </item>
       </layout>
-     </widget>
-     <widget class="QWidget" name="tab_4">
-      <attribute name="title">
-       <string>Tab 2</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QScrollArea" name="scrollArea_2">
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOn</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="sizeAdjustPolicy">
-          <enum>QAbstractScrollArea::AdjustToContents</enum>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents_2">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>457</width>
-            <height>459</height>
-           </rect>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <widget class="QLabel" name="label_video">
-           <property name="geometry">
-            <rect>
-             <x>120</x>
-             <y>0</y>
-             <width>271</width>
-             <height>42</height>
-            </rect>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>录像</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="checkBox_choose">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>0</y>
-             <width>91</width>
-             <height>42</height>
-            </rect>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>选择</string>
-           </property>
-          </widget>
-          <zorder>checkBox_choose</zorder>
-          <zorder>label_video</zorder>
-         </widget>
-        </widget>
-       </item>
-      </layout>
-      <zorder>stackedWidget</zorder>
-      <zorder>scrollArea_2</zorder>
      </widget>
     </widget>
    </item>

@@ -145,6 +145,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.last_mouse_state_video_playing_step = 1
         # evfs模块
         self.evfs = ms.Evfs()
+        # 不带后缀、有绝对路径的、不含最后次数的文件名
+        # C:/path/zhangsan_20251111_190114_
         self.old_evfs_filename = ""
 
     @property
@@ -620,7 +622,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 # 补上校验值
                 checksum = self.checksum_guard.get_checksum(
                     self.label.ms_board.raw_data[:-1])
-                self.label.ms_board.checksum_evf_v4 = checksum
+                self.label.ms_board.checksum = checksum
             return
         elif isinstance(self.label.ms_board, ms.EvfVideo):
             return
@@ -641,6 +643,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         if not os.path.exists(self.replay_path):
             os.mkdir(self.replay_path)
 
+        self.label.ms_board.save_to_evf_file(self.cal_evf_filename())
+    
+    
+    # 拼接evf录像的文件名
+    def cal_evf_filename(self) -> str:
         if (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (8, 8, 10):
             filename_level = "b_"
         elif (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (16, 16, 40):
@@ -666,21 +673,30 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             file_name += "_trans"
         elif not self.checksum_module_ok():
             file_name += "_fake"
+        return file_name
 
-        self.label.ms_board.save_to_evf_file(file_name)
+    
         
     # 保存evfs文件。先保存后一个文件，再删除前一个文件。
     def save_evfs_file(self):
-        now = datetime.now()
-        date_str = now.strftime("%Y%m%d")
-        file_name = self.replay_path + '\\' + self.label.ms_board.player_identifier +\
-            "_" + date_str + "_" + str(self.evfs.len())
-        self.evfs.save_evfs_file(file_name)
-        try:
-            os.remove(self.old_evfs_filename)
-        except Exception as e:
-            ...
-        self.old_evfs_filename = file_name
+        # 文件名包含秒为单位的时间戳，理论上不会重复
+        # 即使重复，会变为文件名+(2)
+        if self.old_evfs_filename:
+            file_name = self.old_evfs_filename + str(self.evfs.len())
+            self.evfs.save_evfs_file(file_name)
+            old_evfs_filename = self.old_evfs_filename + str(self.evfs.len() - 1) + ".evfs"
+            if os.path.exists(old_evfs_filename):
+                # 进一步确认是文件而不是目录
+                if os.path.isfile(old_evfs_filename):
+                    os.remove(old_evfs_filename)
+        else:
+            now = datetime.now()
+            date_str = now.strftime("_%Y%m%d_%H%M%S_")
+            file_name = self.replay_path + '\\' +\
+                self.label.ms_board.player_identifier + date_str
+            self.evfs.save_evfs_file(file_name + "1")
+            self.old_evfs_filename = file_name
+
 
     def gameFailed(self):  # 失败后改脸和状态变量
         self.timer_10ms.stop()
@@ -865,8 +881,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）
     # 加入evfs是空的，且当前游戏状态不是"win"，则不追加
     def try_append_evfs(self, new_game_state):
+        # 只有开启了自动保存evfs，才会保存。也要防止通过关闭这个选项，逃避自动记录重开
         if not self.autosave_video_set:
+            self.evfs.clear()
             return
+        # 从第一次扫开开始记录
         if new_game_state != "win" and self.evfs.is_empty():
             return
         # 存在以下断言
@@ -874,7 +893,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # assert self.label.ms_board.game_board_state in (2, 3, 4)
         if self.label.ms_board.game_board_state == 2:
             self.label.ms_board.step_game_state("replay")
-        
+        # 生成当前局面的数据
         if not self.label.ms_board.raw_data:
             self.label.ms_board.use_question = False  # 禁用问号是共识
             self.label.ms_board.use_cursor_pos_lim = self.cursor_limit
@@ -897,9 +916,24 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             # 补上校验值
             checksum = self.checksum_guard.get_checksum(
                 self.label.ms_board.raw_data[:-1])
-            self.label.ms_board.checksum_evf_v4 = checksum
-        
-        ...
+            self.label.ms_board.checksum = checksum
+        # 计算当前单元的校验码，并追加到evfs中
+        # evfs的第一个单元的校验码，只考虑第一个录像
+        # 此后每个单元，都考虑当前录像和最后一个单元的校验码
+        if self.evfs.is_empty():
+            # self.evfs[0].checksum
+            checksum = self.checksum_guard.get_checksum(
+                self.label.ms_board.raw_data)
+            self.evfs.push(self.label.ms_board.raw_data, 
+                           self.cal_evf_filename(), checksum)
+        else:
+            evfs_len = self.evfs.len()
+            checksum = self.checksum_guard.get_checksum(
+                self.label.ms_board.raw_data + self.evfs[evfs_len - 1].checksum)
+            self.evfs.push(self.label.ms_board.raw_data, 
+                           self.cal_evf_filename(), checksum)
+        self.evfs.generate_evfs_v0_raw_data()
+        self.save_evfs_file()
     
 
     def showMineNum(self, n):
@@ -1337,14 +1371,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def is_official(self) -> bool:
         # 局面开始时，判断一下局面是设置是否正式。
         # 极端小的3BV依然是合法的，而网站是否认同不关软件的事。
-        if self.board_constraint:
+        if not self.is_fair():
             return False
-        return self.game_state == "win" and self.gameMode == 0
+        # 检查获胜，且标准模式
+        return self.label.ms_board.game_board_state == 3 and self.gameMode == 0
 
     def is_fair(self) -> bool:
         if self.board_constraint:
             return False
-        return self.game_state == "win" or self.game_state == "fail"
+        # 因为记录evfs是绑定game_state的setter方法的，所以假如勾选记录evfs，
+        # 此处就是"playing"；反之，此处就是"win"或"fail"，总之都是fair的
+        return self.game_state == "win" or self.game_state == "fail" or self.game_state == "playing"
 
     def cell_is_in_board(self, i, j):
         # 点在局面内，单位是格不是像素
