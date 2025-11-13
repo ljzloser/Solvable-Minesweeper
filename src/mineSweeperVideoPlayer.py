@@ -13,6 +13,10 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     # 打开录像文件的回调
     def action_OpenFile(self, openfile_name=None):
         self.setting_path / 'replay'
+        
+        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
+                                                     self.mainWindow)
+        
         self.unlimit_cursor()
         if not openfile_name:
             openfile_name = QFileDialog.\
@@ -39,32 +43,50 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             elif openfile_name[-4:] == "evfs":
                 video_set = ms.Evfs(openfile_name)
                 # 包含对每个evf的parse
-                video_set.parse()
-                video = video_set[0].evf_video
+                # video_set.parse()
+                # video = video_set[0].evf_video
             else:
                 return
         except:
             return
-        self.play_video(video, video_set)
+        
+        
+        if video_set:
+            # 包含对每个evf的parse
+            video_set.parse()
+            video_set.analyse()
+            video_set.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
+                                            "mouse_trace", "vision_transfer", "pluck",
+                                            "super_fl_local"])
+            self.ui_video_control.add_new_video_set_tab(video_set)
+            video = video_set[0].evf_video
+        else:
+            video.parse_video()
+            video.analyse()
+            video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
+                                        "mouse_trace", "vision_transfer", "pluck",
+                                        "super_fl_local"])
+        self.ui_video_control.add_new_video_tab(video)
+        self.ui_video_control.videoTabClicked.connect(lambda x: self.play_video(video_set[x].evf_video))
+        self.play_video(video)
         
 
-    # 录像播放控制器关闭时，播放新文件
+    # 播放新录像，调整局面尺寸等
+    # 控制台中，不添加新标签、连接信号。假如关闭就展示
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
-    def play_video(self, video, video_set):
+    def play_video(self, video):
         # if self.game_state == 'display':
         #     self.ui_video_control.QWidget.close()
         # self.game_state = 'display'
         if self.game_state != 'display':
             self.game_state = 'display'
 
-        if not video_set:
-            video.parse_video()
-        video.analyse()
+        
         # 检查evf的checksum，其余录像没有鉴定能力
         if isinstance(video, ms.EvfVideo):
             self.score_board_manager.with_namespace({
                 "checksum_ok": self.checksum_guard.
-                valid_checksum(video.raw_data[:-33], video.checksum),
+                valid_checksum(video.raw_data[:-(len(video.checksum) + 2)], video.checksum),
             })
         else:
             self.score_board_manager.with_namespace({
@@ -78,18 +100,6 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             "column": video.column,
             "minenum": video.mine_num,
         })
-        video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                    "mouse_trace", "vision_transfer", "pluck",
-                                    "super_fl_local"])
-
-        # 组织录像评论
-        comments = []
-        for event in video.events:
-            t = event.time
-            comment = event.comments
-            if comment:
-                comments.append((t, [i.split(': ')
-                                for i in comment.split(';')[:-1]]))
         # 调整窗口
         if (video.row, video.column) != (self.row, self.column):
             self.setBoard(video.row, video.column, video.mine_num)
@@ -105,18 +115,14 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
-        self.ui_video_control = videoControl.ui_Form(self.r_path, video, video_set, comments,
-                                                     self.game_setting, self.mainWindow)
-        # self.mainWindow.closeEvent_.connect(self.ui_video_control.QWidget.close)
+        
         self.ui_video_control.pushButton_play.clicked.connect(self.video_play)
         self.ui_video_control.pushButton_replay.clicked.connect(
             self.video_replay)
         self.ui_video_control.videoSetTime.connect(self.video_set_time)
+        self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
         self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
-        for labels in self.ui_video_control.comments_labels:
-            labels[0].Release.connect(self.video_set_a_time)
-            labels[1].Release.connect(self.video_set_a_time)
-            labels[2].Release.connect(self.video_set_a_time)
+        
         self.ui_video_control.QWidget.show()
 
         self.video_time = video.video_start_time  # 录像当前时间

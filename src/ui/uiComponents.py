@@ -216,25 +216,7 @@ class SpeedLabel(QtWidgets.QLabel):
         self.setText(text)
         self.wEvent.emit(float(text))
 
-# 录像播放控制面板上的事件标签
-class CommentLabel(QtWidgets.QLabel):
-    Release = QtCore.pyqtSignal(int)
-    def __init__(self, parent, text, time_100, middle = True):
-        super(CommentLabel, self).__init__(parent)
-        if not isinstance(text, str):
-            text = "%.2f"%text
-        self.setText(text)
-        self.time_100 = time_100
 
-        font = QtGui.QFont()
-        font.setFamily("微软雅黑")
-        font.setPointSize(12)
-        self.setFont(font)
-        # self.setMinimumSize(QtCore.QSize(height, width))
-        if middle:
-            self.setAlignment(QtCore.Qt.AlignCenter)
-    def mouseReleaseEvent(self, e):
-        self.Release.emit(self.time_100)
 
 class ScoreTable(QtWidgets.QTableWidget):
     ...
