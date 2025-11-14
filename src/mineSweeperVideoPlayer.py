@@ -9,13 +9,28 @@ import ms_toollib as ms
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
+    def initVideoPlayer(self):
+        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
+                                                     self.mainWindow)
+        self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
+        
+        self.ui_video_control.pushButton_play.clicked.connect(self.video_play)
+        self.ui_video_control.pushButton_replay.clicked.connect(
+            self.video_replay)
+        self.ui_video_control.videoSetTime.connect(self.video_set_time)
+        self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
+        self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
+        self.ui_video_control.tabWidget.currentChanged.connect(self.on_tab_changed)
+        self.timer_video = QTimer()
+        self.timer_video.timeout.connect(self.video_playing_step)
+    
     
     # 打开录像文件的回调
     def action_OpenFile(self, openfile_name=None):
-        self.setting_path / 'replay'
+        # self.setting_path / 'replay'
         
-        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
-                                                     self.mainWindow)
+        # self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
+        #                                              self.mainWindow)
         
         self.unlimit_cursor()
         if not openfile_name:
@@ -51,6 +66,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             return
         
         
+        # 每个标签的数据都存在这里
+        # self.tab_data = []
         if video_set:
             # 包含对每个evf的parse
             video_set.parse()
@@ -59,27 +76,45 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                                             "mouse_trace", "vision_transfer", "pluck",
                                             "super_fl_local"])
             self.ui_video_control.add_new_video_set_tab(video_set)
+            self.ui_video_control.videoTabClicked.connect(lambda x: self.play_video(video_set[x].evf_video))
+            self.ui_video_control.videoTabDoubleClicked.connect(lambda x: self.play_video(video_set[x].evf_video, True))
+            # self.tab_data.append(video_set)
             video = video_set[0].evf_video
         else:
-            video.parse_video()
+            video.parse()
             video.analyse()
             video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
                                         "mouse_trace", "vision_transfer", "pluck",
                                         "super_fl_local"])
-        self.ui_video_control.add_new_video_tab(video)
-        self.ui_video_control.videoTabClicked.connect(lambda x: self.play_video(video_set[x].evf_video))
+            self.ui_video_control.add_new_video_tab(video)
+            # self.tab_data.append(video)
         self.play_video(video)
         
 
     # 播放新录像，调整局面尺寸等
     # 控制台中，不添加新标签、连接信号。假如关闭就展示
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
-    def play_video(self, video):
+    def play_video(self, video, new_tab=False):
         # if self.game_state == 'display':
         #     self.ui_video_control.QWidget.close()
         # self.game_state = 'display'
+        
         if self.game_state != 'display':
             self.game_state = 'display'
+        self.video_playing = False
+        self.timer_video.stop()
+        
+        # 添加新标签并切换过去
+        if new_tab:
+            tab_count = self.ui_video_control.tabWidget.count()
+            for index in range(tab_count):
+                tab_widget = self.ui_video_control.tabWidget.widget(index)
+                if video.file_name == tab_widget.file_name:
+                    self.ui_video_control.tabWidget.setCurrentIndex(index)
+                    break
+            else:
+                self.ui_video_control.add_new_video_tab(video)
+                self.ui_video_control.tabWidget.setCurrentIndex(tab_count)
 
         
         # 检查evf的checksum，其余录像没有鉴定能力
@@ -113,21 +148,26 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             self.label_2.reloadFace(self.pixSize)
             self.minimumWindow()
 
-        self.timer_video = QTimer()
-        self.timer_video.timeout.connect(self.video_playing_step)
         
-        self.ui_video_control.pushButton_play.clicked.connect(self.video_play)
-        self.ui_video_control.pushButton_replay.clicked.connect(
-            self.video_replay)
-        self.ui_video_control.videoSetTime.connect(self.video_set_time)
-        self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
-        self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
+        
+        
         
         self.ui_video_control.QWidget.show()
+        
+        t_end = video.video_end_time
+        t_start = video.video_start_time
+        
+        # 重新设置进度条的最大值、最小值，要临时屏蔽信号发送
+        self.ui_video_control.horizontalSlider_time.blockSignals(True)
+        self.ui_video_control.horizontalSlider_time.setValue(0)
+        self.ui_video_control.horizontalSlider_time.setMaximum(
+            int(t_end * 1000))
+        self.ui_video_control.horizontalSlider_time.setMinimum(
+            int(t_start * 1000))
+        self.ui_video_control.horizontalSlider_time.blockSignals(False)
 
-        self.video_time = video.video_start_time  # 录像当前时间
-        self.video_stop_time = video.video_end_time  # 录像停止时间
-        self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
+        self.video_time = t_start  # 录像当前时间
+        self.video_stop_time = t_end  # 录像停止时间
         self.label.paint_cursor = True
         self.video_playing = True  # 录像正在播放
         # 禁用双击修改指标名称公式
@@ -142,6 +182,14 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.set_country_flag(self.label.ms_board.country)
 
         self.timer_video.start(10)
+        
+        
+    # 切换标签时，播放标签中的录像
+    def on_tab_changed(self, idt):
+        if isinstance(self.ui_video_control.tabWidget.widget(idt), videoControl.VideoTabWidget):
+            self.play_video(self.ui_video_control.tabWidget.widget(idt).video)
+        ...
+        
 
     def video_playing_step(self):
         # 播放录像时定时器的回调

@@ -39,6 +39,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         self.time_10ms: int = 0  # 已毫秒为单位的游戏时间，全局统一的
         self.showTime(self.time_10ms // 100)
+        
+        self.initVideoPlayer()
+        
+        
         self.timer_10ms = QTimer()
         self.timer_10ms.setInterval(10)  # 10毫秒回调一次的定时器
         self.timer_10ms.timeout.connect(self.timeCount)
@@ -646,8 +650,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.label.ms_board.save_to_evf_file(self.cal_evf_filename())
     
     
-    # 拼接evf录像的文件名
-    def cal_evf_filename(self) -> str:
+    # 拼接evf录像的文件名，无后缀
+    def cal_evf_filename(self, absolute=True) -> str:
         if (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (8, 8, 10):
             filename_level = "b_"
         elif (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (16, 16, 40):
@@ -658,7 +662,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             filename_level = "c_"
         if self.game_state == "display" or self.game_state == "showdisplay":
             self.label.ms_board.current_time = 999999.9
-        file_name = self.replay_path + '\\' + filename_level +\
+        if absolute:
+            file_name = self.replay_path + '\\'
+        else:
+            file_name = ""
+        file_name += filename_level +\
             f'{self.label.ms_board.mode}' + '_' +\
             f'{self.label.ms_board.rtime:.3f}' +\
             '_' + f'{self.label.ms_board.bbbv}' +\
@@ -925,13 +933,13 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             checksum = self.checksum_guard.get_checksum(
                 self.label.ms_board.raw_data)
             self.evfs.push(self.label.ms_board.raw_data, 
-                           self.cal_evf_filename(), checksum)
+                           self.cal_evf_filename(absolute=False), checksum)
         else:
             evfs_len = self.evfs.len()
             checksum = self.checksum_guard.get_checksum(
                 self.label.ms_board.raw_data + self.evfs[evfs_len - 1].checksum)
             self.evfs.push(self.label.ms_board.raw_data, 
-                           self.cal_evf_filename(), checksum)
+                           self.cal_evf_filename(absolute=False), checksum)
         self.evfs.generate_evfs_v0_raw_data()
         self.save_evfs_file()
     
@@ -1002,8 +1010,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.board_constraint = self.predefinedBoardPara[k]['board_constraint']
         self.attempt_times_limit = self.predefinedBoardPara[k]['attempt_times_limit']
 
-    # 菜单回放的回调
 
+    # 菜单回放的回调
     def replay_game(self):
         if not isinstance(self.label.ms_board, ms.BaseVideo):
             return
@@ -1012,7 +1020,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.dump_evf_file_data()
         raw_data = bytes(self.label.ms_board.raw_data)
 
-        video = ms.EvfVideo("virtual.evf", raw_data)
+        video = ms.EvfVideo("virtual_preview.evf", raw_data)
+        video.parse()
+        video.analyse()
+        video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
+                                    "mouse_trace", "vision_transfer", "pluck",
+                                    "super_fl_local"])
         self.play_video(video)
 
     def action_CEvent(self):

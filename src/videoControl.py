@@ -2,7 +2,7 @@ from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
     QSizePolicy, QHBoxLayout
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
 import ms_toollib as ms
@@ -53,13 +53,15 @@ class CommentCheckBox(QWidget):
 
 # 录像播放控制面板上的标签，点击发送一个整数信号
 class CommentLabel(QLabel):
-    Release = QtCore.pyqtSignal(int)
-    def __init__(self, parent, text, signal_int, middle = True):
+    # Release = QtCore.pyqtSignal(int)
+    clicked = pyqtSignal()  # 单击信号
+    doubleClicked = pyqtSignal()  # 双击信号
+    def __init__(self, parent, text, middle = True):
         super(CommentLabel, self).__init__(parent)
         if not isinstance(text, str):
             text = "%.2f"%text
         self.setText(text)
-        self.signal_int = signal_int
+        # self.signal_int = signal_int
 
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
@@ -68,8 +70,18 @@ class CommentLabel(QLabel):
         # self.setMinimumSize(QtCore.QSize(height, width))
         if middle:
             self.setAlignment(QtCore.Qt.AlignCenter)
-    def mouseReleaseEvent(self, e):
-        self.Release.emit(self.signal_int)
+    
+    def mouseReleaseEvent(self, event):
+        """处理鼠标释放事件，主要用于单击检测"""
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()  # 发射单击信号
+        super().mouseReleaseEvent(event)  # 确保调用父类方法
+
+    def mouseDoubleClickEvent(self, event):
+        """处理鼠标双击事件"""
+        if event.button() == Qt.LeftButton:
+            self.doubleClicked.emit()  # 发射双击信号
+        super().mouseDoubleClickEvent(event)
 
 
 class VideoSetTabWidget(QWidget):
@@ -78,9 +90,11 @@ class VideoSetTabWidget(QWidget):
     封装了滚动区域、标题标签和选择复选框
     """
     
-    def __init__(self, parent=None, tab_name=""):
+    def __init__(self, parent=None, video_set=None, tab_name="", file_name=""):
         super().__init__(parent)
         self.tab_name = tab_name
+        self.file_name = file_name
+        self.video_set = video_set
         self.setup_ui()
     
     def setup_ui(self):
@@ -190,9 +204,11 @@ class VideoTabWidget(QWidget):
     封装了滚动区域、时间标签、事件标签和分类标签
     """
     
-    def __init__(self, parent=None, tab_name=""):
+    def __init__(self, parent=None, video=None, tab_name="", file_name=""):
         super().__init__(parent)
         self.tab_name = tab_name
+        self.file_name = file_name
+        self.video = video
         self.setup_ui()
     
     def setup_ui(self):
@@ -347,6 +363,7 @@ class ui_Form(QWidget, Ui_Form):
     videoSetTime = QtCore.pyqtSignal(int)
     videoSetTimePeriod = QtCore.pyqtSignal(int)
     videoTabClicked = QtCore.pyqtSignal(int)
+    videoTabDoubleClicked = QtCore.pyqtSignal(int)
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
@@ -380,6 +397,8 @@ class ui_Form(QWidget, Ui_Form):
         self.QWidget.move(game_setting.value("DEFAULT/videocontroltop", 100, int),
                           game_setting.value("DEFAULT/videocontrolleft", 300, int))
         self.tabWidget.tabCloseRequested.connect(self.close_tab)
+        # 所有录像数据，打开、关闭标签时维护。包含录像和录像集
+        # self.videos = []
         
         
     def add_new_video_tab(self, video):
@@ -394,30 +413,25 @@ class ui_Form(QWidget, Ui_Form):
                 
         
         self.tab_id += 1
-        tab = VideoTabWidget(tab_name=f"tab_{self.tab_id}")
+        tab = VideoTabWidget(self, video=video, tab_name=f"tab_{self.tab_id}", file_name=video.file_name)
+        tab.setAttribute(Qt.WA_DeleteOnClose)
         
-        comments_labels = []
         comment_row = 1
         for comment in comments:
-            # print(comment)
-            c1 = CommentLabel(tab.scrollAreaWidgetContents, comment[0], int(comment[0] * 100))
+            time_value = int(comment[0] * 1000)
+            c1 = CommentLabel(tab.scrollAreaWidgetContents, comment[0])
             c1.setGeometry(QtCore.QRect(0, 42 * comment_row, 68, 42))
+            c1.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
             for list_ in comment[1]:
-                # if len(list_) == 1:
-                #     list_ = ['luck'] + list_
-                c2 = CommentLabel(tab.scrollAreaWidgetContents, list_[0], int(comment[0] * 100))
+                c2 = CommentLabel(tab.scrollAreaWidgetContents, list_[0])
                 c2.setGeometry(QtCore.QRect(68, 42 * comment_row, 90, 42))
-                c3 = CommentLabel(tab.scrollAreaWidgetContents, list_[1], int(comment[0] * 100))
+                c3 = CommentLabel(tab.scrollAreaWidgetContents, list_[1])
                 c3.setGeometry(QtCore.QRect(158, 42 * comment_row, 300, 42))
                 c3.setWordWrap(True)
-                comments_labels.append([c1, c2, c3])
                 comment_row += 1
-         
-        
-        for labels in comments_labels:
-            labels[0].Release.connect(self.videoSetTimePeriod.emit)
-            labels[1].Release.connect(self.videoSetTimePeriod.emit)
-            labels[2].Release.connect(self.videoSetTimePeriod.emit)
+                c2.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                c3.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+            
             
         tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
         
@@ -427,9 +441,9 @@ class ui_Form(QWidget, Ui_Form):
         
     def add_new_video_set_tab(self, video_set):
         self.tab_id += 1
-        tab = VideoSetTabWidget(tab_name=f"tab_{self.tab_id}")
-        
-        video_labels = []
+        tab = VideoSetTabWidget(self, video_set=video_set, tab_name=f"tab_{self.tab_id}", file_name=video_set.file_name)
+        tab.setAttribute(Qt.WA_DeleteOnClose)
+        # video_labels = []
         comment_row = 1
         for idv in range(video_set.len()):
             cell = video_set[idv]
@@ -437,18 +451,22 @@ class ui_Form(QWidget, Ui_Form):
             c1 = CommentCheckBox(tab.scrollAreaWidgetContents, idv)
             c1.setGeometry(QtCore.QRect(0, 42 * comment_row, 91, 42))
             c2 = CommentLabel(tab.scrollAreaWidgetContents,
-                              video.file_name.split("\\")[-1] + ".evf", idv, middle=False)
+                              video.file_name.split("\\")[-1] + ".evf", middle=False)
             c2.setGeometry(QtCore.QRect(91, 42 * comment_row, 367, 42))
-            video_labels.append(c2)
+            # video_labels.append((idv, c2))
+            c2.clicked.connect(lambda v=idv: self.videoTabClicked.emit(v))
+            c2.doubleClicked.connect(lambda v=idv: self.videoTabDoubleClicked.emit(v))
             comment_row += 1
         
-        for video_label in video_labels:
-            video_label.Release.connect(self.videoTabClicked.emit)
+        # for idv, video_label in video_labels:
+        #     video_label.clicked.connect(lambda: self.videoTabClicked.emit(idv))
+            # video_label.mouseReleaseEvent.connect(self.videoTabDoubleClicked.emit)
             
         tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
         
         
         self.tabWidget.addTab(tab, f"目录({self.tab_id})")
+
 
     def set_double_spin_box_time(self, int_time):
         self.doubleSpinBox_time.setValue(int_time / 1000)
@@ -471,6 +489,8 @@ class ui_Form(QWidget, Ui_Form):
         self.tabWidget.removeTab(index)
     
     def close(self):
+        self.tabWidget.clear()
+        self.tab_id = 0
         self.game_setting.set_value("DEFAULT/videocontroltop", self.QWidget.x())
         self.game_setting.set_value("DEFAULT/videocontrolleft", self.QWidget.y())
         self.game_setting.sync()
