@@ -278,6 +278,9 @@ color: #50A6EA;}</string>
           <bold>false</bold>
          </font>
         </property>
+        <property name="contextMenuPolicy">
+         <enum>Qt::NoContextMenu</enum>
+        </property>
         <property name="styleSheet">
          <string notr="true">font: 20pt &quot;微软雅黑&quot;;
 color: #50A6EA;
@@ -311,6 +314,9 @@ background-color: rgb(240, 240, 240);</string>
    </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
+     </property>
      <property name="styleSheet">
       <string notr="true">QTabWidget::pane { margin: 0px; border: 0px; }
 </string>

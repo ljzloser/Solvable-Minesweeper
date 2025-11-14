@@ -32,17 +32,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
         self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
-
         super(MineSweeperGUI, self).__init__(MainWindow, args)
-
-        # MineSweeperGUI父类的init中读.ini、读图片、设置字体、局面初始化等
 
         self.time_10ms: int = 0  # 已毫秒为单位的游戏时间，全局统一的
         self.showTime(self.time_10ms // 100)
-        
-        self.initVideoPlayer()
-        
-        
+
+
         self.timer_10ms = QTimer()
         self.timer_10ms.setInterval(10)  # 10毫秒回调一次的定时器
         self.timer_10ms.timeout.connect(self.timeCount)

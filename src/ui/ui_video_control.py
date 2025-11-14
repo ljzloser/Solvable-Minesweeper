@@ -145,6 +145,7 @@ class Ui_Form(object):
         font.setItalic(False)
         font.setWeight(50)
         self.doubleSpinBox_time.setFont(font)
+        self.doubleSpinBox_time.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.doubleSpinBox_time.setStyleSheet("font: 20pt \"微软雅黑\";\n"
 "color: #50A6EA;\n"
 "background-color: rgb(240, 240, 240);")
@@ -159,6 +160,7 @@ class Ui_Form(object):
         self.horizontalLayout.addWidget(self.doubleSpinBox_time)
         self.verticalLayout.addWidget(self.widget)
         self.tabWidget = QtWidgets.QTabWidget(Form)
+        self.tabWidget.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.tabWidget.setStyleSheet("QTabWidget::pane { margin: 0px; border: 0px; }\n"
 "")
         self.tabWidget.setTabsClosable(True)

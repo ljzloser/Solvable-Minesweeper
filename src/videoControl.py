@@ -1,7 +1,7 @@
 from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
-    QSizePolicy, QHBoxLayout
+    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
@@ -397,8 +397,6 @@ class ui_Form(QWidget, Ui_Form):
         self.QWidget.move(game_setting.value("DEFAULT/videocontroltop", 100, int),
                           game_setting.value("DEFAULT/videocontrolleft", 300, int))
         self.tabWidget.tabCloseRequested.connect(self.close_tab)
-        # 所有录像数据，打开、关闭标签时维护。包含录像和录像集
-        # self.videos = []
         
         
     def add_new_video_tab(self, video):

@@ -7,9 +7,11 @@ import gameDefinedParameter
 import  videoControl
 import ms_toollib as ms
 from mineSweeperGUIEvent import MineSweeperGUIEvent
+from mainWindowGUI import MainWindow
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
-    def initVideoPlayer(self):
+    def __init__(self, MainWindow: MainWindow, args):
+        super(MineSweeperVideoPlayer, self).__init__(MainWindow, args)
         self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
                                                      self.mainWindow)
         self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
@@ -20,18 +22,13 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.videoSetTime.connect(self.video_set_time)
         self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
         self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
-        self.ui_video_control.tabWidget.currentChanged.connect(self.on_tab_changed)
+        self.ui_video_control.tabWidget.tabBar().tabBarClicked.connect(self.on_tab_clicked)
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
     
     
     # 打开录像文件的回调
     def action_OpenFile(self, openfile_name=None):
-        # self.setting_path / 'replay'
-        
-        # self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
-        #                                              self.mainWindow)
-        
         self.unlimit_cursor()
         if not openfile_name:
             openfile_name = QFileDialog.\
@@ -88,6 +85,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                                         "super_fl_local"])
             self.ui_video_control.add_new_video_tab(video)
             # self.tab_data.append(video)
+        tab_count = self.ui_video_control.tabWidget.count()
+        self.ui_video_control.tabWidget.setCurrentIndex(tab_count - 1)
         self.play_video(video)
         
 
@@ -95,10 +94,6 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     # 控制台中，不添加新标签、连接信号。假如关闭就展示
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
     def play_video(self, video, new_tab=False):
-        # if self.game_state == 'display':
-        #     self.ui_video_control.QWidget.close()
-        # self.game_state = 'display'
-        
         if self.game_state != 'display':
             self.game_state = 'display'
         self.video_playing = False
@@ -185,7 +180,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         
         
     # 切换标签时，播放标签中的录像
-    def on_tab_changed(self, idt):
+    def on_tab_clicked(self, idt):
         if isinstance(self.ui_video_control.tabWidget.widget(idt), videoControl.VideoTabWidget):
             self.play_video(self.ui_video_control.tabWidget.widget(idt).video)
         ...
