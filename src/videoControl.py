@@ -5,11 +5,13 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
+from pathlib import Path
+import os
 import ms_toollib as ms
 
 
 class CommentCheckBox(QWidget):
-    Release = QtCore.pyqtSignal(int)
+    # toggled = QtCore.pyqtSignal(int)
     
     def __init__(self, parent, signal_int):
         super(CommentCheckBox, self).__init__(parent)
@@ -37,11 +39,11 @@ class CommentCheckBox(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         # 连接复选框的点击信号
-        self.checkbox.toggled.connect(self.on_toggled)
+        # self.checkbox.toggled.connect(self.on_toggled)
     
-    def on_toggled(self, checked):
-        # 发送int信号
-        self.Release.emit(self.signal_int)
+    # def on_toggled(self):
+    #     # 发送int信号
+    #     self.toggled.emit(self.signal_int)
     
     # 提供与QCheckBox兼容的方法
     def isChecked(self):
@@ -82,7 +84,7 @@ class CommentLabel(QLabel):
         if event.button() == Qt.LeftButton:
             self.doubleClicked.emit()  # 发射双击信号
         super().mouseDoubleClickEvent(event)
-
+       
 
 class VideoSetTabWidget(QWidget):
     """
@@ -96,6 +98,10 @@ class VideoSetTabWidget(QWidget):
         self.file_name = file_name
         self.video_set = video_set
         self.setup_ui()
+        
+        # 添加右键菜单功能
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 设置右键菜单策略[1,2](@ref)
+        self.customContextMenuRequested.connect(self.show_context_menu)  # 连接右键菜单信号[1,5](@ref)
     
     def setup_ui(self):
         """初始化UI界面"""
@@ -154,6 +160,41 @@ class VideoSetTabWidget(QWidget):
         
         self.checkBox_choose.toggled.connect(self.on_select_all_toggled)
         
+    def show_context_menu(self, pos):
+        """显示右键菜单"""
+        _translate = QtCore.QCoreApplication.translate
+        menu = QMenu(self)  # 创建菜单[1,2](@ref)
+        export_action = menu.addAction(_translate("Form", "导出选中的录像"))
+        
+        # 处理菜单项选择
+        action = menu.exec_(self.mapToGlobal(pos))
+        if action == export_action:
+            self.export_data()  # 调用导出方法
+    
+    def export_data(self):
+        """导出数据的具体实现"""
+        checkboxes = self.scrollAreaWidgetContents.findChildren(CommentCheckBox)  # 请将CommentCheckBox替换为你的实际复选框类名
+    
+        # 按控件在父容器中的y坐标（垂直位置）进行排序
+        ordered_checkboxes = sorted(checkboxes, key=lambda cb: cb.y())
+        
+        # self.video_set.file_name是带evfs后缀的绝对路径
+        path = Path(self.video_set.file_name)
+        folder_name = path.stem
+        target_folder = path.parent / folder_name
+        try:
+            target_folder.mkdir(parents=True, exist_ok=True)
+        except:
+            return
+        
+        # 合理的video.file_name是不带后缀的相对路径evf文件名
+        # 考虑潜在的风险，此处仍然做了绝对路径转相对路径的处理
+        for idx, box in enumerate(ordered_checkboxes):
+            if box.isChecked():
+                video = self.video_set[idx].evf_video
+                video_name = Path(video.file_name)
+                video.save_to_evf_file(str(target_folder / video_name.name))
+    
         
     def on_select_all_toggled(self, checked):
         """全选复选框状态变化时的槽函数"""
@@ -362,8 +403,8 @@ class VideoTabWidget(QWidget):
 class ui_Form(QWidget, Ui_Form):
     videoSetTime = QtCore.pyqtSignal(int)
     videoSetTimePeriod = QtCore.pyqtSignal(int)
-    videoTabClicked = QtCore.pyqtSignal(int)
-    videoTabDoubleClicked = QtCore.pyqtSignal(int)
+    videoTabClicked = QtCore.pyqtSignal(str, int)
+    videoTabDoubleClicked = QtCore.pyqtSignal(str, int)
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
@@ -439,7 +480,8 @@ class ui_Form(QWidget, Ui_Form):
         
     def add_new_video_set_tab(self, video_set):
         self.tab_id += 1
-        tab = VideoSetTabWidget(self, video_set=video_set, tab_name=f"tab_{self.tab_id}", file_name=video_set.file_name)
+        tab_name = f"tab_{self.tab_id}"
+        tab = VideoSetTabWidget(self, video_set=video_set, tab_name=tab_name, file_name=video_set.file_name)
         tab.setAttribute(Qt.WA_DeleteOnClose)
         # video_labels = []
         comment_row = 1
@@ -452,8 +494,8 @@ class ui_Form(QWidget, Ui_Form):
                               video.file_name.split("\\")[-1] + ".evf", middle=False)
             c2.setGeometry(QtCore.QRect(91, 42 * comment_row, 367, 42))
             # video_labels.append((idv, c2))
-            c2.clicked.connect(lambda v=idv: self.videoTabClicked.emit(v))
-            c2.doubleClicked.connect(lambda v=idv: self.videoTabDoubleClicked.emit(v))
+            c2.clicked.connect(lambda v=idv: self.videoTabClicked.emit(tab_name, v))
+            c2.doubleClicked.connect(lambda v=idv: self.videoTabDoubleClicked.emit(tab_name, v))
             comment_row += 1
         
         # for idv, video_label in video_labels:

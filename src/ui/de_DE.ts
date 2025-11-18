@@ -6,40 +6,40 @@
     <message>
         <location filename="ui_record_pop.py" line="420"/>
         <source>确定</source>
-        <translation>Bestimmen Sie</translation>
+        <translation>OK</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="748"/>
+        <location filename="ui_gameSettingShortcuts.py" line="747"/>
         <source>取消</source>
-        <translation>Stornierung</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="594"/>
+        <location filename="ui_gameSettings.py" line="669"/>
         <source>结束后标雷</source>
-        <translation>Markierte Minen nach dem Ende</translation>
+        <translation>Minen markieren nach Spielende</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="595"/>
+        <location filename="ui_gameSettings.py" line="658"/>
         <source>标识：</source>
         <translation>Markierungen:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="597"/>
+        <location filename="ui_gameSettings.py" line="668"/>
         <source>永远使用筛选法埋雷（不推荐）</source>
-        <translation>Verwenden Sie zum Verlegen von Minen immer eine Abschirmung (nicht empfohlen)</translation>
+        <translation>Immer Minen nach Zufallsprinzip platzieren (nicht empfohlen)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="599"/>
+        <location filename="ui_gameSettings.py" line="665"/>
         <source>自动保存录像（推荐）</source>
         <translation>Automatisches Speichern von Videos (empfohlen)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="600"/>
+        <location filename="ui_gameSettings.py" line="648"/>
         <source>游戏模式：</source>
         <translation>Spielmodus:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="601"/>
+        <location filename="ui_gameSettings.py" line="657"/>
         <source>方格边长：</source>
         <translation>Quadratische Seitenlängen:</translation>
     </message>
@@ -66,7 +66,7 @@
     <message>
         <location filename="ui_gameSettingShortcuts.py" line="786"/>
         <source>经典无猜</source>
-        <translation type="unfinished"></translation>
+        <translation>Klassisch - Kein Raten</translation>
     </message>
     <message>
         <location filename="ui_gameSettingShortcuts.py" line="787"/>
@@ -94,19 +94,14 @@
         <translation>Situative Zwänge:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="613"/>
+        <location filename="ui_gameSettings.py" line="671"/>
         <source>自动重开：</source>
         <translation>Automatische Wiedereröffnung:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="614"/>
+        <location filename="ui_gameSettings.py" line="663"/>
         <source>国家或地区：</source>
         <translation>Land oder Region:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="615"/>
-        <source>窗口透明度：</source>
-        <translation>Transparenz der Fenster:</translation>
     </message>
     <message>
         <location filename="ui_record_pop.py" line="404"/>
@@ -114,46 +109,41 @@
         <translation>Über</translation>
     </message>
     <message>
-        <location filename="ui_about.py" line="158"/>
+        <location filename="ui_about.py" line="157"/>
         <source>项目主页：</source>
         <translation>Projekt-Homepage:</translation>
     </message>
     <message>
-        <location filename="ui_about.py" line="159"/>
+        <location filename="ui_about.py" line="158"/>
         <source>资料教程：</source>
         <translation>Informations-Tutorials:</translation>
     </message>
     <message>
-        <location filename="ui_about.py" line="160"/>
+        <location filename="ui_about.py" line="159"/>
         <source>①本软件可以不受任何限制地复制、储存、传播。
 ②任何人可以在任何一个项目中使用本项目源代码的任何一个部分，同时欢迎在本项目主页提出宝贵的意见。</source>
         <translation>①Diese Software kann ohne jegliche Einschränkungen kopiert, gespeichert und verteilt werden.
 ②Jeder kann jeden Teil des Quellcodes dieses Projekts in jedem Projekt verwenden und ist auch willkommen, wertvolle Kommentare auf dieser Projekt-Homepage zu geben.</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="421"/>
-        <source>Space</source>
-        <translation>Space</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="150"/>
+        <location filename="ui_defined_parameter.py" line="149"/>
         <source>自定义设置</source>
         <translation>Benutzerdefinierte Einstellungen</translation>
     </message>
     <message>
         <location filename="ui_defined_parameter.py" line="153"/>
         <source>行数(row)</source>
-        <translation>Anzahl der Zeilen</translation>
+        <translation>Zeilen</translation>
     </message>
     <message>
         <location filename="ui_defined_parameter.py" line="154"/>
         <source>列数(column)</source>
-        <translation>Anzahl der Spalten</translation>
+        <translation>Spalten</translation>
     </message>
     <message>
         <location filename="ui_defined_parameter.py" line="155"/>
         <source>雷数(number)</source>
-        <translation>Der Donner zählt</translation>
+        <translation>Minenanzahl</translation>
     </message>
     <message>
         <location filename="ui_record_pop.py" line="406"/>
@@ -253,180 +243,175 @@
     <message>
         <location filename="ui_record_pop.py" line="416"/>
         <source>中级</source>
-        <translation>Zwischenbericht</translation>
+        <translation>Fortgeschrittene</translation>
     </message>
     <message>
         <location filename="ui_record_pop.py" line="418"/>
         <source>高级</source>
-        <translation>Fortgeschrittene</translation>
+        <translation>Experte</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="596"/>
+        <location filename="ui_gameSettings.py" line="667"/>
         <source>勾选后永远使用筛选法埋雷，否则会适时改用调整法</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn diese Option aktiviert ist, wird beim Verlegen von Minen immer die Screening-Methode verwendet. Andernfalls wird gegebenenfalls auf die Anpassungsmethode umgeschaltet</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="598"/>
+        <location filename="ui_gameSettings.py" line="664"/>
         <source>完成后自动将录像保存到replay文件夹下</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufzeichnung nach Abschluss automatisch im Ordner &quot;Replay&quot; speichern</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="610"/>
+        <location filename="ui_gameSettings.py" line="672"/>
         <source>允许纪录弹窗（推荐）</source>
-        <translation type="unfinished"></translation>
+        <translation>Popup für Aufzeichnung zulassen (empfohlen)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="616"/>
+        <location filename="ui_gameSettings.py" line="661"/>
         <source>用于参加比赛</source>
-        <translation type="unfinished"></translation>
+        <translation>Zur Turnierteilnahme</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="617"/>
+        <location filename="ui_gameSettings.py" line="662"/>
         <source>比赛标识：</source>
-        <translation type="unfinished"></translation>
+        <translation>Turnierkennung:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="618"/>
+        <location filename="ui_gameSettings.py" line="670"/>
         <source>光标不能超出边框</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Cursor darf nicht über den Rand hinausragen</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="619"/>
+        <location filename="ui_gameSettings.py" line="659"/>
         <source>用于与其他人相区分，但不希望排名网站和软件展示出来</source>
-        <translation type="unfinished"></translation>
+        <translation>Dient dazu, sich von anderen zu unterscheiden, ist jedoch nicht für die Anzeige durch Ranking-Websites und Software vorgesehen</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="620"/>
+        <location filename="ui_gameSettings.py" line="660"/>
         <source>个性标识：</source>
-        <translation type="unfinished"></translation>
+        <translation>Personalisierte Identifizierung:</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="181"/>
+        <location filename="ui_video_control.py" line="178"/>
         <source>重播</source>
-        <translation type="unfinished"></translation>
+        <translation>Wiederholung</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="182"/>
+        <location filename="ui_video_control.py" line="179"/>
         <source>播放/暂停</source>
-        <translation type="unfinished"></translation>
+        <translation>Abspielen/Pause</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="183"/>
+        <location filename="ui_video_control.py" line="180"/>
         <source>滑动滚轮修改播放速度</source>
-        <translation type="unfinished"></translation>
+        <translation>Scrollrad zum Ändern der Abspielgeschwindigkeit</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="184"/>
-        <source>时间</source>
-        <translation type="unfinished"></translation>
+        <location filename="ui_gameSettings.py" line="666"/>
+        <source>自动保存录像集</source>
+        <translation>&quot;evfs&quot; automatisch speichern</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="185"/>
-        <source>标签</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui_video_control.py" line="186"/>
-        <source>事件</source>
-        <translation type="unfinished"></translation>
+        <location filename="ui_record_pop.py" line="421"/>
+        <source>Return</source>
+        <translation>Return</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="ui_main_board.py" line="429"/>
+        <location filename="ui_main_board.py" line="428"/>
         <source>元扫雷</source>
         <translation>Meta Minesweeper</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="430"/>
+        <location filename="ui_main_board.py" line="429"/>
         <source>游戏</source>
         <translation>Spiele</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="431"/>
+        <location filename="ui_main_board.py" line="430"/>
         <source>设置</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="432"/>
+        <location filename="ui_main_board.py" line="431"/>
         <source>语言设置</source>
         <translation>Spracheinstellungen</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="433"/>
+        <location filename="ui_main_board.py" line="432"/>
         <source>帮助</source>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="434"/>
+        <location filename="ui_main_board.py" line="433"/>
         <source>新游戏</source>
         <translation>Neue Spiele</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="435"/>
+        <location filename="ui_main_board.py" line="434"/>
         <source>初级</source>
         <translation>Junior</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="436"/>
+        <location filename="ui_main_board.py" line="435"/>
         <source>中级</source>
         <translation>Zwischenbericht</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="437"/>
+        <location filename="ui_main_board.py" line="436"/>
         <source>高级</source>
         <translation>Fortgeschrittene</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="438"/>
+        <location filename="ui_main_board.py" line="437"/>
         <source>自定义</source>
         <translation>Personalisierung</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="439"/>
+        <location filename="ui_main_board.py" line="438"/>
         <source>退出</source>
         <translation>Rücknahme</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="440"/>
+        <location filename="ui_main_board.py" line="439"/>
         <source>游戏设置</source>
         <translation>Spiel-Einstellungen</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="441"/>
+        <location filename="ui_main_board.py" line="440"/>
         <source>关于</source>
         <translation>Über</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="442"/>
+        <location filename="ui_main_board.py" line="441"/>
         <source>快捷键设置</source>
         <translation>Shortcut-Einstellungen</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="443"/>
+        <location filename="ui_main_board.py" line="442"/>
         <source>打开</source>
         <translation>Öffnen Sie</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="444"/>
+        <location filename="ui_main_board.py" line="443"/>
         <source>鼠标设置</source>
         <translation>Maus-Einstellungen</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="445"/>
+        <location filename="ui_main_board.py" line="444"/>
         <source>保存</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichern</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="445"/>
+        <source>回放</source>
+        <translation>Wiederholung</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="446"/>
-        <source>回放</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="447"/>
         <source>检查更新</source>
-        <translation type="unfinished"></translation>
+        <translation>Auf Updates prüfen</translation>
     </message>
 </context>
 </TS>

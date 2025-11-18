@@ -48,7 +48,7 @@ class ui_Form(Ui_Form):
         self.comboBox_country.lineEdit().setAlignment(Qt.AlignCenter)
         self.comboBox_country.editTextChanged.connect(self.onchange_combobox_country)
         self.comboBox_country.lineEdit().setText(self.country)
-
+        self.comboBox_country.addItems(self.country_name)
         
         self.setParameter()
 

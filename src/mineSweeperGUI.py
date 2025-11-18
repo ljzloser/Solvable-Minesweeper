@@ -1021,7 +1021,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
                                     "mouse_trace", "vision_transfer", "pluck",
                                     "super_fl_local"])
-        self.play_video(video)
+        self.play_video(video, True)
 
     def action_CEvent(self):
         # 点击菜单栏的自定义后回调

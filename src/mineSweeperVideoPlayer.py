@@ -73,8 +73,9 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                                             "mouse_trace", "vision_transfer", "pluck",
                                             "super_fl_local"])
             self.ui_video_control.add_new_video_set_tab(video_set)
-            self.ui_video_control.videoTabClicked.connect(lambda x: self.play_video(video_set[x].evf_video))
-            self.ui_video_control.videoTabDoubleClicked.connect(lambda x: self.play_video(video_set[x].evf_video, True))
+            self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
+            self.ui_video_control.videoTabDoubleClicked.connect(
+                lambda a, b: self.play_video_tab_name_id(a, b, True))
             # self.tab_data.append(video_set)
             video = video_set[0].evf_video
         else:
@@ -177,6 +178,16 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.set_country_flag(self.label.ms_board.country)
 
         self.timer_video.start(10)
+        
+        
+    # 根据标签名和索引播放录像
+    def play_video_tab_name_id(self, tab_name, idv, new_tab=False):
+        tab_count = self.ui_video_control.tabWidget.count()
+        for index in range(tab_count):
+            tab_widget = self.ui_video_control.tabWidget.widget(index)
+            if tab_widget.tab_name == tab_name:
+                self.play_video(tab_widget.video_set[idv].evf_video, new_tab)
+                return
         
         
     # 切换标签时，播放标签中的录像
