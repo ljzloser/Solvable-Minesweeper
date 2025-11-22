@@ -918,7 +918,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.label.ms_board.generate_evf_v4_raw_data()
             # 补上校验值
             checksum = self.checksum_guard.get_checksum(
-                self.label.ms_board.raw_data[:-1])
+                self.label.ms_board.raw_data[:-2])
             self.label.ms_board.checksum = checksum
         # 计算当前单元的校验码，并追加到evfs中
         # evfs的第一个单元的校验码，只考虑第一个录像
