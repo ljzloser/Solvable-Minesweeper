@@ -178,7 +178,9 @@ class Ui_MainWindow(Ui_MainWindow):
         self.r_path = r_path
             
         # 录像保存位置
-        self.replay_path = str(self.setting_path / 'replay')
+        replay_path_dir = self.setting_path / 'replay'
+        self.replay_path = str(replay_path_dir)
+        replay_path_dir.mkdir(parents=True, exist_ok=True)
         # 记录了全局游戏设置
         game_setting_path = str(self.setting_path / 'gameSetting.ini')
         self.game_setting = IniConfig(game_setting_path)
