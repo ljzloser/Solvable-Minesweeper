@@ -2,7 +2,7 @@
 - 包含8种模式的专业扫雷版本、第三代扫雷录像播放器及高性能算法工具箱
 - project with 8 modes of minesweeper, third generation minesweeper video player and high performance algorithm toolbox
  
-[![MetaSweeper](https://img.shields.io/badge/MetaSweeper-v3.2.0-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
+[![MetaSweeper](https://img.shields.io/badge/MetaSweeper-v3.2.1-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
 [![stars](https://img.shields.io/github/stars/eee555/Solvable-Minesweeper)](https://github.com/eee555/Solvable-Minesweeper/stargazers)
 [![forks](https://img.shields.io/github/forks/eee555/Solvable-Minesweeper)](https://github.com/eee555/Solvable-Minesweeper/forks)
 
@@ -166,6 +166,10 @@ Currently in the lengthy development phase, with updates approximately every 1 t
 
 ## 下载链接
 
+### 正式版v3.2.1：
+可以保存evfs录像集，可以选择其中任意录像播放，可以多选并另存为evf文件。增加pluck指标，刻画了运气的好坏。增加迟延模式，可以在标识前增加“[lag]”，获取更宽松的作弊判定。录像播放控制、计数器等子窗口可以保存位置坐标。升级了录像播放器，可以多标签切换。将录像格式升级至evf4。调整法埋雷算法升级。回车等于窗口确定。播放器进度条时间修改为3位小数。可以通过拖入文件来进行播放。给计数器添加log, sin, tan, cos, row, column, minenum等函数和变量。优化了国家下拉框的补全交互。删除设置中的透明度属性。修复了计数器公式不能包含百分号%、回放时脸不动、窗口超出屏幕后无法移回、文件权限相关问题等已经发现的bug。  
+链接：
+
 ### 正式版v3.2.0：
 修改为安装包安装。“竞速无猜”更名为“经典无猜”。修复了游戏开始前点“保存”会崩溃，标准模式pb不能正常保存，标雷后缩放窗口导致异常，不同缩放下窗口尺寸不同，切屏引发崩溃等问题。现在任务栏只会出现一个主窗口，能够正确处理盲扫和标雷相关的弹窗逻辑。增加了自动更新的模块，可以在游戏内选择服务器自动更新。  
 链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe](https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe)
@@ -180,12 +184,12 @@ Currently in the lengthy development phase, with updates approximately every 1 t
 
 ### 正式版v3.1.9：
 
-修复了7个bug，包括弱可猜模式可能踩雷；用设置修改尺寸时，布局出错；使用快捷键切换模式时，部分操作引发异常等。计数器中可以使用"is_offical", "is_fair"来检查录像合法性。提高了对某种作弊手段的防御能力。升级了录像格式到evf-v0.3。  
+修复了7个bug，包括弱可猜模式可能踩雷；用设置修改尺寸时，布局出错；使用快捷键切换模式时，部分操作引发异常等。计数器中可以使用"is_offical", "is_fair"来检查录像合法性。提高了对某种作弊手段的防御能力。升级了录像格式到evf3。  
 链接：[https://openms.top/download/Metaminesweeper-v3.1.9.zip](https://openms.top/download/Metaminesweeper-v3.1.9.zip)
 
 ### 正式版v3.1.7：
 
-修复了因舍入导致的一些问题。设计了更美观的图标。升级了录像格式到evf-v0.2。  
+修复了因舍入导致的一些问题。设计了更美观的图标。升级了录像格式到evf2。  
 链接：[https://eee555.lanzn.com/iQ4C11p34mqh](https://eee555.lanzn.com/iQ4C11p34mqh)
 
 ### 正式版v3.1.6：

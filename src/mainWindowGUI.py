@@ -48,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
             url = event.mimeData().urls()[0]
             if url.isLocalFile():
                 fileType = QFileInfo(url.toLocalFile()).suffix()
-                if fileType in ('evf', 'avf', 'rmv', 'mvf'):
+                if fileType in ('evf', 'avf', 'rmv', 'mvf', 'evfs'):
                     event.acceptProposedAction()
                     return
         event.ignore()
