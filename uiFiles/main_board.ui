@@ -636,7 +636,6 @@
     <addaction name="separator"/>
     <addaction name="action_save"/>
     <addaction name="action_replay"/>
-    <addaction name="action_open_folder"/>
     <addaction name="separator"/>
     <addaction name="actiontui_chu"/>
    </widget>

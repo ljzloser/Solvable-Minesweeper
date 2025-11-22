@@ -113,6 +113,18 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="font">
          <font>
           <family>微软雅黑</family>
@@ -238,13 +250,13 @@ color: #3d3d3d;
         <property name="minimumSize">
          <size>
           <width>130</width>
-          <height>0</height>
+          <height>32</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16777215</height>
+          <height>32</height>
          </size>
         </property>
         <property name="font">
@@ -519,6 +531,18 @@ color: #3d3d3d;</string>
          </property>
          <item>
           <widget class="QLineEdit" name="lineEdit_label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>33</height>
+            </size>
+           </property>
            <property name="font">
             <font>
              <family>微软雅黑</family>
@@ -552,6 +576,18 @@ color: #3d3d3d;</string>
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_unique_label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>33</height>
+            </size>
+           </property>
            <property name="font">
             <font>
              <family>微软雅黑</family>
@@ -585,6 +621,18 @@ color: #3d3d3d;</string>
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_race_label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>33</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>33</height>
+            </size>
+           </property>
            <property name="font">
             <font>
              <family>微软雅黑</family>
@@ -971,7 +1019,13 @@ font: 12pt &quot;微软雅黑&quot;;
               <property name="minimumSize">
                <size>
                 <width>130</width>
-                <height>0</height>
+                <height>32</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>32</height>
                </size>
               </property>
               <property name="font">
@@ -1145,6 +1199,18 @@ color: #3d3d3d;
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_constraint">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>32</height>
+            </size>
+           </property>
            <property name="font">
             <font>
              <family>微软雅黑</family>
@@ -1236,7 +1302,13 @@ color: #3d3d3d;</string>
            <property name="minimumSize">
             <size>
              <width>130</width>
-             <height>0</height>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>32</height>
             </size>
            </property>
            <property name="font">
