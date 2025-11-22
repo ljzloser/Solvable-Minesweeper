@@ -6,7 +6,7 @@
 ; 程序名称
 #define MyAppName "Metasweeper"
 ; 程序版本
-#define MyAppVersion "3.2.0"
+#define MyAppVersion "3.2.1"
 ; 发行商
 #define MyAppPublisher "eee555"
 ; 官网
@@ -18,7 +18,7 @@
 ; 根目录
 #define RootPath "Metaminesweeper-snapshot"
 ; 图标
-#define IconPath "media\cat.ico"
+#define IconPath "metaminesweeper\media\cat.ico"
 [Setup]
 ;注意：AppId 的值唯一标识此应用程序。不要在其他应用程序的安装程序中使用相同的 AppId 值。
 ;（要生成新的 GUID，请单击 Tools |在 IDE 中生成 GUID
@@ -53,7 +53,7 @@ UninstallDisplayIcon={app}\{#IconPath}
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 ; 中文语言包，需要下载对应的中文.isl文件放到InnoSetup目录下的languages目录下
-Name: "chinese"; MessagesFile: "compiler:Languages\Chinese.isl"
+Name: "chinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
@@ -72,7 +72,7 @@ Filename: "{app}\{#AppPath}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#
 [Code]
 var
     Page: TWizardPage;
-    AVFCheckbox, EVFCheckbox, RMVCheckbox, MVFCheckbox: TNewCheckbox;
+    AVFCheckbox, EVFCheckbox, RMVCheckbox, MVFCheckbox, EVFSCheckbox: TNewCheckbox;
 procedure FileAssociationPage;
 begin
     Page := CreateCustomPage(wpSelectDir, '文件打开方式', '勾选对应的文件类型,以添加对应文件类型使用{#MyAppName}的打开方式，然后点击“下一步”按钮。');
@@ -108,13 +108,21 @@ begin
     MVFCheckbox.Caption := '.mvf';
     MVFCheckbox.Checked := False;
     MVFCheckbox.Parent := Page.Surface;
+    
+    EVFSCheckbox := TNewCheckbox.Create(Page);
+    EVFSCheckbox.Top := 80;
+    EVFSCheckbox.Left := 0;
+    EVFSCheckbox.Width := Page.SurfaceWidth;
+    EVFSCheckbox.Caption := '.evfs';
+    EVFSCheckbox.Checked := False;
+    EVFSCheckbox.Parent := Page.Surface;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
     if CurStep = ssPostInstall then
     begin
-        if not (AVFCheckbox.Checked or EVFCheckbox.Checked or RMVCheckbox.Checked or MVFCheckbox.Checked) then
+        if not (AVFCheckbox.Checked or EVFCheckbox.Checked or RMVCheckbox.Checked or MVFCheckbox.Checked or EVFSCheckbox.Checked) then
         begin
             RegDeleteKeyIncludingSubkeys(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\{#MyAppExeName}');
         end;
@@ -190,6 +198,24 @@ begin
             RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.mvf\DefaultIcon');
             RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.mvf');       
         end;
+        
+        if EVFSCheckbox.Checked then
+        begin
+            RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\{#MyAppExeName}', '','{#MyAppName}');
+            RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\{#MyAppExeName}', 'FriendlyAppName', '{#MyAppName}');
+            RegWriteStringValue(HKEY_CLASSES_ROOT, '.evfs\OpenWithProgids', '', '{#MyAppName}.evfs');
+            RegWriteStringValue(HKEY_CLASSES_ROOT, '.evfs', '','{#MyAppName}.evfs');
+            RegWriteStringValue(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\DefaultIcon', '', ExpandConstant('{app}\media\EVF.ico,0'));
+            RegWriteStringValue(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\shell\open\command', '', ExpandConstant('"' + ExpandConstant('{app}\{#AppPath}\{#MyAppExeName}') + '" "%1"'));
+        end
+        else
+        begin
+            RegDeleteValue(HKEY_CLASSES_ROOT, '.evfs\OpenWithProgids', '');
+            RegDeleteValue(HKEY_CLASSES_ROOT, '.evfs', '');
+            RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\shell\open\command');
+            RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\DefaultIcon');
+            RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs');
+        end;
     end;
 end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
@@ -221,6 +247,13 @@ begin
         RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.mvf\shell\open\command');
         RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.mvf\DefaultIcon');
         RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.mvf');
+        
+        RegDeleteValue(HKEY_CLASSES_ROOT, '.evfs\OpenWithProgids', '');
+        RegDeleteValue(HKEY_CLASSES_ROOT, '.evfs', '');
+        RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\shell\open\command');
+        RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs\DefaultIcon');
+        RegDeleteKeyIncludingSubkeys(HKEY_CLASSES_ROOT, '{#MyAppName}.evfs');
+
     end;
 end;
 procedure InitializeWizard;
