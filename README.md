@@ -129,8 +129,11 @@ Currently in the lengthy development phase, with updates approximately every 1 t
 [CONTRIBUTING.md](https://github.com/eee555/Solvable-Minesweeper/blob/master/CONTRIBUTING.md)
 
 ## 荣誉
-被收录于Awesome Rust Repositories: 
+收录于Awesome Rust Repositories: 
 [https://twitter.com/RustRepos/status/1636837781765799940](https://twitter.com/RustRepos/status/1636837781765799940)
+
+收录于llamasweeper.com，评分4.5星：
+[https://llamasweeper.com/#/others](https://llamasweeper.com/#/others)
 
 开源扫雷网官方扫雷软件[https://openms.top](https://openms.top)
 
