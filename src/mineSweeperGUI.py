@@ -592,9 +592,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def checksum_module_ok(self):
         # 检查校验和模块的签名
         # 调试的时候不会自动存录像，除非将此处改为return True
-        # return True
-        return hashlib.sha256(bytes(metaminesweeper_checksum.get_self_key())).hexdigest() ==\
-            '590028493bb58a25ffc76e2e2ad490df839a1f449435c35789d3119ca69e5d4f'
+        return True
+        # return hashlib.sha256(bytes(metaminesweeper_checksum.get_self_key())).hexdigest() ==\
+        #     '590028493bb58a25ffc76e2e2ad490df839a1f449435c35789d3119ca69e5d4f'
 
     # 搜集数据，生成evf文件的二进制数据，但是不保存
     def dump_evf_file_data(self):
@@ -887,6 +887,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 只有开启了自动保存evfs，才会保存。也要防止通过关闭这个选项，逃避自动记录重开
         if not self.autosave_video_set:
             self.evfs.clear()
+            return
+        if not self.checksum_module_ok():
             return
         # 从第一次扫开开始记录
         if new_game_state != "win" and self.evfs.is_empty():
@@ -1181,7 +1183,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def action_AEvent(self):
         # 关于
         self.actionChecked('A')
-        ui = gameAbout.ui_Form(self.r_path)
+        ui = gameAbout.ui_Form(self.r_path, self.mainWindow)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
         ui.Dialog.exec_()

@@ -6,8 +6,10 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QLocalSocket, QLocalServer
 import sys
 import os
+import argparse
 import mainWindowGUI as mainWindowGUI
 import mineSweeperGUI as mineSweeperGUI
+import ms_toollib as ms
 import ctypes
 from ctypes import wintypes
 os.environ["QT_FONT_DPI"] = "96"
@@ -61,9 +63,87 @@ def find_window(class_name, window_name):
     return hwnd
 
 
+
+def cli_check_file(file_path: str) -> int:
+    if not os.path.exists(file_path):
+        print("ERROR: file not found")
+        return 2
+    
+    # 搜集目录或文件下的所有evf和evfs文件
+    evf_evfs_files = []
+    if os.path.isfile(file_path) and (file_path.endswith('.evf') or file_path.endswith('.evfs')):
+        evf_evfs_files = [os.path.abspath(file_path)]
+    elif os.path.isdir(file_path):
+        evf_evfs_files = [os.path.abspath(os.path.join(root, file))
+                     for root, dirs, files in os.walk(file_path)
+                     for file in files if file.endswith('.evf') or file.endswith('.evfs')]
+
+    if not evf_evfs_files:
+        print("ERROR: must be evf or evfs files or directory")
+        return 2
+        
+    
+    # 实例化一个MineSweeperGUI出来
+    app = QtWidgets.QApplication(sys.argv)
+    mainWindow = mainWindowGUI.MainWindow()
+    ui = mineSweeperGUI.MineSweeperGUI(mainWindow, sys.argv)
+    
+    for ide, e in enumerate(evf_evfs_files):
+        if not ui.checksum_module_ok():
+            print("ERROR: ???")
+            return 2
+        if e.endswith('.evf'):
+            # 检验evf文件是否合法
+            video = ms.EvfVideo(e)
+            try:
+                video.parse()
+            except:
+                evf_evfs_files[ide] = (e, 2)
+            else:
+                checksum = ui.checksum_guard.get_checksum(
+                    video.raw_data[:-(len(video.checksum) + 2)])
+                if video.checksum == checksum:
+                    evf_evfs_files[ide] = (e, 0)
+                else:
+                    evf_evfs_files[ide] = (e, 1)
+        elif e.endswith('.evfs'):
+            # 检验evfs文件是否合法
+            videos = ms.Evfs(e)
+            try:
+                videos.parse()
+            except:
+                evf_evfs_files[ide] = (e, 2)
+            else:
+                if videos.len() <= 0:
+                    evf_evfs_files[ide] = (e, 2)
+                checksum = ui.checksum_guard.get_checksum(
+                    videos[0].evf_video.raw_data)
+                if video.checksum != checksum:
+                    evf_evfs_files[ide] = (e, 1)
+                    continue
+                for idcell, cell in enumerate(videos[1:]):
+                    checksum = ui.checksum_guard.get_checksum(
+                        cell.evf_video.raw_data + videos[idcell - 1].checksum)
+                    if cell.evf_file.checksum != checksum:
+                        evf_evfs_files[ide] = (e, 1)
+                        continue
+                evf_evfs_files[ide] = (e, 0)
+    print(evf_evfs_files)
+    return 0
+    
 if __name__ == "__main__":
-    # QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
-    # try:
+    # metaminesweeper.exe -c filename.evf用法，检查文件的合法性
+    # metaminesweeper.exe -c filename.evfs
+    # metaminesweeper.exe -c ./somepath/replay
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--check", help="检查文件合法性")
+    args, _ = parser.parse_known_args()
+
+    if args.check:
+        exit_code = cli_check_file(args.check)
+        sys.exit(exit_code)
+        
+
     app = QtWidgets.QApplication(sys.argv)
     serverName = "MineSweeperServer"
     socket = QLocalSocket()

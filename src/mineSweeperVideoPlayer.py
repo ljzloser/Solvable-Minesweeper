@@ -145,9 +145,6 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             self.minimumWindow()
 
         
-        
-        
-        
         self.ui_video_control.QWidget.show()
         
         t_end = video.video_end_time
@@ -162,10 +159,10 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             int(t_start * 1000))
         self.ui_video_control.horizontalSlider_time.blockSignals(False)
 
-        self.video_time = t_start  # 录像当前时间
-        self.video_stop_time = t_end  # 录像停止时间
+        # self.video_time = t_start  # 录像当前时间
+        # self.video_stop_time = t_end  # 录像停止时间
         self.label.paint_cursor = True
-        self.video_playing = True  # 录像正在播放
+        # self.video_playing = True  # 录像正在播放
         # 禁用双击修改指标名称公式
         self.score_board_manager.editing_row = -2
 
@@ -177,7 +174,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         # 改成录像的国旗
         self.set_country_flag(self.label.ms_board.country)
 
-        self.timer_video.start(10)
+        # self.timer_video.start(10)
+        self.video_replay()
         
         
     # 根据标签名和索引播放录像
@@ -194,7 +192,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def on_tab_clicked(self, idt):
         if isinstance(self.ui_video_control.tabWidget.widget(idt), videoControl.VideoTabWidget):
             self.play_video(self.ui_video_control.tabWidget.widget(idt).video)
-        ...
+        elif isinstance(self.ui_video_control.tabWidget.widget(idt), videoControl.VideoSetTabWidget):
+            ...
         
 
     def video_playing_step(self):
