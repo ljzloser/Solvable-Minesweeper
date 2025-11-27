@@ -123,7 +123,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.score_board_manager.with_namespace({
             "race_identifier": self.race_identifier,
             "mode": self.gameMode,
-            "checksum_ok": "--",
             "is_official": "--",
             "is_fair": "--",
             "row": self.row,
@@ -237,7 +236,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     self.label.paint_cursor = False
                     self.set_country_flag()
                     self.score_board_manager.with_namespace({
-                        "checksum_ok": "--",
                         "is_official": "--",
                         "is_fair": "--",
                         "mode": self.gameMode,

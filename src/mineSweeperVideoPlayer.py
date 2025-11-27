@@ -114,15 +114,15 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
         
         # 检查evf的checksum，其余录像没有鉴定能力
-        if isinstance(video, ms.EvfVideo):
-            self.score_board_manager.with_namespace({
-                "checksum_ok": self.checksum_guard.
-                valid_checksum(video.raw_data[:-(len(video.checksum) + 2)], video.checksum),
-            })
-        else:
-            self.score_board_manager.with_namespace({
-                "checksum_ok": False,
-            })
+        # if isinstance(video, ms.EvfVideo):
+        #     self.score_board_manager.with_namespace({
+        #         "checksum_ok": self.checksum_guard.
+        #         valid_checksum(video.raw_data[:-(len(video.checksum) + 2)], video.checksum),
+        #     })
+        # else:
+        #     self.score_board_manager.with_namespace({
+        #         "checksum_ok": False,
+        #     })
         self.score_board_manager.with_namespace({
             "is_official": video.is_official,
             "is_fair": video.is_fair,

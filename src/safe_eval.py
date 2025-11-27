@@ -191,6 +191,11 @@ elif sys.version_info[0:2] == (3, 12):
         '<8>',
         '<6>',
         '<10>',
+        '<7>',
+        '<13>',
+        '<14>',
+        '<16>',
+        '<18>',
         "RESUME",
         "CACHE",
         "LOAD_NAME",
@@ -224,7 +229,6 @@ elif sys.version_info[0:2] == (3, 12):
         'SWAP',
         'RERAISE',
         'UNARY_NOT',
-        '<13>',
         'STORE_SLICE',
         'SET_ADD',
         'BINARY_SUBSCR',
@@ -320,6 +324,8 @@ if __name__ == "__main__":
     a = safe_eval("[i**1.2 for i in [bbbv, right]]", constraints)
     a = safe_eval("[log(i) * sin(cos(i)) for i in [bbbv, right]][bbbv-67]", constraints)
     a = safe_eval("{i for i in (5,1,sin(cos(88)))}", constraints)
+    a = safe_eval("f'mode ({bbbv}x{bbbv}/{bbbv})'", constraints)
+    
     
     
     
