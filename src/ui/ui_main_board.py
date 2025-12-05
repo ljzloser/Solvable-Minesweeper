@@ -229,7 +229,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 968, 33))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 968, 27))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
