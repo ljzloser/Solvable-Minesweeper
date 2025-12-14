@@ -1,7 +1,6 @@
-# from fbs_runtime.application_context.PyQt5 import ApplicationContext
 import time
 from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+# from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QLocalSocket, QLocalServer
 import sys
@@ -75,34 +74,6 @@ def on_ready_read(socket: QLocalSocket):
         socket.disconnectFromServer()  # 断开连接
 
 
-def find_window(class_name, window_name):
-    """
-    查找指定窗口的句柄。
-
-
-    Args:
-        class_name (str): 要查找的窗口的类名。
-        window_name (str): 要查找的窗口的标题。
-
-
-    Returns:
-        int: 查找到的窗口的句柄。如果未找到窗口，则抛出异常。
-
-
-    Raises:
-        ctypes.WinError: 如果未找到指定窗口，则抛出此异常。
-
-
-    """
-    user32 = ctypes.WinDLL("user32", use_last_error=True)
-    user32.FindWindowW.argtypes = [wintypes.LPCWSTR, wintypes.LPCWSTR]
-    user32.FindWindowW.restype = wintypes.HWND
-
-    hwnd = user32.FindWindowW(class_name, window_name)
-    if not hwnd:
-        raise ctypes.WinError(ctypes.get_last_error())
-    return hwnd
-
 
 def cli_check_file(file_path: str) -> int:
     if not os.path.exists(file_path):
@@ -173,7 +144,7 @@ def cli_check_file(file_path: str) -> int:
                         evf_evfs_files[ide] = (e, 1)
                         continue
                 evf_evfs_files[ide] = (e, 0)
-    print(evf_evfs_files)
+    # print(evf_evfs_files)
     return 0
 
 
@@ -216,22 +187,14 @@ if __name__ == "__main__":
         ui.mainWindow.show()
         # ui.mainWindow.game_setting = ui.game_setting
 
-        _translate = QtCore.QCoreApplication.translate
-        hwnd = find_window(None, _translate("MainWindow", "元扫雷"))
+        # _translate = QtCore.QCoreApplication.translate
+        hwnd = int(ui.mainWindow.winId())
 
         SetWindowDisplayAffinity = ctypes.windll.user32.SetWindowDisplayAffinity
-        ui.disable_screenshot = lambda: (
-            ... if SetWindowDisplayAffinity(hwnd, 0x00000011) else 1 / 0
-        )
-        ui.enable_screenshot = lambda: (
-            ... if SetWindowDisplayAffinity(hwnd, 0x00000000) else 1 / 0
-        )
-        ui.disable_screenshot = lambda: (
-            ... if SetWindowDisplayAffinity(hwnd, 0x00000011) else 1 / 0
-        )
-        ui.enable_screenshot = lambda: (
-            ... if SetWindowDisplayAffinity(hwnd, 0x00000000) else 1 / 0
-        )
+        ui.disable_screenshot = lambda: ... if SetWindowDisplayAffinity(
+            hwnd, 0x00000011) else 1/0
+        ui.enable_screenshot = lambda: ... if SetWindowDisplayAffinity(
+            hwnd, 0x00000000) else 1/0
 
         sys.exit(app.exec_())
         PluginManager.instance().stop()

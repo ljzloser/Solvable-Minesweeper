@@ -2,15 +2,17 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
 from PyQt5.QtGui import QPixmap
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
-from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
+# from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 import superGUI
 import gameAbout
 import gameSettings
 import gameSettingShortcuts
-import captureScreen, mine_num_bar, videoControl, gameRecordPop
+import captureScreen, mine_num_bar, gameRecordPop
 from CheckUpdateGui import CheckUpdateGui
 from githubApi import GitHub, SourceManager
+import win32con
+import win32gui
 import utils
 import ms_toollib as ms
 # import configparser
@@ -1413,12 +1415,20 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 计算限制区域
         rect = QRect(widget_pos, widget_size)
         self._clip_mouse(rect)
+        # 设置窗口置顶
+        hwnd = self.mainWindow.winId()
+        win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                              win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
     def unlimit_cursor(self):
         '''
         取消将鼠标区域限制在游戏界面中。
         '''
         ctypes.windll.user32.ClipCursor(None)
+        # 取消窗口置顶
+        hwnd = self.mainWindow.winId()
+        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                              win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
     def _clip_mouse(self, rect):
         # 定义RECT结构体

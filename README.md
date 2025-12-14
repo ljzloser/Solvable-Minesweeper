@@ -67,7 +67,8 @@
 元扫雷正处于持续演进阶段，通常 **3~12 个月发布一个版本**。
 欢迎提交 **Issue / PR / Star / Fork** ——您的参与将决定一个开源扫雷生态的未来走向。
 
-### 参考连接
+
+## 参考连接
 
 + 使用教程：[https://openms.top/#/guide/[80.%E6%95%99%E7%A8%8B.%E8%BD%AF%E4%BB%B6]%E5%85%83%E6%89%AB%E9%9B%B7%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B](https://openms.top/#/guide/[80.%E6%95%99%E7%A8%8B.%E8%BD%AF%E4%BB%B6]%E5%85%83%E6%89%AB%E9%9B%B7%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B)
 + 算法工具箱地址：[https://github.com/eee555/ms_toollib](https://github.com/eee555/ms_toollib)
@@ -123,10 +124,10 @@
 
 ## 贡献
 
-[CONTRIBUTING.md](https://github.com/eee555/Solvable-Minesweeper/blob/master/CONTRIBUTING.md)
+参见[CONTRIBUTING.md](https://github.com/eee555/Solvable-Minesweeper/blob/master/CONTRIBUTING.md)。
 
 # 协议须知
-项目使用了附带额外条款的GPLv3协议，尤其禁止了项目未经授权的商用行为，也规定了项目的收益分配方式。细节参见`LICENSE`。
+项目使用了附带额外条款的GPLv3协议，尤其禁止了项目未经授权的商用行为，也规定了项目的收益分配方式。细节参见[LICENSE](LICENSE)。
 
 ## 荣誉
 收录于Awesome Rust Repositories: 
