@@ -684,6 +684,7 @@
     </property>
     <addaction name="actiongaun_yv"/>
     <addaction name="actionauto_update"/>
+    <addaction name="actionchajian"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="font">
@@ -1059,6 +1060,11 @@
    </property>
    <property name="shortcut">
     <string notr="true">P</string>
+   </property>
+  </action>
+  <action name="actionchajian">
+   <property name="text">
+    <string>插件</string>
    </property>
   </action>
  </widget>

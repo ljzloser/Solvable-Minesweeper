@@ -10,12 +10,12 @@ import mainWindowGUI as mainWindowGUI
 import mineSweeperGUI as mineSweeperGUI
 import ms_toollib as ms
 import ctypes
-from ctypes import wintypes
+# from ctypes import wintypes
 from mp_plugins.context import AppContext
 from mp_plugins.events import *
 from mp_plugins import PluginManager
 from pathlib import Path
-import os
+# import os
 
 os.environ["QT_FONT_DPI"] = "96"
 

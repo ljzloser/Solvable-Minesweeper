@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect, QUrl
+from PyQt5.QtGui import QPixmap, QDesktopServices
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
@@ -55,7 +55,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.actionzhogn_ji.triggered.connect(lambda: self.predefined_Board(2))
         self.actiongao_ji.triggered.connect(lambda: self.predefined_Board(3))
         self.actionzi_ding_yi.triggered.connect(self.action_CEvent)
-        self.actiongao_ji.triggered.connect(lambda: self.predefined_Board(3))
 
         def save_evf_file_integrated():
             if self.game_state != "ready" and self.game_state != "playing" and\
@@ -81,6 +80,13 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             lambda: self.trans_language("pl_PL"))
         self.german_action.triggered.connect(
             lambda: self.trans_language("de_DE"))
+        
+        # 查看菜单
+        self.action_open_replay.triggered.connect(
+            lambda: QDesktopServices.openUrl(
+                QUrl.fromLocalFile(str(self.setting_path / 'replay'))))
+        self.action_open_ini.triggered.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.setting_path))))
 
         # config = configparser.ConfigParser()
         # config.read(self.game_setting_path, encoding='utf-8')
@@ -286,6 +292,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self._minenum = minenum
 
     def layMine(self, i, j):
+        
         xx = self.row
         yy = self.column
         num = self.minenum
@@ -475,7 +482,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             # self.timer_mine_num.start(3000)
 
     def gameStart(self):
-        # 画界面，但是不埋雷
+        # 画界面，但是不埋雷。等价于点脸、f2、设置确定后的效果
         self.mineUnFlagedNum = self.minenum  # 没有标出的雷，显示在左上角
         self.showMineNum(self.mineUnFlagedNum)    # 在左上角画雷数
         # pixmap = QPixmap(self.pixmapNum[14])
@@ -513,13 +520,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 return
         # 此时self.label.ms_board是utils.abstract_game_board的实例
         if self.game_state == 'display' or self.game_state == 'showdisplay':
-            # self.timer_video.stop()
-            # self.ui_video_control.QWidget.close()
             self.label.ms_board = ms.BaseVideo(
                 [[0] * self.column for _ in range(self.row)], self.pixSize)
             self.label.ms_board.mode = self.gameMode
         elif self.game_state == 'study':
-            # self.num_bar_ui.QWidget.close()
             self.score_board_manager.visible()
             self.label.ms_board = ms.BaseVideo(
                 [[0] * self.column for _ in range(self.row)], self.pixSize)

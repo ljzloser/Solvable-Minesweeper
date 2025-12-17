@@ -176,7 +176,7 @@ def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
         for j in range(len(board[0])):
             if game_board[i][j] == 11:
                 game_board[i][j] = 10
-    game_board = ms.mark_board(game_board)
+    game_board = ms.mark_board(game_board, remark=True)
     if any([game_board[x][y] == 11 for x,y in poses]):
         # 有一个必然是雷，就直接返回
         return board, False

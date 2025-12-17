@@ -436,6 +436,8 @@ class Ui_MainWindow(object):
         self.action_best.setFont(font)
         self.action_best.setShortcut("P")
         self.action_best.setObjectName("action_best")
+        self.actionchajian = QtWidgets.QAction(MainWindow)
+        self.actionchajian.setObjectName("actionchajian")
         self.menu.addAction(self.actionopen)
         self.menu.addSeparator()
         self.menu.addAction(self.actionnew_game)
@@ -459,6 +461,7 @@ class Ui_MainWindow(object):
         self.menu_2.addAction(self.language_menu.menuAction())
         self.menu_3.addAction(self.actiongaun_yv)
         self.menu_3.addAction(self.actionauto_update)
+        self.menu_3.addAction(self.actionchajian)
         self.menu_4.addAction(self.action_level)
         self.menu_4.addAction(self.action_best)
         self.menu_4.addAction(self.action_open_replay)
@@ -497,6 +500,7 @@ class Ui_MainWindow(object):
         self.action_open_ini.setText(_translate("MainWindow", "设置所在位置"))
         self.action_level.setText(_translate("MainWindow", "成就"))
         self.action_best.setText(_translate("MainWindow", "个人纪录"))
+        self.actionchajian.setText(_translate("MainWindow", "插件"))
 from ui.mineLabel import mineLabel
 from ui.mineNumLabel import mineNumLabel
 from ui.uiComponents import StatusLabel
