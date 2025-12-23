@@ -489,10 +489,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 画界面，但是不埋雷。等价于点脸、f2、设置确定后的效果
         self.mineUnFlagedNum = self.minenum  # 没有标出的雷，显示在左上角
         self.showMineNum(self.mineUnFlagedNum)    # 在左上角画雷数
-        # pixmap = QPixmap(self.pixmapNum[14])
-        # self.label_2.setPixmap(self.pixmapNum[14])
         self.set_face(14)
-        # self.label_2.setScaledContents(True)
         self.time_10ms = 0
         self.showTime(self.time_10ms)
         self.timer_10ms.stop()
@@ -502,18 +499,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.label_info.setText(self.player_identifier)
 
         # 这里有点乱
-        self.label.set_rcp(self.row, self.column, self.pixSize)
+        # self.label.set_rcp(self.row, self.column, self.pixSize)
         self.game_state = 'ready'
+        self.label.ms_board.reset(self.row, self.column, self.pixSize)
         self.label.reloadCellPic(self.pixSize)
-        self.label.setMinimumSize(QtCore.QSize(
-            self.pixSize*self.column + 8, self.pixSize*self.row + 8))
-        self.label.setMaximumSize(QtCore.QSize(
-            self.pixSize*self.column + 8, self.pixSize*self.row + 8))
-        # self.label.setMinimumSize(QtCore.QSize(8, 8))
         self.label_2.reloadFace(self.pixSize)
 
-        # self.mainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        # self.mainWindow.setMinimumSize(QtCore.QSize(10, 10))
         self.minimumWindow()
 
     # 点击脸时调用，或尺寸不变时重开
@@ -1045,7 +1036,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def setBoard(self, row, column, minenum):
         # 把局面设置成(row, column, minenum)，同时提取配套参数
-        # 打开录像时、改级别时用
+        # 打开录像时、改级别、改设置时用
         self.row = row
         self.column = column
         self.minenum = minenum
@@ -1117,9 +1108,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
-
-            self.pixSize = ui.pixSize
             self.gameStart()
+            self.pixSize = ui.pixSize
             self.gameMode = ui.gameMode
             self.auto_replay = ui.auto_replay
             self.end_then_flag = ui.end_then_flag
