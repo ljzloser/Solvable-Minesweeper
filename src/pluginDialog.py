@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
 )
 from PyQt5.QtCore import Qt, QTimer
+from ui.uiComponents import RoundQDialog
 import sys
 from typing import Dict
 
@@ -37,7 +38,7 @@ from PyQt5.QtCore import QCoreApplication
 _translate = QCoreApplication.translate
 
 
-class PluginManagerUI(QDialog):
+class PluginManagerUI(RoundQDialog):
 
     def __init__(self, plugin_names: list[str]):
         """

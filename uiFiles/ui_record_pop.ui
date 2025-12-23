@@ -1121,15 +1121,6 @@
           <height>41</height>
          </size>
         </property>
-        <property name="font">
-         <font>
-          <family>黑体</family>
-          <pointsize>16</pointsize>
-          <weight>75</weight>
-          <italic>false</italic>
-          <bold>true</bold>
-         </font>
-        </property>
         <property name="mouseTracking">
          <bool>false</bool>
         </property>
@@ -1138,11 +1129,6 @@
         </property>
         <property name="layoutDirection">
          <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border-image: url(media/button.png);
-font: 16pt &quot;黑体&quot;;
-color:white;font: bold;</string>
         </property>
         <property name="text">
          <string>确定</string>

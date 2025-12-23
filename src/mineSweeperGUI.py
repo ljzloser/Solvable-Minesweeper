@@ -166,6 +166,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     @pixSize.setter
     def pixSize(self, pixSize):
+        '''
+        修改pixSize后，要调整ui尺寸，导致内部游戏状态变为"ready"
+        '''
         pixSize = max(5, pixSize)
         pixSize = min(255, pixSize)
         pixSize = min(32767//self.column, pixSize)

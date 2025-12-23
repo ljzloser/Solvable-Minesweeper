@@ -13,94 +13,39 @@ from PyQt5.QtGui import QPainter, QPainterPath
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QVBoxLayout, QCompleter, QLineEdit
-from PyQt5.QtCore import QStringListModel, QSortFilterProxyModel, QRegExp
+from PyQt5.QtWidgets import QCompleter
+from PyQt5.QtCore import QStringListModel, QSortFilterProxyModel
 # ui相关的小组件，非窗口
 
-class RoundQDialog(QDialog):
-    closeEvent_ = QtCore.pyqtSignal()
-    def __init__(self, parent=None):
-        # 可以随意拖动的圆角、阴影对话框
-        super(RoundQDialog, self).__init__(parent)
+BLUE_BUTTON_QSS = """
+QPushButton {
+    background-color: #00A2E8;
+    color: white;
+    border: none;
+    color:white;
+    font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
+    font-size: 16pt;
+    font-weight: bold;
+}
+"""
+
+
+class RoundMixin:
+    def _init_round(self):
+        # 可以随意拖动的圆角、阴影对话框的行为类
         self.border_width = 5
-        self.m_drag = False
+        self._dragging = False
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
 
     def paintEvent(self, event):
    	# # 阴影
-        path = QPainterPath()
-        path.setFillRule(Qt.WindingFill)
+        # path = QPainterPath()
+        # path.setFillRule(Qt.WindingFill)
 
-        pat = QPainter(self)
-        pat.setRenderHint(pat.Antialiasing)
-        pat.fillPath(path, QBrush(Qt.white))
-
-        color = QColor(192, 192, 192, 50)
-
-        for i in range(10):
-            i_path = QPainterPath()
-            i_path.setFillRule(Qt.WindingFill)
-            ref = QRectF(10-i, 10-i, self.width()-(10-i)*2, self.height()-(10-i)*2)
-            # i_path.addRect(ref)
-            i_path.addRoundedRect(ref, self.border_width, self.border_width)
-            color.setAlpha(150 - int(i**0.5*50)) # 为什么这个公式？
-            pat.setPen(color)
-            pat.drawPath(i_path)
-
-        # 圆角
-        pat2 = QPainter(self)
-        pat2.setRenderHint(pat2.Antialiasing)  # 抗锯齿
-        pat2.setBrush(QtGui.QColor(242, 242, 242, 255))
-        pat2.setPen(Qt.transparent)
-
-        rect = self.rect()
-        rect.setLeft(9)
-        rect.setTop(9)
-        rect.setWidth(rect.width()-9)
-        rect.setHeight(rect.height()-9)
-        pat2.drawRoundedRect(rect, 10, 10)
-
-    def mousePressEvent(self, e):
-        if e.button() == Qt.LeftButton:
-            self.m_drag = True
-            self.m_DragPosition = e.globalPos() - self.pos()
-            e.accept()
-            # self.setCursor(QCursor(Qt.OpenHandCursor))
-
-    def mouseReleaseEvent(self, e):
-        if e.button() == Qt.LeftButton:
-            self.m_drag = False
-            # self.setCursor(QCursor(Qt.ArrowCursor))
-
-    def mouseMoveEvent(self, e):
-        if Qt.LeftButton and self.m_drag:
-            self.move(e.globalPos() - self.m_DragPosition)
-            e.accept()
-
-    def closeEvent(self, event):
-        self.closeEvent_.emit()
-
-class RoundQWidget(QWidget):
-    barSetMineNum = QtCore.pyqtSignal(int)
-    barSetMineNumCalPoss = QtCore.pyqtSignal()
-    closeEvent_ = QtCore.pyqtSignal()
-    def __init__(self, parent=None):
-        # 可以随意拖动的圆角、阴影对话框
-        super(RoundQWidget, self).__init__(parent)
-        self.border_width = 5
-        self.m_drag = False
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
-
-    def paintEvent(self, event):
-   	# # 阴影
-        path = QPainterPath()
-        path.setFillRule(Qt.WindingFill)
-
-        pat = QPainter(self)
-        pat.setRenderHint(pat.Antialiasing)
-        pat.fillPath(path, QBrush(Qt.white))
+        p = QPainter(self)
+        p.setRenderHint(p.Antialiasing)
+        # p.fillPath(path, QBrush(Qt.white))
 
         color = QColor(192, 192, 192, 50)
 
@@ -111,42 +56,57 @@ class RoundQWidget(QWidget):
             # i_path.addRect(ref)
             i_path.addRoundedRect(ref, self.border_width, self.border_width)
             color.setAlpha(int(150 - i**0.5*50))
-            pat.setPen(color)
-            pat.drawPath(i_path)
+            p.setPen(color)
+            p.drawPath(i_path)
 
         # 圆角
-        pat2 = QPainter(self)
-        pat2.setRenderHint(pat2.Antialiasing)  # 抗锯齿
-        pat2.setBrush(QtGui.QColor(242, 242, 242, 255))
-        pat2.setPen(Qt.transparent)
+        p.setBrush(QtGui.QColor(242, 242, 242, 255))
+        p.setPen(Qt.transparent)
 
         rect = self.rect()
         rect.setLeft(9)
         rect.setTop(9)
         rect.setWidth(rect.width()-9)
         rect.setHeight(rect.height()-9)
-        pat2.drawRoundedRect(rect, 10, 10)
+        p.drawRoundedRect(rect, 10, 10)
 
     def mousePressEvent(self, e):
         if e.button() == Qt.LeftButton:
-            self.m_drag = True
-            self.m_DragPosition = e.globalPos() - self.pos()
+            self._dragging = True
+            self._drag_offset = e.globalPos() - self.pos()
             e.accept()
-            # self.setCursor(QCursor(Qt.OpenHandCursor))
 
     def mouseReleaseEvent(self, e):
         if e.button() == Qt.LeftButton:
-            self.m_drag = False
-            # self.setCursor(QCursor(Qt.ArrowCursor))
+            self._dragging = False
 
     def mouseMoveEvent(self, e):
-        if Qt.LeftButton and self.m_drag:
-            self.move(e.globalPos() - self.m_DragPosition)
+        if self._dragging and e.buttons() & Qt.LeftButton:
+            self.move(e.globalPos() - self._drag_offset)
             e.accept()
 
+
+class RoundQWidget(QWidget, RoundMixin):
+    barSetMineNum = QtCore.pyqtSignal(int)
+    barSetMineNumCalPoss = QtCore.pyqtSignal()
+    closeEvent_ = pyqtSignal()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._init_round()
     def closeEvent(self, event):
         self.closeEvent_.emit()
+        event.accept()
 
+
+
+class RoundQDialog(QDialog, RoundMixin):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet(BLUE_BUTTON_QSS)
+        self._init_round()
+        
+        
+        
 
 class StatusLabel (QtWidgets.QLabel):
     # 最上面的脸的控件，在这里重写一些方法

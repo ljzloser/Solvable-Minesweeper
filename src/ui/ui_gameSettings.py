@@ -610,9 +610,6 @@ class Ui_Form(object):
         font.setWeight(50)
         self.pushButton_yes.setFont(font)
         self.pushButton_yes.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton_yes.setStyleSheet("border-image: url(media/button.png);\n"
-"font: 16pt \"微软雅黑\";\n"
-"color:white;")
         self.pushButton_yes.setAutoDefault(False)
         self.pushButton_yes.setFlat(False)
         self.pushButton_yes.setObjectName("pushButton_yes")
@@ -633,9 +630,6 @@ class Ui_Form(object):
         font.setWeight(50)
         self.pushButton_no.setFont(font)
         self.pushButton_no.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton_no.setStyleSheet("border-image: url(media/button.png);\n"
-"font: 16pt \"微软雅黑\";\n"
-"color:white;")
         self.pushButton_no.setObjectName("pushButton_no")
         self.horizontalLayout_11.addWidget(self.pushButton_no)
         self.verticalLayout.addWidget(self.widget_7)
