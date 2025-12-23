@@ -27,8 +27,12 @@ class mineLabel(QtWidgets.QLabel):
         self.mouse = QPainterPath()
         self.mouse.addPolygon(mouse_)
         self.setMouseTracking(True)
-        self.paint_cursor = False # 是否画光标。不仅控制画光标，还代表了是游戏还是播放录像。
+        # 是否画光标。不仅控制画光标，还代表了是游戏还是播放录像。
+        self.paint_cursor = False
+        # 是否打印概率
         self.paintProbability = False
+        self.current_x = 0
+        self.current_y = 0
 
     def setPath(self, r_path):
         # 告诉局面控件，相对路径
@@ -49,8 +53,10 @@ class mineLabel(QtWidgets.QLabel):
         self.mine_path = str(r_path.with_name('media').joinpath('mine.svg'))
 
     def set_rcp(self, row, column, pixSize):
-        # ui层面，重设一下宽、高、大小
-        # self.paintProbability = False  # 是否打印概率
+        '''
+        ui层面，重设一下宽、高、大小
+        '''
+        # 即使只改pixSize，工具箱里的这些变量也要改，没有简便的接口，一步不能少。
         self.row = row
         self.column = column
         if self.paintProbability:
@@ -70,9 +76,13 @@ class mineLabel(QtWidgets.QLabel):
         if self.pixSize != pixSize:
             self.pixSize = pixSize
             self.importCellPic(pixSize)
-            self.resize(QtCore.QSize(pixSize * column + 8, pixSize * row + 8))
-            self.current_x = self.row # 鼠标坐标，和高亮的展示有关
-            self.current_y = self.column
+            # self.resize(QtCore.QSize(pixSize * column + 8, pixSize * row + 8))
+            self.setMinimumSize(QtCore.QSize(
+                pixSize * column + 8, pixSize * row + 8))
+            self.setMaximumSize(QtCore.QSize(
+                pixSize * column + 8, pixSize * row + 8))
+            # self.current_x = self.row # 鼠标坐标，和高亮的展示有关
+            # self.current_y = self.column
     
             points = [ QPoint(0, 0),   # 你猜这个多边形是什么，它就是鼠标
                       QPoint(0, pixSize),

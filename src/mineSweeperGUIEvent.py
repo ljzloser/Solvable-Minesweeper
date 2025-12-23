@@ -75,7 +75,6 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                         and self.label.ms_board.mouse_state == 4:
                     self.ai(i // self.pixSize, j // self.pixSize)
                 self.chording_ai(i // self.pixSize, j // self.pixSize)
-
             self.label.ms_board.step('lr', (i, j))
 
             if self.label.ms_board.game_board_state == 3:

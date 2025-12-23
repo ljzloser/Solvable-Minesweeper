@@ -91,17 +91,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.action_open_ini.triggered.connect(
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.setting_path))))
 
-        # config = configparser.ConfigParser()
-        # config.read(self.game_setting_path, encoding='utf-8')
-
-        if (self.row, self.column, self.minenum) == (8, 8, 10):
-            self.actionChecked('B')
-        elif (self.row, self.column, self.minenum) == (16, 16, 40):
-            self.actionChecked('I')
-        elif (self.row, self.column, self.minenum) == (16, 30, 99):
-            self.actionChecked('E')
-        else:
-            self.actionChecked('C')
 
         self.frameShortcut1.activated.connect(lambda: self.predefined_Board(1))
         self.frameShortcut2.activated.connect(lambda: self.predefined_Board(2))
@@ -198,10 +187,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         else:
             self.predefinedBoardPara[0]['pixsize'] = pixSize
 
-        self.label.setMinimumSize(QtCore.QSize(
-            pixSize * self.column + 8, pixSize * self.row + 8))
-        self.label.setMaximumSize(QtCore.QSize(
-            pixSize * self.column + 8, pixSize * self.row + 8))
+        # self.label.setMinimumSize(QtCore.QSize(
+        #     pixSize * self.column + 8, pixSize * self.row + 8))
+        # self.label.setMaximumSize(QtCore.QSize(
+        #     pixSize * self.column + 8, pixSize * self.row + 8))
         # self.label.setFixedSize(QtCore.QSize(self.pixSize*self.column + 8, self.pixSize*self.row + 8))
 
         self.reimportLEDPic(pixSize)  # 重新导入图片，无磁盘io
@@ -250,6 +239,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     self.timer_video.stop()
                     self.ui_video_control.QWidget.close()
                     self.label.paint_cursor = False
+                    self.label.paintProbability = False
                     self.set_country_flag()
                     self.score_board_manager.with_namespace({
                         "is_official": "--",
@@ -498,7 +488,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.timer_10ms.stop()
         self.score_board_manager.editing_row = -1
 
-        self.label.paintProbability = False
+        # self.label.paintProbability = False
         self.label_info.setText(self.player_identifier)
 
         # 这里有点乱
@@ -541,7 +531,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.label.ms_board.reset(self.row, self.column, self.pixSize)
         self.label.update()
 
-        self.label.paintProbability = False
+        # self.label.paintProbability = False
         # self.label.paint_cursor = False
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
 
@@ -965,20 +955,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         elif t >= 1000:
             return
 
-    def actionChecked(self, k):
-        # 菜单前面打勾
-        self.actionchu_ji.setChecked(False)
-        self.actionzhogn_ji.setChecked(False)
-        self.actiongao_ji.setChecked(False)
-        self.actionzi_ding_yi.setChecked(False)
-        if k == 'B':
-            self.actionchu_ji.setChecked(True)
-        elif k == 'I':
-            self.actionzhogn_ji.setChecked(True)
-        elif k == 'E':
-            self.actiongao_ji.setChecked(True)
-        elif k == 'C':
-            self.actionzi_ding_yi.setChecked(True)
 
     def predefined_Board(self, k):
         # 按快捷键123456时的回调
@@ -1023,7 +999,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def action_CEvent(self):
         # 点击菜单栏的自定义后回调
-        self.actionChecked('C')
         ui = gameDefinedParameter.ui_Form(self.r_path, self.row, self.column,
                                           self.minenum, self.mainWindow)
         ui.Dialog.setModal(True)
@@ -1037,26 +1012,23 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             #     "minenum": self.minenum,
             # })
 
-    def setBoard(self, row, column, minenum):
+    def set_board_params(self, row, column, minenum):
         # 把局面设置成(row, column, minenum)，同时提取配套参数
         # 打开录像时、改级别、改设置时用
         self.row = row
         self.column = column
         self.minenum = minenum
         if (row, column, minenum) == (8, 8, 10):
-            self.actionChecked('B')
             self.pixSize = self.predefinedBoardPara[1]['pixsize']
             self.gameMode = self.predefinedBoardPara[1]['gamemode']
             self.board_constraint = self.predefinedBoardPara[1]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[1]['attempt_times_limit']
         elif (row, column, minenum) == (16, 16, 40):
-            self.actionChecked('I')
             self.pixSize = self.predefinedBoardPara[2]['pixsize']
             self.gameMode = self.predefinedBoardPara[2]['gamemode']
             self.board_constraint = self.predefinedBoardPara[2]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[2]['attempt_times_limit']
         elif (row, column, minenum) == (16, 30, 99):
-            self.actionChecked('E')
             self.pixSize = self.predefinedBoardPara[3]['pixsize']
             self.gameMode = self.predefinedBoardPara[3]['gamemode']
             self.board_constraint = self.predefinedBoardPara[3]['board_constraint']
@@ -1064,7 +1036,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         elif (row, column, minenum) == (self.predefinedBoardPara[4]['row'],
                                         self.predefinedBoardPara[4]['column'],
                                         self.predefinedBoardPara[4]['mine_num']):
-            self.actionChecked('C')
             self.pixSize = self.predefinedBoardPara[4]['pixsize']
             self.gameMode = self.predefinedBoardPara[4]['gamemode']
             self.board_constraint = self.predefinedBoardPara[4]['board_constraint']
@@ -1072,7 +1043,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         elif (row, column, minenum) == (self.predefinedBoardPara[5]['row'],
                                         self.predefinedBoardPara[5]['column'],
                                         self.predefinedBoardPara[5]['mine_num']):
-            self.actionChecked('C')
             self.pixSize = self.predefinedBoardPara[5]['pixsize']
             self.gameMode = self.predefinedBoardPara[5]['gamemode']
             self.board_constraint = self.predefinedBoardPara[5]['board_constraint']
@@ -1080,13 +1050,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         elif (row, column, minenum) == (self.predefinedBoardPara[6]['row'],
                                         self.predefinedBoardPara[6]['column'],
                                         self.predefinedBoardPara[6]['mine_num']):
-            self.actionChecked('C')
             self.pixSize = self.predefinedBoardPara[6]['pixsize']
             self.gameMode = self.predefinedBoardPara[6]['gamemode']
             self.board_constraint = self.predefinedBoardPara[6]['board_constraint']
             self.attempt_times_limit = self.predefinedBoardPara[6]['attempt_times_limit']
         else:
-            self.actionChecked('C')
             self.pixSize = self.predefinedBoardPara[0]['pixsize']
             self.gameMode = self.predefinedBoardPara[0]['gamemode']
             self.board_constraint = self.predefinedBoardPara[0]['board_constraint']
@@ -1095,17 +1063,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def setBoard_and_start(self, row, column, minenum):
         # 把局面设置成(row, column, minenum)，把3BV的限制设置成min3BV, max3BV
         # 比gameStart更高级
-        if self.game_state == 'display' or self.game_state == 'showdisplay':
-            self.label.paintProbability = False
+        # if self.game_state == 'display' or self.game_state == 'showdisplay':
+        #     self.label.paintProbability = False
         if (self.row, self.column, self.minenum) != (row, column, minenum):
-            self.setBoard(row, column, minenum)
+            self.set_board_params(row, column, minenum)
+            self.label.set_rcp(row, column, self.pixSize)
             self.gameStart()
         else:
             self.gameRestart()
 
     def action_NEvent(self):
         # 游戏设置
-        self.actionChecked('N')
         ui = gameSettings.ui_Form(self)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
@@ -1158,7 +1126,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def action_QEvent(self):
         # 快捷键设置的回调
-        self.actionChecked('Q')
         ui = gameSettingShortcuts.myGameSettingShortcuts(self.game_setting,
                                                          self.ico_path, self.r_path,
                                                          self.mainWindow)
@@ -1177,7 +1144,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def action_AEvent(self):
         # 关于
-        self.actionChecked('A')
         ui = gameAbout.ui_Form(self.r_path, self.mainWindow)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
