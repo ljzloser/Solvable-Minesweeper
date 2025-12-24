@@ -156,7 +156,9 @@ QSlider::add-page:horizontal:disabled, QSlider::sub-page:horizontal:disabled, QS
          <number>0</number>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(media/replay.svg);
+         <string notr="true">QPushButton {
+    border-image: url(media/replay.svg);
+}
 QPushButton::hover{
 	background-color: rgb(170, 255, 255);
 }</string>
@@ -181,7 +183,12 @@ QPushButton::hover{
          <number>0</number>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(media/play.svg);</string>
+         <string notr="true">QPushButton {
+    border-image: url(media/play.svg);
+}
+QPushButton::hover{
+	background-color: rgb(170, 255, 255);
+}</string>
         </property>
         <property name="text">
          <string/>

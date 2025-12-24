@@ -51,10 +51,22 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
+      <string notr="true">QTabBar::tab
+{
+
+font: 14pt &quot;微软雅黑&quot;;
+width:88px;
+height:36px;
+}</string>
      </property>
      <property name="currentIndex">
       <number>0</number>
+     </property>
+     <property name="usesScrollButtons">
+      <bool>true</bool>
+     </property>
+     <property name="documentMode">
+      <bool>false</bool>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -63,9 +75,6 @@
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QLabel" name="label">
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-         </property>
          <property name="text">
           <string>元扫雷是由资深扫雷玩家与软件工程师共同打造的一款现代化复刻。</string>
          </property>
@@ -76,9 +85,6 @@
        </item>
        <item>
         <widget class="QLabel" name="label_3">
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-         </property>
          <property name="text">
           <string>Copyright © 2020-2025 元扫雷开发团队, 版权所有</string>
          </property>
@@ -86,15 +92,6 @@
        </item>
        <item>
         <widget class="QLabel" name="label_2">
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -152,15 +149,6 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QLabel" name="label_4">
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -201,15 +189,6 @@
        </item>
        <item>
         <widget class="QLabel" name="label_11">
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -317,15 +296,6 @@
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
         <widget class="QLabel" name="label_7">
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -506,7 +476,7 @@
        </font>
       </property>
       <attribute name="title">
-       <string>授权协议</string>
+       <string>协议</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
@@ -526,15 +496,6 @@
        </property>
        <item>
         <widget class="QLabel" name="label_13">
-         <property name="font">
-          <font>
-           <family>微软雅黑</family>
-           <pointsize>12</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
          <property name="text">
           <string>1. 在非商业用途前提下，用户有权不受任何限制地对“元扫雷”软件进行复制、存储及传播。</string>
          </property>

@@ -252,6 +252,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     self.score_board_manager.show(
                         self.label.ms_board, index_type=1)
             case "study":
+                # 这两个值涉及画局面时，画的是游戏局面还是虚拟的局面
+                self.label.paint_cursor = False
+                self.label.paintProbability = False
                 self.num_bar_ui.QWidget.close()
         self._game_state = game_state
 

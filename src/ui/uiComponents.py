@@ -29,7 +29,7 @@ QSpinBox, QLineEdit {
     background-color: #f4f4f4;
     color: #3d3d3d;
     font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
-    font-size: 12pt;
+    font-size: 14pt;
 }
                                    
 QPushButton {
@@ -53,15 +53,15 @@ QComboBox {
     background-color: rgba(244,244,244,0);
     color: #3d3d3d;
     font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
-    font-size: 12pt;
+    font-size: 14pt;
 }
 QComboBox::drop-down {
     width: 26px;
 }
 
-QLabel {
+QLabel, QCheckBox {
     font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
-    font-size: 12pt;
+    font-size: 14pt;
 }
 
 """

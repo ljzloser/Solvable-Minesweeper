@@ -94,7 +94,9 @@ class Ui_Form(object):
         self.pushButton_replay = QtWidgets.QPushButton(self.widget)
         self.pushButton_replay.setMinimumSize(QtCore.QSize(40, 40))
         self.pushButton_replay.setToolTipDuration(0)
-        self.pushButton_replay.setStyleSheet("border-image: url(media/replay.svg);\n"
+        self.pushButton_replay.setStyleSheet("QPushButton {\n"
+"    border-image: url(media/replay.svg);\n"
+"}\n"
 "QPushButton::hover{\n"
 "    background-color: rgb(170, 255, 255);\n"
 "}")
@@ -104,7 +106,12 @@ class Ui_Form(object):
         self.pushButton_play = QtWidgets.QPushButton(self.widget)
         self.pushButton_play.setMinimumSize(QtCore.QSize(40, 40))
         self.pushButton_play.setToolTipDuration(0)
-        self.pushButton_play.setStyleSheet("border-image: url(media/play.svg);")
+        self.pushButton_play.setStyleSheet("QPushButton {\n"
+"    border-image: url(media/play.svg);\n"
+"}\n"
+"QPushButton::hover{\n"
+"    background-color: rgb(170, 255, 255);\n"
+"}")
         self.pushButton_play.setText("")
         self.pushButton_play.setObjectName("pushButton_play")
         self.horizontalLayout.addWidget(self.pushButton_play)
