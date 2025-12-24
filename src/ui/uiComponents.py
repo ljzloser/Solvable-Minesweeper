@@ -17,7 +17,19 @@ from PyQt5.QtWidgets import QCompleter
 from PyQt5.QtCore import QStringListModel, QSortFilterProxyModel
 # ui相关的小组件，非窗口
 
-BLUE_BUTTON_QSS = """
+GLOBAL_QSS = """
+QSpinBox, QLineEdit {
+border-width: 2px;
+border-radius: 8px;
+border-style: solid;
+border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
+border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+background-color: #f4f4f4;
+color: #3d3d3d;
+}
+                                   
 QPushButton {
     background-color: #00A2E8;
     color: white;
@@ -27,6 +39,27 @@ QPushButton {
     font-size: 16pt;
     font-weight: bold;
 }
+
+QComboBox {
+border-width: 2px;
+border-radius: 8px;
+border-style: solid;
+border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
+border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
+background-color: rgba(244,244,244,0);
+color: #3d3d3d;
+font: 12pt "微软雅黑";
+}
+QComboBox::drop-down {
+    width: 26px;
+}
+
+QLabel {
+font: 12pt "微软雅黑";
+}
+
 """
 
 
@@ -39,9 +72,7 @@ class RoundMixin:
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
 
     def paintEvent(self, event):
-   	# # 阴影
-        # path = QPainterPath()
-        # path.setFillRule(Qt.WindingFill)
+        # 阴影
 
         p = QPainter(self)
         p.setRenderHint(p.Antialiasing)
@@ -93,6 +124,8 @@ class RoundQWidget(QWidget, RoundMixin):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._init_round()
+        self.setStyleSheet(GLOBAL_QSS)
+
     def closeEvent(self, event):
         self.closeEvent_.emit()
         event.accept()
@@ -102,8 +135,8 @@ class RoundQWidget(QWidget, RoundMixin):
 class RoundQDialog(QDialog, RoundMixin):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setStyleSheet(BLUE_BUTTON_QSS)
         self._init_round()
+        self.setStyleSheet(GLOBAL_QSS)
         
         
         

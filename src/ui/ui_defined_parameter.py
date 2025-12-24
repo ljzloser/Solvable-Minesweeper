@@ -22,7 +22,6 @@ class Ui_Form(object):
         icon.addPixmap(QtGui.QPixmap("media/cat.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
         Form.setWindowOpacity(10.0)
-        Form.setStyleSheet("background-color:#F2F2F2")
         self.pushButton_2 = QtWidgets.QPushButton(Form)
         self.pushButton_2.setGeometry(QtCore.QRect(390, 130, 181, 51))
         self.pushButton_2.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -128,7 +127,6 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         self.pushButton_2.clicked.connect(Form.close) # type: ignore
-        self.pushButton_3.clicked.connect(Form.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

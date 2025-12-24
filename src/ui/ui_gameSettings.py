@@ -29,9 +29,6 @@ class Ui_Form(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("media/cat.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
-        Form.setStyleSheet("QComboBox::drop-down {\n"
-"    width: 26px;\n"
-"}")
         self.verticalLayout = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout.setContentsMargins(18, 18, 18, 18)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -64,17 +61,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.comboBox_gamemode.setFont(font)
         self.comboBox_gamemode.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.comboBox_gamemode.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;\n"
-"\n"
-"")
         self.comboBox_gamemode.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         self.comboBox_gamemode.setObjectName("comboBox_gamemode")
         self.comboBox_gamemode.addItem("")
@@ -112,15 +98,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_pixsize.setFont(font)
         self.spinBox_pixsize.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_pixsize.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_pixsize.setFrame(True)
         self.spinBox_pixsize.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_pixsize.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -233,15 +210,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_label.setFont(font)
         self.lineEdit_label.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_label.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_label.setText("")
         self.lineEdit_label.setMaxLength(1024)
         self.lineEdit_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -255,15 +223,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_unique_label.setFont(font)
         self.lineEdit_unique_label.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_unique_label.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_unique_label.setText("")
         self.lineEdit_unique_label.setMaxLength(1024)
         self.lineEdit_unique_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -277,15 +236,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_race_label.setFont(font)
         self.lineEdit_race_label.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_race_label.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_race_label.setText("")
         self.lineEdit_race_label.setMaxLength(1024)
         self.lineEdit_race_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -314,18 +264,6 @@ class Ui_Form(object):
         self.comboBox_country.setFont(font)
         self.comboBox_country.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.comboBox_country.setAutoFillBackground(False)
-        self.comboBox_country.setStyleSheet("QComboBox {\n"
-"border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: rgba(244,244,244,0);\n"
-"color: #3d3d3d;\n"
-"font: 12pt \"微软雅黑\";\n"
-"}")
         self.comboBox_country.setEditable(True)
         self.comboBox_country.setCurrentText("")
         self.comboBox_country.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLength)
@@ -340,7 +278,9 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(16)
         self.label_national_flag.setFont(font)
-        self.label_national_flag.setStyleSheet("background-color:rgb(255, 255, 255)")
+        self.label_national_flag.setStyleSheet("QLabel{\n"
+"background-color:rgb(255, 255, 255)\n"
+"}")
         self.label_national_flag.setText("")
         self.label_national_flag.setAlignment(QtCore.Qt.AlignCenter)
         self.label_national_flag.setWordWrap(False)
@@ -443,17 +383,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_auto_replay.setFont(font)
         self.spinBox_auto_replay.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_auto_replay.setStyleSheet("QSpinBox{\n"
-"border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;\n"
-"}")
         self.spinBox_auto_replay.setFrame(True)
         self.spinBox_auto_replay.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_auto_replay.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -516,15 +445,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_constraint.setFont(font)
         self.lineEdit_constraint.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_constraint.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_constraint.setText("")
         self.lineEdit_constraint.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_constraint.setObjectName("lineEdit_constraint")
@@ -560,15 +480,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_attempt_times_limit.setFont(font)
         self.spinBox_attempt_times_limit.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_attempt_times_limit.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_attempt_times_limit.setFrame(True)
         self.spinBox_attempt_times_limit.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_attempt_times_limit.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)

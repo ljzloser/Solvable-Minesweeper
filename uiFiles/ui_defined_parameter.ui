@@ -38,9 +38,6 @@
   <property name="windowOpacity">
    <double>10.000000000000000</double>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-color:#F2F2F2</string>
-  </property>
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
@@ -263,22 +260,6 @@ color:black;</string>
     <hint type="destinationlabel">
      <x>585</x>
      <y>167</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_3</sender>
-   <signal>clicked()</signal>
-   <receiver>Form</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>539</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>584</x>
-     <y>94</y>
     </hint>
    </hints>
   </connection>

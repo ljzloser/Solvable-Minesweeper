@@ -10,6 +10,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QBrush,QPalette,QFont,QImage,QPainterPath, QPolygon,QPixmap, QRadialGradient,QGradient,QLinearGradient,QConicalGradient
 import math
 
+# 单局游戏结束后的分数的弹窗，已弃用。
 class Ui_Form(QtWidgets.QDialog):
     def __init__(self, scores, scoresValue):
         super(Ui_Form, self).__init__()

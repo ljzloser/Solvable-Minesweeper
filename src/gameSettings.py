@@ -39,7 +39,7 @@ class ui_Form(Ui_Form):
         
         self.Dialog = RoundQDialog(mainWindow.mainWindow)
         self.setupUi(self.Dialog)
-        self.Dialog.setWindowIcon(QtGui.QIcon (str(self.r_path.with_name('media').joinpath('cat.ico'))))
+        # self.Dialog.setWindowIcon(QtGui.QIcon (str(self.r_path.with_name('media').joinpath('cat.ico'))))
         
         self.pushButton_yes.clicked.connect(self.processParameter)
         self.pushButton_no.clicked.connect(self.Dialog.close)
@@ -108,13 +108,6 @@ class ui_Form(Ui_Form):
         # gameMode = 0，4, 5, 6, 7, 8, 9, 10代表：
         # 标准、win7、经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
         self.comboBox_gamemode.setCurrentIndex([0, 999, 999, 999, 1, 4, 2, 3, 5, 6, 7][self.gameMode])
-        
-        self.pushButton_yes.setStyleSheet("border-image: url(" + str(self.r_path.with_name('media').joinpath('button.png')).replace("\\", "/") + ");\n"
-"font: 16pt \"黑体\";\n"
-"color:white;font: bold;")
-        self.pushButton_no.setStyleSheet("border-image: url(" + str(self.r_path.with_name('media').joinpath('button.png')).replace("\\", "/") + ");\n"
-"font: 16pt \"黑体\";\n"
-"color:white;font: bold;")
         
     def processParameter(self):
         #只有点确定才能进来

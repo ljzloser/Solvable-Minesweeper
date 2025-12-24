@@ -38,13 +38,6 @@
    <iconset>
     <normaloff>media/cat.ico</normaloff>media/cat.ico</iconset>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QComboBox::drop-down {
-    width: 26px;
-}
-
-</string>
-  </property>
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
@@ -135,7 +128,7 @@
        <x>110</x>
        <y>15</y>
        <width>180</width>
-       <height>36</height>
+       <height>32</height>
       </rect>
      </property>
      <property name="font">
@@ -143,21 +136,6 @@
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-width:120px;
-height: 32px;
-color: #3d3d3d;
-
-</string>
      </property>
      <property name="currentIndex">
       <number>4</number>
@@ -221,17 +199,6 @@ color: #3d3d3d;
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
@@ -274,17 +241,6 @@ color: #3d3d3d;</string>
      </property>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="frame">
       <bool>true</bool>
@@ -329,17 +285,6 @@ color: #3d3d3d;</string>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="text">
       <string/>
      </property>
@@ -361,17 +306,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -409,17 +343,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -470,17 +393,6 @@ color: #3d3d3d;</string>
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="frame">
       <bool>true</bool>
      </property>
@@ -514,9 +426,6 @@ color: #3d3d3d;</string>
        <width>61</width>
        <height>39</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Sunken</enum>
@@ -559,9 +468,6 @@ color: #3d3d3d;</string>
        <height>32</height>
       </rect>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>雷数：</string>
      </property>
@@ -574,9 +480,6 @@ color: #3d3d3d;</string>
        <width>61</width>
        <height>32</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="text">
       <string>高度：</string>
@@ -616,9 +519,6 @@ color: #3d3d3d;</string>
        <height>32</height>
       </rect>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>宽度：</string>
      </property>
@@ -638,9 +538,6 @@ color: #3d3d3d;</string>
        <height>16777215</height>
       </size>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>边长：</string>
      </property>
@@ -656,7 +553,7 @@ color: #3d3d3d;</string>
        <x>110</x>
        <y>15</y>
        <width>180</width>
-       <height>36</height>
+       <height>32</height>
       </rect>
      </property>
      <property name="font">
@@ -664,21 +561,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-width:120px;
-height: 32px;
-color: #3d3d3d;
-
-</string>
      </property>
      <property name="currentIndex">
       <number>4</number>
@@ -742,17 +624,6 @@ color: #3d3d3d;
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
@@ -795,17 +666,6 @@ color: #3d3d3d;</string>
      </property>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="frame">
       <bool>true</bool>
@@ -850,17 +710,6 @@ color: #3d3d3d;</string>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="text">
       <string/>
      </property>
@@ -882,17 +731,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -930,17 +768,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -991,17 +818,6 @@ color: #3d3d3d;</string>
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="frame">
       <bool>true</bool>
      </property>
@@ -1035,9 +851,6 @@ color: #3d3d3d;</string>
        <width>71</width>
        <height>39</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Sunken</enum>
@@ -1080,9 +893,6 @@ color: #3d3d3d;</string>
        <height>32</height>
       </rect>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>雷数：</string>
      </property>
@@ -1095,9 +905,6 @@ color: #3d3d3d;</string>
        <width>71</width>
        <height>32</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="text">
       <string>高度：</string>
@@ -1137,9 +944,6 @@ color: #3d3d3d;</string>
        <height>32</height>
       </rect>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>宽度：</string>
      </property>
@@ -1158,9 +962,6 @@ color: #3d3d3d;</string>
        <width>140</width>
        <height>16777215</height>
       </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="text">
       <string>边长：</string>
@@ -1195,17 +996,6 @@ color: #3d3d3d;</string>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="frame">
       <bool>true</bool>
      </property>
@@ -1237,7 +1027,7 @@ color: #3d3d3d;</string>
        <x>110</x>
        <y>15</y>
        <width>180</width>
-       <height>36</height>
+       <height>32</height>
       </rect>
      </property>
      <property name="font">
@@ -1245,21 +1035,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-width:120px;
-height: 32px;
-color: #3d3d3d;
-
-</string>
      </property>
      <property name="currentIndex">
       <number>4</number>
@@ -1317,9 +1092,6 @@ color: #3d3d3d;
        <height>32</height>
       </rect>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>高度：</string>
      </property>
@@ -1332,9 +1104,6 @@ color: #3d3d3d;
        <width>61</width>
        <height>32</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="text">
       <string>宽度：</string>
@@ -1354,17 +1123,6 @@ color: #3d3d3d;
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1428,9 +1186,6 @@ color: #3d3d3d;</string>
        <height>16777215</height>
       </size>
      </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
-     </property>
      <property name="text">
       <string>边长：</string>
      </property>
@@ -1449,17 +1204,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -1491,9 +1235,6 @@ color: #3d3d3d;</string>
        <width>61</width>
        <height>39</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Sunken</enum>
@@ -1528,17 +1269,6 @@ color: #3d3d3d;</string>
        <family>微软雅黑</family>
        <pointsize>12</pointsize>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
      </property>
      <property name="frame">
       <bool>true</bool>
@@ -1580,17 +1310,6 @@ color: #3d3d3d;</string>
        <pointsize>12</pointsize>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
@@ -1628,17 +1347,6 @@ color: #3d3d3d;</string>
      <property name="focusPolicy">
       <enum>Qt::ClickFocus</enum>
      </property>
-     <property name="styleSheet">
-      <string notr="true">border-width: 2px;
-border-radius: 8px;
-border-style: solid;
-border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);
-border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);
-background-color: #f4f4f4;
-color: #3d3d3d;</string>
-     </property>
      <property name="text">
       <string/>
      </property>
@@ -1654,9 +1362,6 @@ color: #3d3d3d;</string>
        <width>61</width>
        <height>32</height>
       </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
      </property>
      <property name="text">
       <string>雷数：</string>

@@ -31,6 +31,10 @@
   <property name="windowTitle">
    <string notr="true"/>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>media/cat.ico</normaloff>media/cat.ico</iconset>
+  </property>
   <property name="windowOpacity">
    <double>10.000000000000000</double>
   </property>

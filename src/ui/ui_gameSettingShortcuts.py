@@ -27,11 +27,6 @@ class Ui_Form(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("media/cat.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
-        Form.setStyleSheet("QComboBox::drop-down {\n"
-"    width: 26px;\n"
-"}\n"
-"\n"
-"")
         self.pushButton_2 = QtWidgets.QPushButton(Form)
         self.pushButton_2.setGeometry(QtCore.QRect(307, 310, 273, 41))
         self.pushButton_2.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -59,24 +54,11 @@ class Ui_Form(object):
         self.tab_4 = QtWidgets.QWidget()
         self.tab_4.setObjectName("tab_4")
         self.comboBox_gamemode4 = QtWidgets.QComboBox(self.tab_4)
-        self.comboBox_gamemode4.setGeometry(QtCore.QRect(110, 15, 180, 36))
+        self.comboBox_gamemode4.setGeometry(QtCore.QRect(110, 15, 180, 32))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.comboBox_gamemode4.setFont(font)
-        self.comboBox_gamemode4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"width:120px;\n"
-"height: 32px;\n"
-"color: #3d3d3d;\n"
-"\n"
-"")
         self.comboBox_gamemode4.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLength)
         self.comboBox_gamemode4.setObjectName("comboBox_gamemode4")
         self.comboBox_gamemode4.addItem("")
@@ -93,15 +75,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_minenum4.setFont(font)
-        self.spinBox_minenum4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_minenum4.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_minenum4.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_minenum4.setKeyboardTracking(True)
@@ -121,15 +94,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_attempt_times_limit4.setFont(font)
         self.spinBox_attempt_times_limit4.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_attempt_times_limit4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_attempt_times_limit4.setFrame(True)
         self.spinBox_attempt_times_limit4.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_attempt_times_limit4.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -146,15 +110,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_constraint4.setFont(font)
         self.lineEdit_constraint4.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_constraint4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_constraint4.setText("")
         self.lineEdit_constraint4.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_constraint4.setObjectName("lineEdit_constraint4")
@@ -164,15 +119,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_width4.setFont(font)
-        self.spinBox_width4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_width4.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_width4.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_width4.setKeyboardTracking(True)
@@ -187,15 +133,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_height4.setFont(font)
-        self.spinBox_height4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_height4.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_height4.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_height4.setKeyboardTracking(True)
@@ -216,15 +153,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_pixsize4.setFont(font)
-        self.spinBox_pixsize4.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_pixsize4.setFrame(True)
         self.spinBox_pixsize4.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_pixsize4.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -236,7 +164,6 @@ class Ui_Form(object):
         self.spinBox_pixsize4.setObjectName("spinBox_pixsize4")
         self.label_gamemode4 = QtWidgets.QLabel(self.tab_4)
         self.label_gamemode4.setGeometry(QtCore.QRect(20, 13, 61, 39))
-        self.label_gamemode4.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_gamemode4.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.label_gamemode4.setObjectName("label_gamemode4")
         self.label_constraint4 = QtWidgets.QLabel(self.tab_4)
@@ -250,11 +177,9 @@ class Ui_Form(object):
         self.label_constraint4.setObjectName("label_constraint4")
         self.label_minenum4 = QtWidgets.QLabel(self.tab_4)
         self.label_minenum4.setGeometry(QtCore.QRect(20, 100, 61, 32))
-        self.label_minenum4.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_minenum4.setObjectName("label_minenum4")
         self.label_height4 = QtWidgets.QLabel(self.tab_4)
         self.label_height4.setGeometry(QtCore.QRect(20, 59, 61, 32))
-        self.label_height4.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_height4.setObjectName("label_height4")
         self.label_attempt_times_limit4 = QtWidgets.QLabel(self.tab_4)
         self.label_attempt_times_limit4.setGeometry(QtCore.QRect(20, 180, 91, 31))
@@ -267,35 +192,20 @@ class Ui_Form(object):
         self.label_attempt_times_limit4.setObjectName("label_attempt_times_limit4")
         self.label_width4 = QtWidgets.QLabel(self.tab_4)
         self.label_width4.setGeometry(QtCore.QRect(290, 59, 61, 32))
-        self.label_width4.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_width4.setObjectName("label_width4")
         self.label_pixsize4 = QtWidgets.QLabel(self.tab_4)
         self.label_pixsize4.setGeometry(QtCore.QRect(290, 100, 61, 32))
         self.label_pixsize4.setMaximumSize(QtCore.QSize(140, 16777215))
-        self.label_pixsize4.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_pixsize4.setObjectName("label_pixsize4")
         self.tabWidget.addTab(self.tab_4, "")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.comboBox_gamemode5 = QtWidgets.QComboBox(self.tab_3)
-        self.comboBox_gamemode5.setGeometry(QtCore.QRect(110, 15, 180, 36))
+        self.comboBox_gamemode5.setGeometry(QtCore.QRect(110, 15, 180, 32))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.comboBox_gamemode5.setFont(font)
-        self.comboBox_gamemode5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"width:120px;\n"
-"height: 32px;\n"
-"color: #3d3d3d;\n"
-"\n"
-"")
         self.comboBox_gamemode5.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLength)
         self.comboBox_gamemode5.setObjectName("comboBox_gamemode5")
         self.comboBox_gamemode5.addItem("")
@@ -312,15 +222,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_minenum5.setFont(font)
-        self.spinBox_minenum5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_minenum5.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_minenum5.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_minenum5.setKeyboardTracking(True)
@@ -340,15 +241,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_attempt_times_limit5.setFont(font)
         self.spinBox_attempt_times_limit5.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_attempt_times_limit5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_attempt_times_limit5.setFrame(True)
         self.spinBox_attempt_times_limit5.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_attempt_times_limit5.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -365,15 +257,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_constraint5.setFont(font)
         self.lineEdit_constraint5.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_constraint5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_constraint5.setText("")
         self.lineEdit_constraint5.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_constraint5.setObjectName("lineEdit_constraint5")
@@ -383,15 +266,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_width5.setFont(font)
-        self.spinBox_width5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_width5.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_width5.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_width5.setKeyboardTracking(True)
@@ -406,15 +280,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_height5.setFont(font)
-        self.spinBox_height5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_height5.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_height5.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_height5.setKeyboardTracking(True)
@@ -435,15 +300,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_pixsize5.setFont(font)
-        self.spinBox_pixsize5.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_pixsize5.setFrame(True)
         self.spinBox_pixsize5.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_pixsize5.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -455,7 +311,6 @@ class Ui_Form(object):
         self.spinBox_pixsize5.setObjectName("spinBox_pixsize5")
         self.label_gamemode5 = QtWidgets.QLabel(self.tab_3)
         self.label_gamemode5.setGeometry(QtCore.QRect(20, 13, 71, 39))
-        self.label_gamemode5.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_gamemode5.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.label_gamemode5.setObjectName("label_gamemode5")
         self.label_constraint5 = QtWidgets.QLabel(self.tab_3)
@@ -469,11 +324,9 @@ class Ui_Form(object):
         self.label_constraint5.setObjectName("label_constraint5")
         self.label_minenum5 = QtWidgets.QLabel(self.tab_3)
         self.label_minenum5.setGeometry(QtCore.QRect(20, 100, 71, 32))
-        self.label_minenum5.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_minenum5.setObjectName("label_minenum5")
         self.label_height5 = QtWidgets.QLabel(self.tab_3)
         self.label_height5.setGeometry(QtCore.QRect(20, 59, 71, 32))
-        self.label_height5.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_height5.setObjectName("label_height5")
         self.label_attempt_times_limit5 = QtWidgets.QLabel(self.tab_3)
         self.label_attempt_times_limit5.setGeometry(QtCore.QRect(20, 180, 91, 31))
@@ -486,12 +339,10 @@ class Ui_Form(object):
         self.label_attempt_times_limit5.setObjectName("label_attempt_times_limit5")
         self.label_width5 = QtWidgets.QLabel(self.tab_3)
         self.label_width5.setGeometry(QtCore.QRect(290, 59, 71, 32))
-        self.label_width5.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_width5.setObjectName("label_width5")
         self.label_pixsize5 = QtWidgets.QLabel(self.tab_3)
         self.label_pixsize5.setGeometry(QtCore.QRect(290, 100, 71, 32))
         self.label_pixsize5.setMaximumSize(QtCore.QSize(140, 16777215))
-        self.label_pixsize5.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_pixsize5.setObjectName("label_pixsize5")
         self.tabWidget.addTab(self.tab_3, "")
         self.tab_41 = QtWidgets.QWidget()
@@ -508,15 +359,6 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.spinBox_attempt_times_limit6.setFont(font)
         self.spinBox_attempt_times_limit6.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.spinBox_attempt_times_limit6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_attempt_times_limit6.setFrame(True)
         self.spinBox_attempt_times_limit6.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_attempt_times_limit6.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -527,24 +369,11 @@ class Ui_Form(object):
         self.spinBox_attempt_times_limit6.setProperty("value", 99999999)
         self.spinBox_attempt_times_limit6.setObjectName("spinBox_attempt_times_limit6")
         self.comboBox_gamemode6 = QtWidgets.QComboBox(self.tab_41)
-        self.comboBox_gamemode6.setGeometry(QtCore.QRect(110, 15, 180, 36))
+        self.comboBox_gamemode6.setGeometry(QtCore.QRect(110, 15, 180, 32))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.comboBox_gamemode6.setFont(font)
-        self.comboBox_gamemode6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"width:120px;\n"
-"height: 32px;\n"
-"color: #3d3d3d;\n"
-"\n"
-"")
         self.comboBox_gamemode6.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLength)
         self.comboBox_gamemode6.setObjectName("comboBox_gamemode6")
         self.comboBox_gamemode6.addItem("")
@@ -557,11 +386,9 @@ class Ui_Form(object):
         self.comboBox_gamemode6.addItem("")
         self.label_height6 = QtWidgets.QLabel(self.tab_41)
         self.label_height6.setGeometry(QtCore.QRect(20, 59, 61, 32))
-        self.label_height6.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_height6.setObjectName("label_height6")
         self.label_width6 = QtWidgets.QLabel(self.tab_41)
         self.label_width6.setGeometry(QtCore.QRect(290, 59, 61, 32))
-        self.label_width6.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_width6.setObjectName("label_width6")
         self.spinBox_height6 = QtWidgets.QSpinBox(self.tab_41)
         self.spinBox_height6.setGeometry(QtCore.QRect(110, 60, 160, 32))
@@ -569,15 +396,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_height6.setFont(font)
-        self.spinBox_height6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_height6.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_height6.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_height6.setKeyboardTracking(True)
@@ -598,7 +416,6 @@ class Ui_Form(object):
         self.label_pixsize6 = QtWidgets.QLabel(self.tab_41)
         self.label_pixsize6.setGeometry(QtCore.QRect(290, 100, 61, 32))
         self.label_pixsize6.setMaximumSize(QtCore.QSize(140, 16777215))
-        self.label_pixsize6.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_pixsize6.setObjectName("label_pixsize6")
         self.spinBox_width6 = QtWidgets.QSpinBox(self.tab_41)
         self.spinBox_width6.setGeometry(QtCore.QRect(378, 60, 160, 32))
@@ -606,15 +423,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_width6.setFont(font)
-        self.spinBox_width6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_width6.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_width6.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_width6.setKeyboardTracking(True)
@@ -625,7 +433,6 @@ class Ui_Form(object):
         self.spinBox_width6.setObjectName("spinBox_width6")
         self.label_gamemode6 = QtWidgets.QLabel(self.tab_41)
         self.label_gamemode6.setGeometry(QtCore.QRect(20, 13, 61, 39))
-        self.label_gamemode6.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_gamemode6.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.label_gamemode6.setObjectName("label_gamemode6")
         self.spinBox_pixsize6 = QtWidgets.QSpinBox(self.tab_41)
@@ -640,15 +447,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_pixsize6.setFont(font)
-        self.spinBox_pixsize6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_pixsize6.setFrame(True)
         self.spinBox_pixsize6.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_pixsize6.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
@@ -664,15 +462,6 @@ class Ui_Form(object):
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.spinBox_minenum6.setFont(font)
-        self.spinBox_minenum6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.spinBox_minenum6.setAlignment(QtCore.Qt.AlignCenter)
         self.spinBox_minenum6.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_minenum6.setKeyboardTracking(True)
@@ -687,21 +476,11 @@ class Ui_Form(object):
         font.setPointSize(12)
         self.lineEdit_constraint6.setFont(font)
         self.lineEdit_constraint6.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.lineEdit_constraint6.setStyleSheet("border-width: 2px;\n"
-"border-radius: 8px;\n"
-"border-style: solid;\n"
-"border-top-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-right-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-bottom-color: qlineargradient(spread:pad, x1:0.5, y1:0, x2:0.5, y2:1, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"border-left-color: qlineargradient(spread:pad, x1:1, y1:0, x2:0, y2:0, stop:0 #85b7e3, stop:1 #9ec1db);\n"
-"background-color: #f4f4f4;\n"
-"color: #3d3d3d;")
         self.lineEdit_constraint6.setText("")
         self.lineEdit_constraint6.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_constraint6.setObjectName("lineEdit_constraint6")
         self.label_minenum6 = QtWidgets.QLabel(self.tab_41)
         self.label_minenum6.setGeometry(QtCore.QRect(20, 100, 61, 32))
-        self.label_minenum6.setStyleSheet("font: 12pt \"微软雅黑\";")
         self.label_minenum6.setObjectName("label_minenum6")
         self.label_constraint6 = QtWidgets.QLabel(self.tab_41)
         self.label_constraint6.setGeometry(QtCore.QRect(20, 140, 91, 31))

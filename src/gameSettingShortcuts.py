@@ -45,12 +45,6 @@ class myGameSettingShortcuts(Ui_Form):
         self.spinBox_minenum6.setProperty("value", self.game_setting.value("CUSTOM_PRESET_6/mine_num", None, int))
         self.lineEdit_constraint6.setProperty("value", self.game_setting.value("CUSTOM_PRESET_6/board_constraint", None, str))
 
-        self.pushButton.setStyleSheet("border-image: url(" + str(self.r_path.with_name('media').joinpath('button.png')).replace("\\", "/") + ");\n"
-"font: 16pt \"黑体\";\n"
-"color:white;font: bold;")
-        self.pushButton_2.setStyleSheet("border-image: url(" + str(self.r_path.with_name('media').joinpath('button.png')).replace("\\", "/") + ");\n"
-"font: 16pt \"黑体\";\n"
-"color:white;font: bold;")
         
     def processParameter(self):
         #只有点确定才能进来

@@ -1233,7 +1233,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # self.num_bar_ui.QWidget.show()
 
         # self.setBoard_and_start(len(ui.board), len(ui.board[0]), ans[1][1])
-        self.setBoard(self.row, self.column, ans[1][1])
+        self.set_board_params(self.row, self.column, ans[1][1])
 
         self.label.paintProbability = True
         self.label.set_rcp(self.row, self.column, self.pixSize)
