@@ -37,9 +37,6 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true"/>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
@@ -52,11 +49,8 @@
        <height>41</height>
       </size>
      </property>
-     <property name="font">
-      <font>
-       <family>微软雅黑</family>
-       <pointsize>14</pointsize>
-      </font>
+     <property name="styleSheet">
+      <string notr="true">font-size: 16pt;</string>
      </property>
      <property name="text">
       <string>恭喜打破：</string>
@@ -86,11 +80,8 @@
      </item>
      <item>
       <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <family>微软雅黑</family>
-         <pointsize>14</pointsize>
-        </font>
+       <property name="styleSheet">
+        <string notr="true">font-size: 16pt;</string>
        </property>
        <property name="text">
         <string>模式：</string>
@@ -99,11 +90,8 @@
      </item>
      <item>
       <widget class="QLabel" name="label_16">
-       <property name="font">
-        <font>
-         <family>微软雅黑</family>
-         <pointsize>14</pointsize>
-        </font>
+       <property name="styleSheet">
+        <string notr="true">font-size: 16pt;</string>
        </property>
        <property name="text">
         <string>未标雷（标准）</string>
@@ -186,11 +174,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_1">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>Time成绩！</string>
@@ -280,11 +265,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_3">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>3BV/s成绩！</string>
@@ -374,11 +356,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>STNB成绩！</string>
@@ -468,11 +447,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_7">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>IOE成绩！</string>
@@ -562,11 +538,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_9">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>Path成绩！</string>
@@ -656,11 +629,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_11">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>RQP成绩！</string>
@@ -750,11 +720,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_13">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>初级</string>
@@ -769,11 +736,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label__13">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string notr="true">148</string>
@@ -788,11 +752,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label___13">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>个人最佳！</string>
@@ -882,11 +843,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_14">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>中级</string>
@@ -901,11 +859,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label__14">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string notr="true">148</string>
@@ -920,11 +875,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label___14">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>个人最佳！</string>
@@ -1014,11 +966,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label_15">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>高级</string>
@@ -1033,11 +982,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label__15">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string notr="true">148</string>
@@ -1052,11 +998,8 @@
       </item>
       <item>
        <widget class="QLabel" name="label___15">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>14</pointsize>
-         </font>
+        <property name="styleSheet">
+         <string notr="true">font-size: 14pt;</string>
         </property>
         <property name="text">
          <string>个人最佳！</string>
