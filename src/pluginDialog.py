@@ -38,7 +38,7 @@ from PyQt5.QtCore import QCoreApplication
 _translate = QCoreApplication.translate
 
 
-class PluginManagerUI(RoundQDialog):
+class PluginManagerUI(QDialog):
 
     def __init__(self, plugin_names: list[str]):
         """
@@ -64,8 +64,10 @@ class PluginManagerUI(RoundQDialog):
         # ================= 左侧插件列表 =================
         self.list_widget = QListWidget()
         for name in self.plugin_names:
-            self.list_widget.addItem(
-                PluginManager.instance().Get_Context_By_Name(name).display_name)
+            ctx = PluginManager.instance().Get_Context_By_Name(name)
+            if ctx is None:
+                continue
+            self.list_widget.addItem(ctx.display_name)
 
         self.list_widget.currentRowChanged.connect(self.on_plugin_selected)
         root_layout.addWidget(self.list_widget, 1)
@@ -167,6 +169,8 @@ class PluginManagerUI(RoundQDialog):
 
         ctx = PluginManager.instance().Get_Context_By_Name(
             self.plugin_names[index])
+        if ctx is None:
+            return
 
         # --- PluginContext 原样填充 ---
         for key, value in msgspec.structs.asdict(ctx).items():
@@ -184,8 +188,11 @@ class PluginManagerUI(RoundQDialog):
         # 清空原控件
         while self.scroll_layout.count():
             item = self.scroll_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            if item is None:
+                continue
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
         self.current_settings_widgets.clear()
 
@@ -221,14 +228,11 @@ class PluginManagerUI(RoundQDialog):
     # 保存按钮
     # ===================================================================
     def on_save_clicked(self):
-        ctx = self.plugin_contexts[self.list_widget.currentRow()]
-
-        # --- PluginContext 原样填充 ---
-        for key, label in self.detail_labels.items():
-            value = getattr(ctx, key)
-            if isinstance(value, list):
-                value = ", ".join(value)
-            label.setText(str(value))
+        ctx = PluginManager.instance().Get_Context_By_Name(
+            self.plugin_names[self.list_widget.currentRow()]
+        )
+        if ctx is None:
+            return
 
         # --- 你自己的获取 settings 的函数 ---
         settings_dict = PluginManager.instance().Get_Settings(ctx.name)

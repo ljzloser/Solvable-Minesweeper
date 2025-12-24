@@ -56,7 +56,7 @@ class PluginManager(object):
         self.__error_callback = None
 
         self.__running = False
-        self.__context: BaseContext = None
+        self.__context: BaseContext | None = None
 
     # -------------------------
     # 单例
@@ -78,7 +78,7 @@ class PluginManager(object):
 
     @property
     def context(self) -> BaseContext:
-        return self.__context
+        return self.__context  # type: ignore
 
     @context.setter
     def context(self, context: BaseContext):
@@ -230,7 +230,7 @@ class PluginManager(object):
         if message.id in self.__event_dict:
             del self.__event_dict[message.id]
 
-        return result
+        return result  # type: ignore
 
     # -------------------------
     # 发消息入口（入队）
