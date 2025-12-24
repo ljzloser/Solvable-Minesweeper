@@ -1,4 +1,3 @@
-
 import sys
 import os
 import msgspec
@@ -78,8 +77,8 @@ create table main.replays
         return super().shutdown()
 
     @BasePlugin.event_handler(GameEndEvent)
-    def on_game_end(self, event: GameEndEvent) -> None:
-        pass
+    def on_game_end(self, event: GameEndEvent):
+        return event
 
 
 if __name__ == "__main__":

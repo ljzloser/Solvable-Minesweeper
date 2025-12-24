@@ -151,6 +151,10 @@ class BasePlugin(ABC):
                     return
                 for handler in self._event_handlers[message.data.__class__]:
                     event = handler(self, message.data)
+                    if event.__class__ != message.data.__class__:
+                        raise TypeError(
+                            f"Event handler must return the same event type got {event.__class__.__name__} expected {message.data.__class__.__name__}"
+                        )
                     message.data = event
                     self.__message_queue.put(message)
             else:
@@ -163,7 +167,7 @@ class BasePlugin(ABC):
                 if hasattr(self, "_context"):
                     self._context = message.data
                     self.initialize()
-                self._context = message.class_name
+                self._context = message.data
         elif message.mode == MessageMode.Error:
             pass
         elif message.mode == MessageMode.Unknown:
