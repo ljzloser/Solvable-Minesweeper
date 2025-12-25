@@ -16,6 +16,7 @@ from mp_plugins.events import *
 from mp_plugins import PluginManager
 from pathlib import Path
 # import os
+from utils import get_paths, patch_env
 
 os.environ["QT_FONT_DPI"] = "96"
 
@@ -28,31 +29,6 @@ os.environ["QT_FONT_DPI"] = "96"
 #     root = os.path.dirname(os.path.abspath(__file__))  # 你的项目根目录
 #     env["PYTHONPATH"] = root
 #     return env
-def get_paths():
-    if getattr(sys, "frozen", False):
-        # 打包成 exe
-        dir = os.path.dirname(sys.executable)  # exe 所在目录
-    else:
-        dir = os.path.dirname(os.path.abspath(__file__))
-
-    return dir
-
-
-def patch_env():
-    import os
-    import sys
-
-    env = os.environ.copy()
-
-    if getattr(sys, "frozen", False):
-        # 打包成 exe，库解压到 _MEIPASS
-        root = getattr(sys, "_MEIPASS", None)
-    else:
-        # 调试模式，库在项目目录
-        root = os.path.dirname(os.path.abspath(__file__))
-
-    env["PYTHONPATH"] = root
-    return env
 
 
 def on_new_connection(localServer: QLocalServer):
