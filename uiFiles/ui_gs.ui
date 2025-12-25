@@ -83,12 +83,6 @@
       </property>
       <item>
        <widget class="QLabel" name="label_gamemode">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>游戏模式：</string>
         </property>
@@ -119,12 +113,6 @@
           <width>16777215</width>
           <height>32</height>
          </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
         </property>
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
@@ -204,12 +192,6 @@
           <height>16777215</height>
          </size>
         </property>
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>方格边长：</string>
         </property>
@@ -240,12 +222,6 @@
           <width>16777215</width>
           <height>32</height>
          </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
         </property>
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
@@ -351,12 +327,6 @@
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="toolTip">
             <string/>
            </property>
@@ -384,12 +354,6 @@
              <width>120</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="toolTip">
             <string>用于与其他人相区分，但不希望排名网站和软件展示出来</string>
@@ -419,12 +383,6 @@
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="toolTip">
             <string>用于参加比赛</string>
            </property>
@@ -452,12 +410,6 @@
              <width>120</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="text">
             <string>国家或地区：</string>
@@ -514,12 +466,6 @@
              <height>33</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="focusPolicy">
             <enum>Qt::ClickFocus</enum>
            </property>
@@ -548,12 +494,6 @@
              <height>33</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="focusPolicy">
             <enum>Qt::ClickFocus</enum>
            </property>
@@ -581,12 +521,6 @@
              <width>16777215</width>
              <height>33</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="focusPolicy">
             <enum>Qt::ClickFocus</enum>
@@ -639,15 +573,6 @@
                 <width>16777215</width>
                 <height>31</height>
                </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>微软雅黑</family>
-                <pointsize>12</pointsize>
-                <weight>50</weight>
-                <italic>false</italic>
-                <bold>false</bold>
-               </font>
               </property>
               <property name="focusPolicy">
                <enum>Qt::ClickFocus</enum>
@@ -774,12 +699,6 @@ background-color:rgb(255, 255, 255)
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="toolTip">
             <string>完成后自动将录像保存到replay文件夹下</string>
            </property>
@@ -805,12 +724,6 @@ background-color:rgb(255, 255, 255)
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>自动保存录像集</string>
            </property>
@@ -823,12 +736,6 @@ background-color:rgb(255, 255, 255)
              <width>0</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="toolTip">
             <string>勾选后永远使用筛选法埋雷，否则会适时改用调整法</string>
@@ -849,12 +756,6 @@ background-color:rgb(255, 255, 255)
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="toolTip">
             <string/>
            </property>
@@ -873,12 +774,6 @@ background-color:rgb(255, 255, 255)
              <width>0</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="toolTip">
             <string/>
@@ -917,12 +812,6 @@ background-color:rgb(255, 255, 255)
             </property>
             <item>
              <widget class="QCheckBox" name="checkBox_auto_replay">
-              <property name="font">
-               <font>
-                <family>微软雅黑</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
               <property name="toolTip">
                <string/>
               </property>
@@ -953,12 +842,6 @@ background-color:rgb(255, 255, 255)
                 <width>16777215</width>
                 <height>32</height>
                </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>微软雅黑</family>
-                <pointsize>12</pointsize>
-               </font>
               </property>
               <property name="focusPolicy">
                <enum>Qt::ClickFocus</enum>
@@ -1041,12 +924,6 @@ background-color:rgb(255, 255, 255)
              <height>32</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="toolTip">
             <string/>
            </property>
@@ -1093,12 +970,6 @@ background-color:rgb(255, 255, 255)
              <height>0</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>局面约束：</string>
            </property>
@@ -1123,12 +994,6 @@ background-color:rgb(255, 255, 255)
              <width>16777215</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="focusPolicy">
             <enum>Qt::ClickFocus</enum>
@@ -1176,12 +1041,6 @@ background-color:rgb(255, 255, 255)
              <height>0</height>
             </size>
            </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>尝试次数：</string>
            </property>
@@ -1212,12 +1071,6 @@ background-color:rgb(255, 255, 255)
              <width>16777215</width>
              <height>32</height>
             </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>微软雅黑</family>
-             <pointsize>12</pointsize>
-            </font>
            </property>
            <property name="focusPolicy">
             <enum>Qt::ClickFocus</enum>
