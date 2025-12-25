@@ -135,14 +135,6 @@ if __name__ == "__main__":
     if args.check:
         exit_code = cli_check_file(args.check)
         sys.exit(exit_code)
-    env = patch_env()
-    context = AppContext(name="Metasweeper", version="1.0.0", display_name="元扫雷",
-                         plugin_dir=(Path(get_paths()) / "plugins").as_posix(),
-                         app_dir=get_paths()
-                         )
-    PluginManager.instance().context = context
-
-    PluginManager.instance().start(Path(get_paths()) / "plugins", env)
 
     app = QtWidgets.QApplication(sys.argv)
     serverName = "MineSweeperServer"
@@ -161,6 +153,15 @@ if __name__ == "__main__":
         localServer.newConnection.connect(
             lambda: on_new_connection(localServer=localServer)
         )
+        env = patch_env()
+        context = AppContext(name="Metasweeper", version="1.0.0", display_name="元扫雷",
+                             plugin_dir=(Path(get_paths()) /
+                                         "plugins").as_posix(),
+                             app_dir=get_paths()
+                             )
+        PluginManager.instance().context = context
+
+        PluginManager.instance().start(Path(get_paths()) / "plugins", env)
         mainWindow = mainWindowGUI.MainWindow()
         ui = mineSweeperGUI.MineSweeperGUI(mainWindow, sys.argv)
         ui.mainWindow.show()
