@@ -19,7 +19,7 @@ from mp_plugins.events import *
 
 
 class HistoryConfig(BaseConfig):
-    pass
+    save_mode: SelectSetting
 
 
 class History(BasePlugin):
@@ -28,7 +28,11 @@ class History(BasePlugin):
     ) -> None:
         super().__init__()
         self._context: AppContext
-        self._config = HistoryConfig()
+        self._config = HistoryConfig(
+            save_mode=SelectSetting(
+                "保存模式", "仅保存胜利局", options=["仅保存胜利局"]
+            )
+        )
 
     def build_plugin_context(self) -> None:
         self._plugin_context.name = "History"
