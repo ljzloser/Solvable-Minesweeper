@@ -133,7 +133,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         })
         # 调整窗口
         if (video.row, video.column) != (self.row, self.column):
-            self.setBoard(video.row, video.column, video.mine_num)
+            self.set_board_params(video.row, video.column, video.mine_num)
             self.label.paintProbability = False
             self.label.set_rcp(self.row, self.column, self.pixSize)
             # self.label.reloadCellPic(self.pixSize)
