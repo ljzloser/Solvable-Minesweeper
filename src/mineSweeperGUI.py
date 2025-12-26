@@ -1,6 +1,8 @@
+import base64
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect, QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
+import msgspec
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
@@ -90,7 +92,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 QUrl.fromLocalFile(str(self.setting_path / 'replay'))))
         self.action_open_ini.triggered.connect(
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.setting_path))))
-
 
         self.frameShortcut1.activated.connect(lambda: self.predefined_Board(1))
         self.frameShortcut2.activated.connect(lambda: self.predefined_Board(2))
@@ -559,8 +560,20 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.score_board_manager.show(self.label.ms_board, index_type=2)
         self.enable_screenshot()
         self.unlimit_cursor()
-        event = GameEndEvent()
-        PluginManager.instance().send_event(event, response_count=0)
+        ms_board = self.label.ms_board
+        status = utils.GameBoardState(ms_board.game_board_state)
+        if status == utils.GameBoardState.Win:
+            self.dump_evf_file_data()
+            event = GameEndEvent()
+            data = msgspec.structs.asdict(event)
+            for key in data:
+                if hasattr(ms_board, key):
+                    if key == "raw_data":
+                        data[key] = base64.b64encode(
+                            ms_board.raw_data).decode("utf-8")
+                    data[key] = getattr(ms_board, key)
+            event = GameEndEvent(**data)
+            PluginManager.instance().send_event(event, response_count=0)
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()
@@ -957,7 +970,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             return
         elif t >= 1000:
             return
-
 
     def predefined_Board(self, k):
         # 按快捷键123456时的回调

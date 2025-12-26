@@ -1,3 +1,4 @@
+import base64
 import sys
 import os
 import msgspec
@@ -18,7 +19,7 @@ from mp_plugins.events import *
 
 
 class HistoryConfig(BaseConfig):
-    pass
+    save_mode: SelectSetting
 
 
 class History(BasePlugin):
@@ -27,7 +28,11 @@ class History(BasePlugin):
     ) -> None:
         super().__init__()
         self._context: AppContext
-        self._config = HistoryConfig()
+        self._config = HistoryConfig(
+            save_mode=SelectSetting(
+                "保存模式", "仅保存胜利局", options=["仅保存胜利局"]
+            )
+        )
 
     def build_plugin_context(self) -> None:
         self._plugin_context.name = "History"
@@ -36,40 +41,62 @@ class History(BasePlugin):
         self._plugin_context.description = "History"
         self._plugin_context.author = "ljzloser"
 
+    @property
+    def db_path(self):
+        return self.path.parent.parent / "history.db"
+
     def initialize(self) -> None:
-        db_path = self.path / "history.db"
-        if not db_path.exists():
-            conn = sqlite3.connect(db_path)
+        if not self.db_path.exists():
+            conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
+
             cursor.execute(
                 """
-create table main.history
+create table history
 (
-    replay_id        INTEGER
-        primary key,
-    termination_type INTEGER not null,
-    player_nick      TEXT    not null,
-    level            TEXT    not null,
-    nf               BOOLEAN not null,
-    timeth           INTEGER not null,
-    bbbv_board       INTEGER not null,
-    bbbv_completed   INTEGER not null
+    replay_id        INTEGER primary key,
+    game_board_state INTEGER,
+    rtime           REAL,
+    left            INTEGER,
+    right           INTEGER,
+    double          INTEGER,
+    left_s          REAL,
+    right_s         REAL,
+    double_s        REAL,
+    level           INTEGER,
+    cl              INTEGER,
+    cl_s            REAL,
+    ce              INTEGER,
+    ce_s            REAL,
+    rce             INTEGER,
+    lce             INTEGER,
+    dce             INTEGER,
+    bbbv            INTEGER,
+    bbbv_solved     INTEGER,
+    bbbv_s          REAL,
+    flag            INTEGER,
+    path            REAL,
+    etime           INTEGER,
+    start_time      INTEGER,
+    end_time        INTEGER,
+    mode            INTEGER,
+    software        TEXT,
+    player_identifier TEXT,
+    race_identifier   TEXT,
+    uniqueness_identifier TEXT,
+    stnb            REAL,
+    corr            REAL,
+    thrp            REAL,
+    ioe             REAL,
+    is_official     INTEGER,
+    is_fair         INTEGER,
+    op              INTEGER,
+    isl             INTEGER,
+    raw_data        BLOB
 );
                 """
             )
             conn.commit()
-            cursor.execute(
-                """
-create table main.replays
-(
-    id        INTEGER
-        primary key,
-    date      DATETIME              not null,
-    replay    BLOB                  not null,
-    processed BOOLEAN default FALSE not null
-);
-                """
-            )
             conn.close()
         return super().initialize()
 
@@ -78,6 +105,98 @@ create table main.replays
 
     @BasePlugin.event_handler(GameEndEvent)
     def on_game_end(self, event: GameEndEvent):
+        data = msgspec.structs.asdict(event)
+        data["raw_data"] = base64.b64decode(s=event.raw_data)
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+insert into main.history
+(
+    game_board_state,
+    rtime,
+    left,
+    right,
+    double,
+    left_s,
+    right_s,
+    double_s,
+    level,
+    cl,
+    cl_s,
+    ce,
+    ce_s,
+    rce,
+    lce,
+    dce,
+    bbbv,
+    bbbv_solved,
+    bbbv_s,
+    flag,
+    path,
+    etime,
+    start_time,
+    end_time,
+    mode,
+    software,
+    player_identifier,
+    race_identifier,
+    uniqueness_identifier,
+    stnb,
+    corr,
+    thrp,
+    ioe,
+    is_official,
+    is_fair,
+    op,
+    isl,
+    raw_data
+    )
+values
+(
+    :game_board_state,
+    :rtime,
+    :left,
+    :right,
+    :double,
+    :left_s,
+    :right_s,
+    :double_s,
+    :level,
+    :cl,
+    :cl_s,
+    :ce,
+    :ce_s,
+    :rce,
+    :lce,
+    :dce,
+    :bbbv,
+    :bbbv_solved,
+    :bbbv_s,
+    :flag,
+    :path,
+    :etime,
+    :start_time,
+    :end_time,
+    :mode,
+    :software,
+    :player_identifier,
+    :race_identifier,
+    :uniqueness_identifier,
+    :stnb,
+    :corr,
+    :thrp,
+    :ioe,
+    :is_official,
+    :is_fair,
+    :op,
+    :isl,
+    :raw_data
+    )
+        """,
+            data)
+        conn.commit()
+        conn.close()
         return event
 
 
