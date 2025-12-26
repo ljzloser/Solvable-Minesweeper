@@ -92,6 +92,7 @@ create table history
     is_fair         INTEGER,
     op              INTEGER,
     isl             INTEGER,
+    pluck           REAL,
     raw_data        BLOB
 );
                 """
@@ -150,6 +151,7 @@ insert into main.history
     is_fair,
     op,
     isl,
+    pluck,
     raw_data
     )
 values
@@ -191,6 +193,7 @@ values
     :is_fair,
     :op,
     :isl,
+    :pluck,
     :raw_data
     )
         """,

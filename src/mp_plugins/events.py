@@ -39,4 +39,5 @@ class GameEndEvent(BaseEvent):
     is_fair: int = 0
     op: int = 0
     isl: int = 0
+    pluck: float = 0
     raw_data: str = ''
