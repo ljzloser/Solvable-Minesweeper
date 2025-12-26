@@ -67,7 +67,10 @@ class GameBoardState(BaseDiaPlayEnum):
 
 class MouseState(BaseDiaPlayEnum):
     '''
-    关于鼠标状态的枚举体，这些魔数遵循ms_toollib标准
+    关于鼠标状态的枚举体。游戏过程中，鼠标的动作会触发鼠标事件，并在evf录像中记录为
+    诸如"mv", "lc", "lr", "rc", "rr", "mc", "mr", "pf", "cc", "l", "r", "m"
+    动作导致鼠标转移至不同的状态，用于计算左键、右键、双击等次数，显示局面高亮等
+    这些魔数遵循ms_toollib标准
     '''
     UpUp = 1
     UpDown = 2
@@ -81,21 +84,21 @@ class MouseState(BaseDiaPlayEnum):
     @property
     def display_name(self):
         match self:
-            case GameBoardState.UpUp:
+            case MouseState.UpUp:
                 return _translate("Form", "双键抬起")
-            case GameBoardState.UpDown:
+            case MouseState.UpDown:
                 return _translate("Form", "右键按下且标过雷")
-            case GameBoardState.UpDownNotFlag:
+            case MouseState.UpDownNotFlag:
                 return _translate("Form", "右键按下且没有标过雷")
-            case GameBoardState.DownUp:
+            case MouseState.DownUp:
                 return _translate("Form", "左键按下")
-            case GameBoardState.Chording:
+            case MouseState.Chording:
                 return _translate("Form", "双键按下")
-            case GameBoardState.ChordingNotFlag:
+            case MouseState.ChordingNotFlag:
                 return _translate("Form", "双键按下且先按下右键且没有标雷")
-            case GameBoardState.DownUpAfterChording:
+            case MouseState.DownUpAfterChording:
                 return _translate("Form", "双击后先弹起右键左键还没有弹起")
-            case GameBoardState.Undefined:
+            case MouseState.Undefined:
                 return _translate("Form", "未初始化")
 
 
@@ -117,22 +120,46 @@ class GameMode(BaseDiaPlayEnum):
     @property
     def display_name(self):
         match self:
-            case GameBoardState.Standard:
+            case GameMode.Standard:
                 return _translate("Form", "标准")
-            case GameBoardState.Win7:
+            case GameMode.Win7:
                 return _translate("Form", "win7")
-            case GameBoardState.ClassicNoGuess:
+            case GameMode.ClassicNoGuess:
                 return _translate("Form", "经典无猜")
-            case GameBoardState.StrictNoGuess:
+            case GameMode.StrictNoGuess:
                 return _translate("Form", "强无猜")
-            case GameBoardState.WeakNoGuess:
+            case GameMode.WeakNoGuess:
                 return _translate("Form", "弱无猜")
-            case GameBoardState.BlessingMode:
+            case GameMode.BlessingMode:
                 return _translate("Form", "准无猜")
-            case GameBoardState.GuessableNoGuess:
+            case GameMode.GuessableNoGuess:
                 return _translate("Form", "强可猜")
-            case GameBoardState.LuckyMode:
+            case GameMode.LuckyMode:
                 return _translate("Form", "弱可猜")
+
+
+class GameLevel(BaseDiaPlayEnum):
+    '''
+    关于游戏难度的枚举体，这些魔数遵循evf标准（ms_toollib也是遵循evf标准）
+    参考：
+    https://github.com/eee555/ms-toollib/blob/main/evf%E6%A0%87%E5%87%86.md
+    '''
+    BEGINNER = 3
+    INTERMEDIATE = 4
+    EXPERT = 5
+    CUSTOM = 6
+
+    @property
+    def display_name(self):
+        match self:
+            case GameLevel.BEGINNER:
+                return _translate("Form", "初级")
+            case GameLevel.INTERMEDIATE:
+                return _translate("Form", "中级")
+            case GameLevel.EXPERT:
+                return _translate("Form", "高级")
+            case GameLevel.CUSTOM:
+                return _translate("Form", "自定义")
 
 
 def get_paths():
