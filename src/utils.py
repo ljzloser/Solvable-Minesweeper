@@ -36,12 +36,9 @@ class BaseDiaPlayEnum(Enum):
 
 
 class GameBoardState(BaseDiaPlayEnum):
-    # GameBoardState::Ready => Ok(1),
-    # GameBoardState::Playing => Ok(2),
-    # GameBoardState::Win => Ok(3),
-    # GameBoardState::Loss => Ok(4),
-    # GameBoardState::PreFlaging => Ok(5),
-    # GameBoardState::Display => Ok(6),
+    '''
+    关于鼠标状态的枚举体，这些魔数遵循ms_toollib标准
+    '''
     Ready = 1
     Playing = 2
     Win = 3
@@ -63,8 +60,81 @@ class GameBoardState(BaseDiaPlayEnum):
             case GameBoardState.PreFlaging:
                 return _translate("Form", "预标记")
             case GameBoardState.Display:
-                return _translate("Form", "显示")
+                return _translate("Form", "回放")
 
+
+
+class MouseState(BaseDiaPlayEnum):
+    '''
+    关于鼠标状态的枚举体，这些魔数遵循ms_toollib标准
+    '''
+    UpUp = 1
+    UpDown = 2
+    UpDownNotFlag = 3
+    DownUp = 4
+    Chording = 5
+    ChordingNotFlag = 6
+    DownUpAfterChording = 7
+    Undefined = 8
+
+    @property
+    def display_name(self):
+        match self:
+            case GameBoardState.UpUp:
+                return _translate("Form", "双键抬起")
+            case GameBoardState.UpDown:
+                return _translate("Form", "右键按下且标过雷")
+            case GameBoardState.UpDownNotFlag:
+                return _translate("Form", "右键按下且没有标过雷")
+            case GameBoardState.DownUp:
+                return _translate("Form", "左键按下")
+            case GameBoardState.Chording:
+                return _translate("Form", "双键按下")
+            case GameBoardState.ChordingNotFlag:
+                return _translate("Form", "双键按下且先按下右键且没有标雷")
+            case GameBoardState.DownUpAfterChording:
+                return _translate("Form", "双击后先弹起右键左键还没有弹起")
+            case GameBoardState.Undefined:
+                return _translate("Form", "未初始化")
+
+
+
+class GameMode(BaseDiaPlayEnum):
+    '''
+    关于游戏模式的枚举体，这些魔数遵循evf标准（ms_toollib也是遵循evf标准）
+    参考：
+    https://github.com/eee555/ms-toollib/blob/main/evf%E6%A0%87%E5%87%86.md
+    '''
+    Standard = 0
+    Win7 = 4
+    ClassicNoGuess = 5
+    StrictNoGuess = 6
+    WeakNoGuess = 7
+    BlessingMode = 8
+    GuessableNoGuess = 9
+    LuckyMode = 10
+
+    @property
+    def display_name(self):
+        match self:
+            case GameBoardState.Standard:
+                return _translate("Form", "标准")
+            case GameBoardState.Win7:
+                return _translate("Form", "win7")
+            case GameBoardState.ClassicNoGuess:
+                return _translate("Form", "经典无猜")
+            case GameBoardState.StrictNoGuess:
+                return _translate("Form", "强无猜")
+            case GameBoardState.WeakNoGuess:
+                return _translate("Form", "弱无猜")
+            case GameBoardState.BlessingMode:
+                return _translate("Form", "准无猜")
+            case GameBoardState.GuessableNoGuess:
+                return _translate("Form", "强可猜")
+            case GameBoardState.LuckyMode:
+                return _translate("Form", "弱可猜")
+            
+            
 
 def get_paths():
     if getattr(sys, "frozen", False):
