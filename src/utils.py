@@ -63,7 +63,7 @@ class GameBoardState(BaseDiaPlayEnum):
             case GameBoardState.PreFlaging:
                 return _translate("Form", "预标记")
             case GameBoardState.Display:
-                return _translate("Form", "显示")
+                return _translate("Form", "回放")
 
 
 def get_paths():

@@ -4,184 +4,167 @@
 <context>
     <name>Form</name>
     <message>
-        <location filename="ui_record_pop.py" line="420"/>
+        <location filename="ui_record_pop.py" line="355"/>
         <source>确定</source>
         <translation>Czy na pewno</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="747"/>
+        <location filename="ui_gameSettingShortcuts.py" line="506"/>
         <source>取消</source>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="681"/>
+        <location filename="ui_gameSettings.py" line="473"/>
         <source>结束后标雷</source>
         <translation>Po zakończeniu znaku</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="670"/>
+        <location filename="ui_gameSettings.py" line="462"/>
         <source>标识：</source>
         <translation>Logotyp:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="680"/>
+        <location filename="ui_gameSettings.py" line="472"/>
         <source>永远使用筛选法埋雷（不推荐）</source>
         <translation>Zawsze używaj metody przesiewowej do zakopywania min (niezalecane)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="677"/>
+        <location filename="ui_gameSettings.py" line="469"/>
         <source>自动保存录像（推荐）</source>
         <translation>Automatyczne zapisywanie nagrań (zalecane)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="660"/>
+        <location filename="ui_gameSettings.py" line="452"/>
         <source>游戏模式：</source>
         <translation>Tryb gry:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="669"/>
+        <location filename="ui_gameSettings.py" line="461"/>
         <source>方格边长：</source>
         <translation>Długość boku siatki:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="782"/>
+        <location filename="../utils.py" line="414"/>
         <source>标准</source>
         <translation>norma</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="783"/>
+        <location filename="ui_gameSettingShortcuts.py" line="542"/>
         <source>Win7</source>
         <translation>Win7</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="784"/>
+        <location filename="../utils.py" line="426"/>
         <source>强无猜</source>
         <translation>Silny, bez zgadywania</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="785"/>
+        <location filename="../utils.py" line="428"/>
         <source>弱无猜</source>
         <translation>Słaby bez zgadywania</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="786"/>
+        <location filename="../utils.py" line="424"/>
         <source>经典无猜</source>
         <translation>Klasyczna niewinność</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="787"/>
+        <location filename="../utils.py" line="430"/>
         <source>准无猜</source>
         <translation>Quasi-zgadywanie</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="788"/>
+        <location filename="../utils.py" line="432"/>
         <source>强可猜</source>
         <translation>Mocne odgadnięcie</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="789"/>
+        <location filename="../utils.py" line="434"/>
         <source>弱可猜</source>
         <translation>Słabe do odgadnięcia</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="792"/>
+        <location filename="ui_gameSettingShortcuts.py" line="551"/>
         <source>尝试次数：</source>
         <translation>Liczba prób:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="796"/>
+        <location filename="ui_gameSettingShortcuts.py" line="555"/>
         <source>局面约束：</source>
         <translation>Ograniczenia sytuacyjne:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="683"/>
+        <location filename="ui_gameSettings.py" line="475"/>
         <source>自动重开：</source>
         <translation>Automatyczne ponowne otwarcie:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="675"/>
+        <location filename="ui_gameSettings.py" line="467"/>
         <source>国家或地区：</source>
         <translation>Kraj lub region:</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="404"/>
+        <location filename="ui_record_pop.py" line="339"/>
         <source>关于</source>
         <translation>o</translation>
     </message>
     <message>
-        <location filename="ui_about.py" line="157"/>
-        <source>项目主页：</source>
-        <translation>Strona główna projektu:</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="158"/>
-        <source>资料教程：</source>
-        <translation>Samouczek informacyjny:</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="159"/>
-        <source>①本软件可以不受任何限制地复制、储存、传播。
-②任何人可以在任何一个项目中使用本项目源代码的任何一个部分，同时欢迎在本项目主页提出宝贵的意见。</source>
-        <translation>(1) Niniejsze oprogramowanie może być kopiowane, przechowywane i rozpowszechniane bez żadnych ograniczeń.
-(2) Każdy może użyć dowolnej części kodu źródłowego tego projektu w dowolnym projekcie i mile widziane cenne komentarze na stronie głównej tego projektu.</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="149"/>
+        <location filename="ui_defined_parameter.py" line="134"/>
         <source>自定义设置</source>
         <translation>Dostosowywanie ustawień</translation>
     </message>
     <message>
-        <location filename="ui_defined_parameter.py" line="153"/>
+        <location filename="ui_defined_parameter.py" line="138"/>
         <source>行数(row)</source>
         <translation>Liczba wierszy</translation>
     </message>
     <message>
-        <location filename="ui_defined_parameter.py" line="154"/>
+        <location filename="ui_defined_parameter.py" line="139"/>
         <source>列数(column)</source>
         <translation>Liczba kolumn</translation>
     </message>
     <message>
-        <location filename="ui_defined_parameter.py" line="155"/>
+        <location filename="ui_defined_parameter.py" line="140"/>
         <source>雷数(number)</source>
         <translation>Liczba grzmotów</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="406"/>
+        <location filename="ui_record_pop.py" line="341"/>
         <source>模式：</source>
         <translation>Tryb:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="795"/>
+        <location filename="ui_gameSettingShortcuts.py" line="554"/>
         <source>雷数：</source>
         <translation>Liczba grzmotów:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="790"/>
+        <location filename="ui_gameSettingShortcuts.py" line="549"/>
         <source>高度：</source>
         <translation>Wysokość:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="791"/>
+        <location filename="ui_gameSettingShortcuts.py" line="550"/>
         <source>宽度：</source>
         <translation>Szerokość:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="793"/>
+        <location filename="ui_gameSettingShortcuts.py" line="552"/>
         <source>边长：</source>
         <translation>Długość boku:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="765"/>
+        <location filename="ui_gameSettingShortcuts.py" line="524"/>
         <source>快捷键[4]</source>
         <translation>Skróty[4]</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="781"/>
+        <location filename="ui_gameSettingShortcuts.py" line="540"/>
         <source>快捷键[5]</source>
         <translation>Skróty[5]</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="797"/>
+        <location filename="ui_gameSettingShortcuts.py" line="556"/>
         <source>快捷键[6]</source>
         <translation>Skróty[6]</translation>
     </message>
@@ -191,214 +174,339 @@
         <translation>lada</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="405"/>
+        <location filename="ui_record_pop.py" line="340"/>
         <source>恭喜打破：</source>
         <translation>Gratulujemy złamania:</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="407"/>
+        <location filename="ui_record_pop.py" line="342"/>
         <source>未标雷（标准）</source>
         <translation>Nieoznakowana kopalnia (standard)</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="408"/>
+        <location filename="ui_record_pop.py" line="343"/>
         <source>Time成绩！</source>
         <translation>Time czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="409"/>
+        <location filename="ui_record_pop.py" line="344"/>
         <source>3BV/s成绩！</source>
         <translation>3BV/s czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="410"/>
+        <location filename="ui_record_pop.py" line="345"/>
         <source>STNB成绩！</source>
         <translation>STNB czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="411"/>
+        <location filename="ui_record_pop.py" line="346"/>
         <source>IOE成绩！</source>
         <translation>IOE czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="412"/>
+        <location filename="ui_record_pop.py" line="347"/>
         <source>Path成绩！</source>
         <translation>Path czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="413"/>
+        <location filename="ui_record_pop.py" line="348"/>
         <source>RQP成绩！</source>
         <translation>RQP czasowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="414"/>
+        <location filename="ui_record_pop.py" line="349"/>
         <source>初级</source>
         <translation>młodszy</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="419"/>
+        <location filename="ui_record_pop.py" line="354"/>
         <source>个人最佳！</source>
         <translation>Rekord życiowy!</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="416"/>
+        <location filename="ui_record_pop.py" line="351"/>
         <source>中级</source>
         <translation>pośredni</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="418"/>
+        <location filename="ui_record_pop.py" line="353"/>
         <source>高级</source>
         <translation>Starszy</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="679"/>
+        <location filename="ui_gameSettings.py" line="471"/>
         <source>勾选后永远使用筛选法埋雷，否则会适时改用调整法</source>
         <translation>Po zaznaczeniu tej opcji należy zawsze stosować metodę przesiewania do zakopywania min; w przeciwnym razie należy odpowiednio przełączyć się na metodę regulacji</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="676"/>
+        <location filename="ui_gameSettings.py" line="468"/>
         <source>完成后自动将录像保存到replay文件夹下</source>
         <translation>Po zakończeniu nagranie zostanie automatycznie zapisane w folderze „replay”</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="684"/>
+        <location filename="ui_gameSettings.py" line="476"/>
         <source>允许纪录弹窗（推荐）</source>
         <translation>Zezwól na powiadomienia wyskakujące (zalecane)</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="673"/>
+        <location filename="ui_gameSettings.py" line="465"/>
         <source>用于参加比赛</source>
         <translation>Do użytku podczas zawodów</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="674"/>
+        <location filename="ui_gameSettings.py" line="466"/>
         <source>比赛标识：</source>
         <translation>Logo konkursu:</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="682"/>
+        <location filename="ui_gameSettings.py" line="474"/>
         <source>光标不能超出边框</source>
         <translation>Kursor nie może wychodzić poza granice</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="671"/>
+        <location filename="ui_gameSettings.py" line="463"/>
         <source>用于与其他人相区分，但不希望排名网站和软件展示出来</source>
         <translation>Służy do odróżnienia się od innych, ale nie jest przeznaczony do wyświetlania przez strony internetowe i oprogramowanie zajmujące się rankingami</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="672"/>
+        <location filename="ui_gameSettings.py" line="464"/>
         <source>个性标识：</source>
         <translation>Identyfikacja spersonalizowana:</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="178"/>
+        <location filename="ui_video_control.py" line="185"/>
         <source>重播</source>
         <translation>Powtórka</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="179"/>
+        <location filename="ui_video_control.py" line="186"/>
         <source>播放/暂停</source>
         <translation>Odtwórz/Wstrzymaj</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="180"/>
+        <location filename="ui_video_control.py" line="187"/>
         <source>滑动滚轮修改播放速度</source>
         <translation>Reguluj prędkość odtwarzania, przesuwając pokrętło</translation>
     </message>
     <message>
-        <location filename="ui_gameSettings.py" line="678"/>
+        <location filename="ui_gameSettings.py" line="470"/>
         <source>自动保存录像集</source>
         <translation>Automatycznie zapisywana kolekcja filmów</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="421"/>
+        <location filename="ui_record_pop.py" line="356"/>
         <source>Return</source>
         <translation>Return</translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="51"/>
+        <location filename="../pluginDialog.py" line="59"/>
         <source>插件管理</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="68"/>
+        <location filename="../pluginDialog.py" line="79"/>
         <source>插件详情</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="92"/>
+        <location filename="../pluginDialog.py" line="125"/>
         <source>设置</source>
         <translation type="unfinished">Zakładać</translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="105"/>
+        <location filename="../pluginDialog.py" line="138"/>
         <source>保存</source>
         <translation type="unfinished">Zapisz</translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="207"/>
+        <location filename="../pluginDialog.py" line="252"/>
         <source>保存成功</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="207"/>
+        <location filename="../pluginDialog.py" line="252"/>
         <source>设置已保存</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="71"/>
+        <location filename="../pluginDialog.py" line="104"/>
         <source>进程ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="72"/>
+        <location filename="../pluginDialog.py" line="105"/>
         <source>插件名称</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="73"/>
+        <location filename="../pluginDialog.py" line="106"/>
         <source>插件显示名称</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="74"/>
+        <location filename="../pluginDialog.py" line="107"/>
         <source>插件描述</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="75"/>
+        <location filename="../pluginDialog.py" line="108"/>
         <source>插件版本</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="76"/>
+        <location filename="../pluginDialog.py" line="109"/>
         <source>作者</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="77"/>
+        <location filename="../pluginDialog.py" line="110"/>
         <source>作者邮箱</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="78"/>
+        <location filename="../pluginDialog.py" line="111"/>
         <source>插件URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="79"/>
+        <location filename="../pluginDialog.py" line="112"/>
         <source>插件状态</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="80"/>
+        <location filename="../pluginDialog.py" line="113"/>
         <source>心跳时间</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../pluginDialog.py" line="81"/>
+        <location filename="../pluginDialog.py" line="114"/>
         <source>订阅事件</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="241"/>
+        <source>元扫雷是由资深扫雷玩家与软件工程师共同打造的一款现代化复刻。</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="242"/>
+        <source>Copyright © 2020-2025 元扫雷开发团队, 版权所有</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="244"/>
+        <source>教程</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="245"/>
+        <source>开发：王嘉宁、李京志</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="246"/>
+        <source>致谢：濮天羿、向飞宇、钟言、翁逸杰、张砷镓</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="247"/>
+        <source>元扫雷接受有益的贡献，包括新的玩法、规则、插件等。</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="249"/>
+        <source>反馈</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="250"/>
+        <source>感谢您考虑支持我们的开源项目，赞助时请备注项目名称+您的称呼+其他要求，例如元扫雷+张先生+建议添加**功能。您的赞助将有助于项目的持续发展和改进，使我们能够继续提高软件的质量。</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="251"/>
+        <source>赞助</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="252"/>
+        <source>1. 在非商业用途前提下，用户有权不受任何限制地对“元扫雷”软件进行复制、存储及传播。</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="253"/>
+        <source>2. 由“元扫雷”软件生成的录像文件，其全部所有权归对应玩家本人所有。</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="254"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;3. 本项目源代码遵循GPLv3并附加额外条款发布。该额外条款特别禁止任何未经开发团队授权的商业使用行为，并对项目相关收益的分配方式作出明确约定。具体内容详见&lt;a href=&quot;https://github.com/eee555/Metasweeper/blob/master/LICENSE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LICENSE&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="255"/>
+        <source>协议</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="179"/>
+        <source>播放</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="180"/>
+        <source>导出</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="181"/>
+        <source>刷新</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="183"/>
+        <source>显示字段</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="252"/>
+        <source>导出evf文件</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history_gui.py" line="263"/>
+        <source>历史记录</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="56"/>
+        <source>胜利</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="58"/>
+        <source>失败</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="60"/>
+        <source>准备</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="62"/>
+        <source>进行中</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="64"/>
+        <source>预标记</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../utils.py" line="66"/>
+        <source>回放</source>
+        <translation type="unfinished">Powtórka</translation>
     </message>
 </context>
 <context>

@@ -9,12 +9,59 @@ import sys
 from typing import Any
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTableWidget, QMenu, \
-    QAction, QTableWidgetItem, QHeaderView, QTableView, QMessageBox, QFileDialog
+    QAction, QTableWidgetItem, QHeaderView, QTableView, QMessageBox, QFileDialog, \
+    QComboBox, QLineEdit
 from PyQt5.QtCore import QDateTime, Qt, QCoreApplication
 from datetime import datetime
 import inspect
 from utils import GameBoardState, BaseDiaPlayEnum, get_paths, patch_env
 _translate = QCoreApplication.translate
+# 逻辑符
+
+
+class LogicSymbol(BaseDiaPlayEnum):
+    And = 0
+    Or = 1
+
+    @property
+    def display_name(self):
+        match self:
+            case LogicSymbol.And:
+                return _translate("Form", "与")
+            case LogicSymbol.Or:
+                return _translate("Form", "或")
+# 比较符
+
+
+class CompareSymbol(BaseDiaPlayEnum):
+    Equal = 0
+    NotEqual = 1
+    GreaterThan = 2
+    LessThan = 3
+    GreaterThanOrEqual = 4
+    LessThanOrEqual = 5
+    Contains = 6
+    NotContains = 7
+
+    @property
+    def display_name(self):
+        match self:
+            case CompareSymbol.Equal:
+                return _translate("Form", "等于")
+            case CompareSymbol.NotEqual:
+                return _translate("Form", "不等于")
+            case CompareSymbol.GreaterThan:
+                return _translate("Form", "大于")
+            case CompareSymbol.LessThan:
+                return _translate("Form", "小于")
+            case CompareSymbol.GreaterThanOrEqual:
+                return _translate("Form", "大于等于")
+            case CompareSymbol.LessThanOrEqual:
+                return _translate("Form", "小于等于")
+            case CompareSymbol.Contains:
+                return _translate("Form", "包含")
+            case CompareSymbol.NotContains:
+                return _translate("Form", "不包含")
 
 
 class HistoryData:
@@ -81,6 +128,75 @@ class HistoryData:
                     value = new_value
                 setattr(instance, name, value)
         return instance
+
+
+class FliterWidget(QWidget):
+    def __init__(self, parent: QWidget | None = ...) -> None:
+        super().__init__(parent)
+        self.vbox = QVBoxLayout(self)
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(
+            ["左括号", "字段", "比较符", "值", "右括号", "逻辑符"])
+        self.table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
+        # 自定义右键菜单
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
+        self.vbox.addWidget(self.table)
+        self.setLayout(self.vbox)
+        self.add_row()
+
+    def show_context_menu(self, pos):
+        menu = QMenu(self)
+        menu.addAction(_translate("Form", "添加"), self.add_row)
+        menu.addAction(_translate("Form", "删除"), self.del_row)
+        menu.addAction(_translate("Form", "插入"),
+                       lambda: self.insert_row(self.table.currentRow()))
+        menu.exec_(self.table.mapToGlobal(pos))
+
+    def build_left_bracket_Widget(self):
+        widget = QComboBox(self)
+        widget.addItems(["", "(", "(("])
+        return widget
+
+    def build_field_Widget(self):
+        widget = QComboBox(self)
+        widget.addItems(HistoryData.fields())
+        return widget
+
+    def build_compare_Widget(self):
+        widget = QComboBox(self)
+        widget.addItems(CompareSymbol.display_names())
+        return widget
+
+    def build_value_Widget(self):
+        widget = QLineEdit(self)
+        return widget
+
+    def build_right_bracket_Widget(self):
+        widget = QComboBox(self)
+        widget.addItems(["", ")", "))"])
+        return widget
+
+    def build_logic_Widget(self):
+        widget = QComboBox(self)
+        widget.addItems(LogicSymbol.display_names())
+        return widget
+
+    def add_row(self):
+        self.insert_row(self.table.rowCount())
+
+    def del_row(self):
+        pass
+
+    def insert_row(self, row: int):
+        self.table.insertRow(row)
+        self.table.setCellWidget(row, 0, self.build_left_bracket_Widget())
+        self.table.setCellWidget(row, 1, self.build_field_Widget())
+        self.table.setCellWidget(row, 2, self.build_compare_Widget())
+        self.table.setCellWidget(row, 3, self.build_value_Widget())
+        self.table.setCellWidget(row, 4, self.build_right_bracket_Widget())
+        self.table.setCellWidget(row, 5, self.build_logic_Widget())
 
 
 class HistoryTable(QWidget):
@@ -264,6 +380,8 @@ class HistoryGUI(QWidget):
         self.resize(800, 600)
         self.layout = QVBoxLayout(self)
         self.table = HistoryTable(self.get_show_fields(), self)
+        self.fliterWidget = FliterWidget(self)
+        self.layout.addWidget(self.fliterWidget)
         self.layout.addWidget(self.table)
         self.setLayout(self.layout)
         self.load_data()
