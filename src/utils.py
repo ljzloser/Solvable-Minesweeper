@@ -316,7 +316,6 @@ def laymine_solvable(board_constraint, attempt_times_limit, params):
 # poses中至少有一个踩雷了。poses必须由同一个操作引起，例如单次双击
 # 返回修改后的board和成功标识位
 def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
-def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
                          game_board: List[List[int]],
                          poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
     """
@@ -353,12 +352,10 @@ def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
                 game_board[i][j] = 10
     game_board = ms.mark_board(game_board, remark=True)
     if any([game_board[x][y] == 11 for x, y in poses]):
-    if any([game_board[x][y] == 11 for x, y in poses]):
         # 有一个必然是雷，就直接返回
         return board, False
     # 删去12不用管
-    poses=list(filter(lambda xy: game_board[xy[0]][xy[1]] == 10, poses))
-
+    poses = list(filter(lambda xy: game_board[xy[0]][xy[1]] == 10, poses))
 
     # 第一步，将board上的10分成三份，不变区0、无约束区1、数字约束区2
     # 引入定理一：假如poses数量多于1，则必然全都在数字约束区
@@ -366,30 +363,27 @@ def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
     # 统计这些区域的位置、雷数、非雷数
     # 标记一下游戏局面。由于(mine_x, mine_y)是不确定的雷，因此标记过后一定还是10
     # 记录每个格子的类型
-    type_board=[[1 for i in range(len(board[0]))] for j in range(len(board))]
-    rand_mine_num=0
-    rand_blank_num=0
-    constraint_mine_num=0
-    constraint_blank_num=0
+    type_board = [[1 for i in range(len(board[0]))] for j in range(len(board))]
+    rand_mine_num = 0
+    rand_blank_num = 0
+    constraint_mine_num = 0
+    constraint_blank_num = 0
 
-
-    matrix_ases, matrix_xses, matrix_bses=ms.refresh_matrixses(game_board)
+    matrix_ases, matrix_xses, matrix_bses = ms.refresh_matrixses(game_board)
     for idb, block in enumerate(matrix_xses):
         for idl, line in enumerate(block):
             if poses[0] in line:
                 if len(line) >= EnuLimit:  # 枚举法的极限
                     # 超过枚举极限时，暂时不能给出可能的解，有待升级
-                if len(line) >= EnuLimit:  # 枚举法的极限
-                    # 超过枚举极限时，暂时不能给出可能的解，有待升级
                     return board, False
-                matrix_a=matrix_ases[idb][idl]
-                matrix_x=matrix_xses[idb][idl]
-                matrix_b=matrix_bses[idb][idl]
-                constraint_mine_num=[board[x][y]
+                matrix_a = matrix_ases[idb][idl]
+                matrix_x = matrix_xses[idb][idl]
+                matrix_b = matrix_bses[idb][idl]
+                constraint_mine_num = [board[x][y]
                                        for x, y in matrix_x].count(-1)
-                constraint_mine_num=[board[x][y]
+                constraint_mine_num = [board[x][y]
                                        for x, y in matrix_x].count(-1)
-                constraint_blank_num=len(matrix_x) - constraint_mine_num
+                constraint_blank_num = len(matrix_x) - constraint_mine_num
                 for (i, j) in line:
                     type_board[i][j] = 2
             else:
@@ -542,39 +536,31 @@ def trans_game_mode(mode: int) -> str:
 #         ...
 
 
-
-
 class CoreBaseVideo(ms.BaseVideo):
     mouse_state = 1
     game_board_state = 1
     x_y = (0, 0)
 
-
     def __new__(cls, board, cell_pixel_size):
         return ms.BaseVideo.__new__(cls, board, cell_pixel_size)
-
 
     def __init__(self, board, cell_pixel_size):
         super(CoreBaseVideo, self).__init__()
 
-
-    @ property
+    @property
     def game_board(self):
         return self._game_board
 
-
-    @ game_board.setter
+    @game_board.setter
     def game_board(self, game_board):
         self._game_board = game_board
-
-    class AlwaysZero:
-        def __getitem__(self, key):
 
     class AlwaysZero:
         def __getitem__(self, key):
             class Inner:
                 def __getitem__(self, inner_key):
                     return 0
+
                 def __getitem__(self, inner_key):
                     return 0
             return Inner()
@@ -584,7 +570,6 @@ class CoreBaseVideo(ms.BaseVideo):
     game_board_poss = AlwaysZero()
 
 
-
 # unsolvableStructure = ms_toollib.py_unsolvableStructure
 # unsolvableStructure2(BoardCheck)
 # 用几种模板，检测局面中是否有明显的死猜的结构
@@ -592,7 +577,6 @@ class CoreBaseVideo(ms.BaseVideo):
 # 局面至少大于4*4
 # 返回0或1
 
-def print2(arr, mode=0):
 def print2(arr, mode=0):
     # 调试时便于打印 print2(BoardofGame)
     if mode == 0:
@@ -613,7 +597,6 @@ def print2(arr, mode=0):
                 print('%2.d' % j.status, end=', ')
                 print('%2.d' % j.status, end=', ')
             print()
-
 
 
 def debug_ms_board(ms_board):
@@ -683,10 +666,8 @@ def main():
     #     mine.compute_score(x, y)
     #     print(mine.mic())
 
-
     # a = laymine_solvable(0, 10, 100000, (8, 8, 10, 0, 0, 100000))
     # print(a)
-
 
     # game_board = [[ 0, 1,10,10,10,10, 1, 0],
     #               [ 1, 3,10,10,10,10, 3, 1],
@@ -707,7 +688,6 @@ def main():
     #          [ 0, 1,-1,-1, 3,-1, 1, 0],
     #          ]
 
-
     # game_board = [[10,10,10,10,10,10,10,10],
     #               [10,10,10,10,10,10,10,10],
     #               [10,10,10,10,10,10,10,10],
@@ -727,9 +707,7 @@ def main():
     #          [ 0, 0, 0, 0, 0, 0, 0, 0],
     #          ]
 
-
     # print2(enumerateChangeBoard2(board, game_board, [(2, 3), (3, 2), (2, 2)])[0])
-
 
     constraints = {}
     board_constraint = "all([1,2,3])"
@@ -742,12 +720,9 @@ def main():
     except:
         print("wrong")
 
-
     ...
 
 
-
 if __name__ == '__main__':
-
 
     main()
