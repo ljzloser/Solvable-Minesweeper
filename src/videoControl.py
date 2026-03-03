@@ -426,6 +426,7 @@ class ui_Form(QWidget, Ui_Form):
         
         
     def add_new_video_tab(self, video):
+        _translate = QtCore.QCoreApplication.translate
         # 组织录像评论
         comments = []
         for event in video.events:
@@ -459,7 +460,7 @@ class ui_Form(QWidget, Ui_Form):
             
         tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
         
-        self.tabWidget.addTab(tab, f"录像({self.tab_id})")
+        self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
         ...
         
         

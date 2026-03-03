@@ -274,17 +274,17 @@
         <translation>Personalisierte Identifizierung:</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="185"/>
+        <location filename="ui_video_control.py" line="190"/>
         <source>重播</source>
         <translation>Wiederholung</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="186"/>
+        <location filename="ui_video_control.py" line="191"/>
         <source>播放/暂停</source>
         <translation>Abspielen/Pause</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="187"/>
+        <location filename="ui_video_control.py" line="192"/>
         <source>滑动滚轮修改播放速度</source>
         <translation>Scrollrad zum Ändern der Abspielgeschwindigkeit</translation>
     </message>
@@ -637,6 +637,36 @@
         <location filename="ui_about.py" line="245"/>
         <source>致谢：濮天羿、向飞宇、钟言、翁逸杰、张砷镓、Thomas Kolar</source>
         <translation>Danksagungen: 濮天羿, 向飞宇, 钟言, 翁逸杰, 张砷镓, Thomas Kolar</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="463"/>
+        <source>录像</source>
+        <translation>Wiedergabe</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="151"/>
+        <source>全选</source>
+        <translation>Alles auswählen</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="167"/>
+        <source>导出选中的录像</source>
+        <translation>Ausgewählte Aufzeichnungen exportieren</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="292"/>
+        <source>时间</source>
+        <translation>Zeit</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="300"/>
+        <source>事件</source>
+        <translation>Ereignis</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="308"/>
+        <source>标签</source>
+        <translation>Bezeichnung</translation>
     </message>
 </context>
 <context>

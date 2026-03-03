@@ -1110,7 +1110,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
-            self.gameStart()
+            self.gameRestart()
             self.pixSize = ui.pixSize
             self.gameMode = ui.gameMode
             self.auto_replay = ui.auto_replay

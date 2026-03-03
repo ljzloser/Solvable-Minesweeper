@@ -274,17 +274,17 @@
         <translation>Unique identifier:</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="185"/>
+        <location filename="ui_video_control.py" line="190"/>
         <source>重播</source>
         <translation>Replay</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="186"/>
+        <location filename="ui_video_control.py" line="191"/>
         <source>播放/暂停</source>
         <translation>Play/Pause</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="187"/>
+        <location filename="ui_video_control.py" line="192"/>
         <source>滑动滚轮修改播放速度</source>
         <translation>Scroll the mouse wheel to adjust the playing speed</translation>
     </message>
@@ -637,6 +637,36 @@
         <location filename="ui_about.py" line="245"/>
         <source>致谢：濮天羿、向飞宇、钟言、翁逸杰、张砷镓、Thomas Kolar</source>
         <translation>Acknowledgements: 濮天羿, 向飞宇, 钟言, 翁逸杰, 张砷镓, Thomas Kolar</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="463"/>
+        <source>录像</source>
+        <translation>Replay</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="151"/>
+        <source>全选</source>
+        <translation>Select All</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="167"/>
+        <source>导出选中的录像</source>
+        <translation>Export selected replays</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="292"/>
+        <source>时间</source>
+        <translation>Time</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="300"/>
+        <source>事件</source>
+        <translation>Event</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="308"/>
+        <source>标签</source>
+        <translation>Label</translation>
     </message>
 </context>
 <context>

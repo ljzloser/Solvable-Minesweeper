@@ -336,6 +336,11 @@ background-color: rgb(240, 240, 240);</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QTabWidget::pane { margin: 0px; border: 0px; }
+QTabBar::tab {
+    font-family: &quot;Microsoft YaHei&quot;, &quot;微软雅黑&quot;, &quot;Segoe UI&quot;, Arial, sans-serif;
+    font-size: 9pt;
+    height: 22px;
+}
 </string>
      </property>
      <property name="currentIndex">

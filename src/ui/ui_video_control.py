@@ -169,6 +169,11 @@ class Ui_Form(object):
         self.tabWidget = QtWidgets.QTabWidget(Form)
         self.tabWidget.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.tabWidget.setStyleSheet("QTabWidget::pane { margin: 0px; border: 0px; }\n"
+"QTabBar::tab {\n"
+"    font-family: \"Microsoft YaHei\", \"微软雅黑\", \"Segoe UI\", Arial, sans-serif;\n"
+"    font-size: 9pt;\n"
+"    height: 22px;\n"
+"}\n"
 "")
         self.tabWidget.setTabsClosable(True)
         self.tabWidget.setMovable(True)
