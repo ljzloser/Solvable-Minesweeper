@@ -52,6 +52,7 @@ def on_ready_read(socket: QLocalSocket):
 
 
 def cli_check_file(file_path: str) -> int:
+    # python main.py -c C:\Users\jia32\Downloads\Metaminesweeper-snapshot\metaminesweeper\replay
     result = {
         "error": "",
         "data": []
@@ -97,10 +98,13 @@ def cli_check_file(file_path: str) -> int:
                         checksum = ui.checksum_guard.get_checksum(
                             video.raw_data[: -(len(video.checksum) + 2)]
                         )
+                        # print(-(len(video.checksum) + 2))
                         if video.checksum == checksum:
                             evf_evfs_files[ide] = (e, 0)
                         else:
-                            evf_evfs_files[ide] = (e, 1)
+                            evf_evfs_files[ide] = (e + ' <==> ' +str(list(video.checksum)) + 
+                                                   ' <==> ' +str(list(checksum))+ ' <==> ' +
+                                                     str(list(video.raw_data[: -(len(video.checksum) + 2)][:40]))+ ' <==> ' + str(list(video.raw_data[: -(len(video.checksum) + 2)][-40:])), 1)
                 elif e.endswith(".evfs"):
                     # 检验evfs文件是否合法
                     videos = ms.Evfs(e)
