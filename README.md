@@ -172,7 +172,7 @@
 ## 下载链接
 
 ### 正式版v3.2.2：
-添加了插件功能。开始支持播放RMV2录像。修复了在局面边框上按下、局面内释放时，处理错误的严重bug。修复了不能在“cell0”上双击的bug。优化了“关于”菜单。补全了计数器中缺失的若干算子、删除了checksum_ok变量。修复了一个evfs安全漏洞。添加了命令行校验录像工具。现在限值光标不能超出边框时，窗口始终置顶。添加了打开录像、设置目录的菜单选项。  
+添加了插件功能。开始支持播放RMV2录像。修复了在局面边框上按下、局面内释放时，处理错误的严重bug。修复了不能在“cell0”上双击的bug。优化了“关于”菜单。补全了计数器中缺失的若干算子、删除了checksum_ok变量。修复了一个evfs安全漏洞。添加了命令行校验录像工具。现在限制光标不能超出边框时，窗口始终置顶。添加了打开录像、设置目录的菜单选项。  
 链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe](https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe)
 
 ### 正式版v3.2.1：
