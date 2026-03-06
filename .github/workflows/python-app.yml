@@ -52,17 +52,17 @@ jobs:
 
       - name: Package with PyInstaller
         run: |
-          pyinstaller ^
-            --icon src/media/cat.ico ^
-            --noconsole ^
-            --noconfirm ^
-            --clean ^
-            --paths src ^
-            --name metaminesweeper ^
-            --add-data "src/media;media" ^
-            --add-data "src/en_US.qm;." ^
-            --add-data "src/de_DE.qm;." ^
-            --add-data "src/pl_PL.qm;." ^
+          pyinstaller `
+            --icon src/media/cat.ico `
+            --noconsole `
+            --noconfirm `
+            --clean `
+            --paths src `
+            --name metaminesweeper `
+            --add-data "src/media;media" `
+            --add-data "src/en_US.qm;." `
+            --add-data "src/de_DE.qm;." `
+            --add-data "src/pl_PL.qm;." `
             src/main.py
 
       - name: Upload artifacts
