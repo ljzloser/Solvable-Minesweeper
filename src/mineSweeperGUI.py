@@ -642,7 +642,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             if not country:
                 country = "XX"
             elif len(country) == 2 and country.isalpha() and country.isascii():
-                file_path = self.r_path.with_name('media') / (country.lower() + ".svg")
+                file_path = superGUI.resource_path('media') / (country.lower() + ".svg")
                 if os.path.exists(file_path):
                     country = country.upper()
             elif country in country_name:

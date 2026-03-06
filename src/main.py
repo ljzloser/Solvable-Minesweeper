@@ -16,20 +16,11 @@ from mp_plugins.context import AppContext
 from mp_plugins.events import *
 from mp_plugins import PluginManager
 from pathlib import Path
-# import os
 from utils import get_paths, patch_env
 
 os.environ["QT_FONT_DPI"] = "96"
 
 
-# def patch_env():
-#     import os
-
-
-#     env = os.environ.copy()
-#     root = os.path.dirname(os.path.abspath(__file__))  # 你的项目根目录
-#     env["PYTHONPATH"] = root
-#     return env
 
 
 def on_new_connection(localServer: QLocalServer):

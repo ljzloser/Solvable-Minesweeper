@@ -267,9 +267,6 @@ class CountryComboBox(QComboBox):
             QComboBox QAbstractItemView {
                 text-align: center;
             }
-            QComboBox {
-                qproperty-alignment: 'AlignCenter';
-            }
         """)
 
     def _on_text_edited(self, text):
