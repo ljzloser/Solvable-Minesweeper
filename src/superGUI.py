@@ -493,7 +493,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self._minenum = self.game_setting.get_or_set_value("DEFAULT/minenum", 99, int)
         self.mineUnFlagedNum = self.minenum
         # “自动重开比例”，大于等于该比例时，不自动重开。负数表示禁用。0相当于禁用，但可以编辑。
-        self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", 30, int)
+        self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", -30, int)
         # self.allow_auto_replay = self.game_setting.get_or_set_value("DEFAULT/allow_auto_replay", True, bool)
         self.auto_notification = self.game_setting.get_or_set_value("DEFAULT/auto_notification", True, bool)
         self.player_identifier = self.game_setting.get_or_set_value("DEFAULT/player_identifier", "匿名玩家(anonymous player)", str)
