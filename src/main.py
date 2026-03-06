@@ -52,33 +52,24 @@ def on_ready_read(socket: QLocalSocket):
 
 
 def cli_check_file(file_path: str) -> int:
-    # python main.py -c C:\Users\jia32\Downloads\Metaminesweeper-snapshot\metaminesweeper\replay
-    result = {
-        "error": "",
-        "data": []
-    }
-    
+    result = {"error": "", "data": []}
+
     if not os.path.exists(file_path):
         result["error"] = "file not found"
     else:
-        # 搜集目录或文件下的所有evf和evfs文件
         evf_evfs_files = []
-        if os.path.isfile(file_path) and (
-            file_path.endswith(".evf") or file_path.endswith(".evfs")
-        ):
-            evf_evfs_files = [os.path.abspath(file_path)]
+        if os.path.isfile(file_path):
+            if file_path.endswith((".evf", ".evfs")):
+                evf_evfs_files = [os.path.abspath(file_path)]
         elif os.path.isdir(file_path):
-            evf_evfs_files = [
-                os.path.abspath(os.path.join(root, file))
-                for root, dirs, files in os.walk(file_path)
-                for file in files
-                if file.endswith(".evf") or file.endswith(".evfs")
-            ]
+            for root, _, files in os.walk(file_path):
+                for file in files:
+                    if file.endswith((".evf", ".evfs")):
+                        evf_evfs_files.append(os.path.abspath(os.path.join(root, file)))
 
         if not evf_evfs_files:
             result["error"] = "must be evf or evfs files or directory"
         else:
-            # 实例化一个MineSweeperGUI出来
             app = QtWidgets.QApplication(sys.argv)
             mainWindow = mainWindowGUI.MainWindow()
             ui = mineSweeperGUI.MineSweeperGUI(mainWindow, sys.argv)
@@ -87,8 +78,8 @@ def cli_check_file(file_path: str) -> int:
                 if not ui.checksum_module_ok():
                     result["error"] = "checksum module error"
                     break
+
                 if e.endswith(".evf"):
-                    # 检验evf文件是否合法
                     video = ms.EvfVideo(e)
                     try:
                         video.parse()
@@ -98,12 +89,8 @@ def cli_check_file(file_path: str) -> int:
                         checksum = ui.checksum_guard.get_checksum(
                             video.raw_data[: -(len(video.checksum) + 2)]
                         )
-                        if list(video.checksum) == list(checksum):
-                            evf_evfs_files[ide] = (e, 0)
-                        else:
-                            evf_evfs_files[ide] = (e, 1)
+                        evf_evfs_files[ide] = (e, 0 if list(video.checksum) == list(checksum) else 1)
                 elif e.endswith(".evfs"):
-                    # 检验evfs文件是否合法
                     videos = ms.Evfs(e)
                     try:
                         videos.parse()
@@ -112,34 +99,34 @@ def cli_check_file(file_path: str) -> int:
                     else:
                         if videos.len() <= 0:
                             evf_evfs_files[ide] = (e, 2)
-                        checksum = ui.checksum_guard.get_checksum(
-                            videos[0].evf_video.raw_data)
+                            continue
+
+                        checksum = ui.checksum_guard.get_checksum(videos[0].evf_video.raw_data)
                         if list(videos[0].checksum) != list(checksum):
                             evf_evfs_files[ide] = (e, 1)
                             continue
+
                         for idcell, cell in enumerate(videos[1:]):
                             checksum = ui.checksum_guard.get_checksum(
                                 cell.evf_video.raw_data + videos[idcell - 1].checksum
                             )
                             if list(cell.evf_video.checksum) != list(checksum):
                                 evf_evfs_files[ide] = (e, 1)
-                                continue
-                        evf_evfs_files[ide] = (e, 0)
-            
-            # 将结果转换为列表格式
-            if not result["error"]:  # 只有在没有错误的情况下才添加数据
-                data_list = []
-                for item in evf_evfs_files:
-                    if isinstance(item, tuple) and len(item) == 2:
-                        file_path_item, status = item
-                        data_list.append({"file": file_path_item, "status": status})
-                result["data"] = data_list
-    
-    # 写入out.json
+                                break
+                        else:
+                            evf_evfs_files[ide] = (e, 0)
+
+            if not result["error"]:
+                result["data"] = [
+                    {"file": item[0], "status": item[1]}
+                    for item in evf_evfs_files
+                    if isinstance(item, tuple) and len(item) == 2
+                ]
+
     output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out.json")
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
-    
+
     return 0
 
 

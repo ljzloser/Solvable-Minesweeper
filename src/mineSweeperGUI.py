@@ -167,26 +167,22 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             return
         self.label.set_rcp(self.row, self.column, pixSize)
         self.label.reloadCellPic(pixSize)
-        if (self.row, self.column, self.minenum) == (8, 8, 10):
-            self.predefinedBoardPara[1]['pixsize'] = pixSize
-        elif (self.row, self.column, self.minenum) == (16, 16, 40):
-            self.predefinedBoardPara[2]['pixsize'] = pixSize
-        elif (self.row, self.column, self.minenum) == (16, 30, 99):
-            self.predefinedBoardPara[3]['pixsize'] = pixSize
-        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[4]['row'],
-                                                       self.predefinedBoardPara[4]['column'],
-                                                       self.predefinedBoardPara[4]['mine_num']):
-            self.predefinedBoardPara[4]['pixsize'] = pixSize
-        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[5]['row'],
-                                                       self.predefinedBoardPara[5]['column'],
-                                                       self.predefinedBoardPara[5]['mine_num']):
-            self.predefinedBoardPara[5]['pixsize'] = pixSize
-        elif (self.row, self.column, self.minenum) == (self.predefinedBoardPara[6]['row'],
-                                                       self.predefinedBoardPara[6]['column'],
-                                                       self.predefinedBoardPara[6]['mine_num']):
-            self.predefinedBoardPara[6]['pixsize'] = pixSize
+
+        board_key = (self.row, self.column, self.minenum)
+        if board_key == (8, 8, 10):
+            idx = 1
+        elif board_key == (16, 16, 40):
+            idx = 2
+        elif board_key == (16, 30, 99):
+            idx = 3
         else:
-            self.predefinedBoardPara[0]['pixsize'] = pixSize
+            idx = 0
+            for i in range(4, 7):
+                p = self.predefinedBoardPara[i]
+                if board_key == (p.get('row'), p.get('column'), p.get('mine_num')):
+                    idx = i
+                    break
+        self.predefinedBoardPara[idx]['pixsize'] = pixSize
 
         # self.label.setMinimumSize(QtCore.QSize(
         #     pixSize * self.column + 8, pixSize * self.row + 8))
@@ -1044,52 +1040,22 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             # })
 
     def set_board_params(self, row, column, minenum):
-        # 把局面设置成(row, column, minenum)，同时提取配套参数
-        # 打开录像时、改级别、改设置时用
         self.row = row
         self.column = column
         self.minenum = minenum
-        if (row, column, minenum) == (8, 8, 10):
-            self.pixSize = self.predefinedBoardPara[1]['pixsize']
-            self.gameMode = self.predefinedBoardPara[1]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[1]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[1]['attempt_times_limit']
-        elif (row, column, minenum) == (16, 16, 40):
-            self.pixSize = self.predefinedBoardPara[2]['pixsize']
-            self.gameMode = self.predefinedBoardPara[2]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[2]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[2]['attempt_times_limit']
-        elif (row, column, minenum) == (16, 30, 99):
-            self.pixSize = self.predefinedBoardPara[3]['pixsize']
-            self.gameMode = self.predefinedBoardPara[3]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[3]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[3]['attempt_times_limit']
-        elif (row, column, minenum) == (self.predefinedBoardPara[4]['row'],
-                                        self.predefinedBoardPara[4]['column'],
-                                        self.predefinedBoardPara[4]['mine_num']):
-            self.pixSize = self.predefinedBoardPara[4]['pixsize']
-            self.gameMode = self.predefinedBoardPara[4]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[4]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[4]['attempt_times_limit']
-        elif (row, column, minenum) == (self.predefinedBoardPara[5]['row'],
-                                        self.predefinedBoardPara[5]['column'],
-                                        self.predefinedBoardPara[5]['mine_num']):
-            self.pixSize = self.predefinedBoardPara[5]['pixsize']
-            self.gameMode = self.predefinedBoardPara[5]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[5]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[5]['attempt_times_limit']
-        elif (row, column, minenum) == (self.predefinedBoardPara[6]['row'],
-                                        self.predefinedBoardPara[6]['column'],
-                                        self.predefinedBoardPara[6]['mine_num']):
-            self.pixSize = self.predefinedBoardPara[6]['pixsize']
-            self.gameMode = self.predefinedBoardPara[6]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[6]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[6]['attempt_times_limit']
-        else:
-            self.pixSize = self.predefinedBoardPara[0]['pixsize']
-            self.gameMode = self.predefinedBoardPara[0]['gamemode']
-            self.board_constraint = self.predefinedBoardPara[0]['board_constraint']
-            self.attempt_times_limit = self.predefinedBoardPara[0]['attempt_times_limit']
+
+        board_key = (row, column, minenum)
+        for i in range(1, 7):
+            p = self.predefinedBoardPara[i]
+            if (row, column, minenum) == (p.get('row'), p.get('column'), p.get('mine_num')):
+                board_key = i
+                break
+
+        params = self.predefinedBoardPara[0] if isinstance(board_key, tuple) else self.predefinedBoardPara[board_key]
+        self.pixSize = params['pixsize']
+        self.gameMode = params['gamemode']
+        self.board_constraint = params['board_constraint']
+        self.attempt_times_limit = params['attempt_times_limit']
 
     def setBoard_and_start(self, row, column, minenum):
         # 把局面设置成(row, column, minenum)，把3BV的限制设置成min3BV, max3BV
@@ -1130,29 +1096,22 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
             self.board_constraint = ui.board_constraint
             self.attempt_times_limit = ui.attempt_times_limit
-            if (self.row, self.column, self.minenum) == (8, 8, 10):
-                self.predefinedBoardPara[1]['attempt_times_limit'] = self.attempt_times_limit
-                self.predefinedBoardPara[1]['board_constraint'] = self.board_constraint
-                self.predefinedBoardPara[1]['gamemode'] = ui.gameMode
-            elif (self.row, self.column, self.minenum) == (16, 16, 40):
-                self.predefinedBoardPara[2]['attempt_times_limit'] = self.attempt_times_limit
-                self.predefinedBoardPara[2]['board_constraint'] = self.board_constraint
-                self.predefinedBoardPara[2]['gamemode'] = ui.gameMode
-            elif (self.row, self.column, self.minenum) == (16, 30, 99):
-                self.predefinedBoardPara[3]['attempt_times_limit'] = self.attempt_times_limit
-                self.predefinedBoardPara[3]['board_constraint'] = self.board_constraint
-                self.predefinedBoardPara[3]['gamemode'] = ui.gameMode
+
+            board_key = (self.row, self.column, self.minenum)
+            if board_key == (8, 8, 10):
+                idx = 1
+            elif board_key == (16, 16, 40):
+                idx = 2
+            elif board_key == (16, 30, 99):
+                idx = 3
             else:
-                self.predefinedBoardPara[0]['attempt_times_limit'] = self.attempt_times_limit
-                self.predefinedBoardPara[0]['board_constraint'] = self.board_constraint
-                self.predefinedBoardPara[0]['gamemode'] = ui.gameMode
+                idx = 0
+            self.predefinedBoardPara[idx]['attempt_times_limit'] = self.attempt_times_limit
+            self.predefinedBoardPara[idx]['board_constraint'] = self.board_constraint
+            self.predefinedBoardPara[idx]['gamemode'] = ui.gameMode
 
             self.score_board_manager.with_namespace({
-                # "race_identifier": ui.race_identifier,
                 "mode": self.gameMode,
-                # "row": self.row,
-                # "column": self.column,
-                # "minenum": self.minenum,
             })
             self.score_board_manager.show(self.label.ms_board, index_type=1)
 
@@ -1380,9 +1339,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def is_fair(self) -> bool:
         if self.board_constraint:
             return False
-        # 因为记录evfs是绑定game_state的setter方法的，所以假如勾选记录evfs，
-        # 此处就是"playing"；反之，此处就是"win"或"fail"，总之都是fair的
-        return self.game_state == "win" or self.game_state == "fail" or self.game_state == "playing"
+        return self.game_state in ("win", "fail", "playing")
 
     def cell_is_in_board(self, i, j):
         # 点在局面内，单位是格不是像素
@@ -1444,32 +1401,25 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ctypes.windll.user32.ClipCursor(ctypes.byref(r))
 
     def closeEvent_(self):
-        # 主窗口关闭的回调
         self.unlimit_cursor()
-        # self.score_board_manager.close()
-        self.game_setting.set_value(
-            "DEFAULT/mainWinTop", str(self.mainWindow.y()))
-        self.game_setting.set_value(
-            "DEFAULT/mainWinLeft", str(self.mainWindow.x()))
+        self.game_setting.set_value("DEFAULT/mainWinTop", str(self.mainWindow.y()))
+        self.game_setting.set_value("DEFAULT/mainWinLeft", str(self.mainWindow.x()))
         self.game_setting.set_value("DEFAULT/row", str(self.row))
         self.game_setting.set_value("DEFAULT/column", str(self.column))
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
 
-        if (self.row, self.column, self.minenum) == (8, 8, 10):
-            self.game_setting.set_value(
-                "BEGINNER/gamemode", str(self.gameMode))
-            self.game_setting.set_value("BEGINNER/pixsize", str(self.pixSize))
-        elif (self.row, self.column, self.minenum) == (16, 16, 40):
-            self.game_setting.set_value(
-                "INTERMEDIATE/gamemode", str(self.gameMode))
-            self.game_setting.set_value(
-                "INTERMEDIATE/pixsize", str(self.pixSize))
-        elif (self.row, self.column, self.minenum) == (16, 30, 99):
-            self.game_setting.set_value("EXPERT/gamemode", str(self.gameMode))
-            self.game_setting.set_value("EXPERT/pixsize", str(self.pixSize))
+        board_key = (self.row, self.column, self.minenum)
+        if board_key == (8, 8, 10):
+            section = "BEGINNER"
+        elif board_key == (16, 16, 40):
+            section = "INTERMEDIATE"
+        elif board_key == (16, 30, 99):
+            section = "EXPERT"
         else:
-            self.game_setting.set_value("CUSTOM/gamemode", str(self.gameMode))
-            self.game_setting.set_value("CUSTOM/pixsize", str(self.pixSize))
+            section = "CUSTOM"
+
+        self.game_setting.set_value(f"{section}/gamemode", str(self.gameMode))
+        self.game_setting.set_value(f"{section}/pixsize", str(self.pixSize))
 
         self.game_setting.sync()
         self.record_setting.sync()
