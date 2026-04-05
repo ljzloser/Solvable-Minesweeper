@@ -32,9 +32,6 @@ import metaminesweeper_checksum
 from mainWindowGUI import MainWindow
 from datetime import datetime
 from mineSweeperVideoPlayer import MineSweeperVideoPlayer
-from pluginDialog import PluginManagerUI
-from mp_plugins import PluginManager, PluginContext
-from mp_plugins.events import GameEndEvent
 
 
 class MineSweeperGUI(MineSweeperVideoPlayer):
@@ -560,16 +557,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         status = utils.GameBoardState(ms_board.game_board_state)
         if status == utils.GameBoardState.Win:
             self.dump_evf_file_data()
-            event = GameEndEvent()
-            data = msgspec.structs.asdict(event)
-            for key in data:
-                if hasattr(ms_board, key):
-                    if key == "raw_data":
-                        data[key] = base64.b64encode(
-                            ms_board.raw_data).decode("utf-8")
-                    data[key] = getattr(ms_board, key)
-            event = GameEndEvent(**data)
-            PluginManager.instance().send_event(event, response_count=0)
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()
@@ -1425,5 +1412,4 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.record_setting.sync()
 
     def action_OpenPluginDialog(self):
-        dialog = PluginManagerUI(PluginManager.instance().Get_Plugin_Names())
-        dialog.exec()
+        pass
