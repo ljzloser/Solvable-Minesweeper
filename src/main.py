@@ -156,11 +156,41 @@ if __name__ == "__main__":
 
         # ── 启动 ZMQ Server + 插件管理器 ──
         game_server = GameServerBridge(ui)
-        plugin_process = subprocess.Popen(
-            [sys.executable, "-m", "plugin_manager", "--mode", "tray"],
-            cwd=os.path.dirname(os.path.abspath(__file__)),
-            env=get_env_for_subprocess(),
-        )
+
+        # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
+        if getattr(sys, 'frozen', False):
+            base_dir = os.path.dirname(sys.executable)
+            plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
+            if not os.path.exists(plugin_exe):
+                QtWidgets.QMessageBox.warning(
+                    mainWindow, "Plugin Manager",
+                    f"plugin_manager.exe not found:\n{plugin_exe}\n\nPlugins will be disabled.",
+                )
+                plugin_process = None
+            else:
+                cmd = [plugin_exe, "--mode", "tray"]
+                cwd = base_dir
+                try:
+                    plugin_process = subprocess.Popen(
+                        cmd, cwd=cwd, env=get_env_for_subprocess(),
+                    )
+                except Exception as e:
+                    QtWidgets.QMessageBox.warning(
+                        mainWindow, "Plugin Manager",
+                        f"Failed to start plugin_manager:\n{e}",
+                    )
+                    plugin_process = None
+        else:
+            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray"]
+            cwd = os.path.dirname(os.path.abspath(__file__))
+            try:
+                plugin_process = subprocess.Popen(
+                    cmd, cwd=cwd, env=get_env_for_subprocess(),
+                )
+            except Exception as e:
+                print(f"[WARN] Failed to start plugin_manager: {e}")
+                plugin_process = None
+
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 
         # 连接信号：插件发来的新游戏指令 → 主线程处理
@@ -180,7 +210,7 @@ if __name__ == "__main__":
 
         def _cleanup():
             game_server.stop()
-            if plugin_process.poll() is None:
+            if plugin_process is not None and plugin_process.poll() is None:
                 plugin_process.terminate()
                 plugin_process.wait(timeout=5)
 

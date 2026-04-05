@@ -485,11 +485,17 @@ class PluginManagerWindow(QMainWindow):
         self._list = lst
         left_layout.addWidget(lst)
 
-        # 刷新按钮
+        # 刷新 + 调试按钮行
         btn_row = QHBoxLayout()
         self._refresh_btn = QPushButton(self.tr("刷新"))
         btn_row.addWidget(self._refresh_btn)
         btn_row.addStretch()
+
+        self._debug_btn = QPushButton("🐛 Debug")
+        self._debug_btn.setCheckable(True)
+        self._debug_btn.setToolTip(self.tr("开启/关闭远程调试 (debugpy)"))
+        btn_row.addWidget(self._debug_btn)
+
         left_layout.addLayout(btn_row)
 
         left_panel.setMaximumWidth(200)
@@ -585,6 +591,9 @@ class PluginManagerWindow(QMainWindow):
         self._list.customContextMenuRequested.connect(self._on_list_context_menu)
         self.connection_changed.connect(self._on_conn_changed)
 
+        # 调试开关
+        self._debug_btn.toggled.connect(self._toggle_debug)
+
     # ── 连接状态 ────────────────────────────────────────
 
     def set_connected(self, ok: bool) -> None:
@@ -612,6 +621,52 @@ class PluginManagerWindow(QMainWindow):
             self._conn_status.set_status(ok, rc)
         except Exception:
             pass
+
+    # ── 远程调试 ────────────────────────────────────────
+
+    _debug_active: bool = False
+
+    def _toggle_debug(self, enabled: bool) -> None:
+        """开启/关闭 debugpy 远程调试"""
+        if enabled:
+            self._start_debug()
+        else:
+            self._stop_debug()
+
+    def _start_debug(self) -> None:
+        """启动 debugpy 监听"""
+        try:
+            import debugpy
+            # in_process_debug_adapter=True: 不启动子进程，直接在当前进程中运行 adapter
+            # 解决 PyInstaller 打包后子进程找不到 Python/debugpy 的问题
+            debugpy.listen(("0.0.0.0", 5678), in_process_debug_adapter=True)
+            PluginManagerWindow._debug_active = True
+            self._debug_btn.setText("🐛 Listening...")
+            self._debug_btn.setStyleSheet("background: #4caf50; color: white; font-weight: bold;")
+            self.statusBar().showMessage(self.tr("Debug server listening on port 5678, waiting for VS Code attach..."))
+            logger.info("Debug server started on port 5678")
+        except ImportError as e:
+            self._debug_btn.setChecked(False)
+            QMessageBox.warning(
+                self, "Debug",
+                f"debugpy import failed:\n{e}",
+            )
+        except Exception as e:
+            self._debug_btn.setChecked(False)
+            QMessageBox.warning(self, "Debug", f"Failed to start debugger:\n{e}")
+
+    def _stop_debug(self) -> None:
+        """停止 debugpy"""
+        try:
+            import debugpy
+            debugpy.stop_listen()
+        except Exception:
+            pass
+        PluginManagerWindow._debug_active = False
+        self._debug_btn.setText("🐛 Debug")
+        self._debug_btn.setStyleSheet("")
+        self.statusBar().showMessage(self.tr("Debug stopped"))
+        logger.info("Debug server stopped")
 
     # ── 插件列表 ────────────────────────────────────────
 

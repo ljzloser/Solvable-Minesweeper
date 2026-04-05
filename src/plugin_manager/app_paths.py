@@ -95,14 +95,16 @@ def get_user_plugin_dirs() -> list[Path]:
     """
     获取用户自定义插件目录（外部，用户自行添加的插件）
 
-    - 开发模式: <project>/src/user_plugins/（可选）
-    - 打包模式:   <exe所在目录>/user_plugins/
+    - 开发模式: <项目根目录>/src/plugins/, <项目根目录>/src/user_plugins/
+    - 打包模式:   <exe所在目录>/plugins/, <exe所在目录>/user_plugins/
     """
     base = get_executable_dir()
-    user_dir = base / "user_plugins"
-    if user_dir.is_dir():
-        return [user_dir]
-    return []
+    result: list[Path] = []
+    for name in ("plugins", "user_plugins"):
+        d = base / name
+        if d.is_dir():
+            result.append(d)
+    return result
 
 
 def get_all_plugin_dirs() -> list[Path]:
