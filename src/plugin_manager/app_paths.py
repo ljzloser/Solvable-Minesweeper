@@ -87,7 +87,7 @@ def get_builtin_plugin_dirs() -> list[Path]:
     plugin_dir = bundle / "plugins"
     if plugin_dir.is_dir():
         return [plugin_dir]
-    logger.warning("内置插件目录不存在: %s", plugin_dir)
+    logger.warning(f"内置插件目录不存在: {plugin_dir}")
     return []
 
 
@@ -153,7 +153,7 @@ def patch_sys_path_for_frozen() -> None:
     bundle = str(get_bundle_dir())
     if bundle not in sys.path:
         sys.path.insert(0, bundle)
-        logger.debug("已将 bundle 目录加入 sys.path: %s", bundle)
+        logger.debug(f"已将 bundle 目录加入 sys.path: {bundle}")
 
 
 def get_env_for_subprocess(env: dict | None = None) -> dict:
@@ -175,7 +175,7 @@ def get_env_for_subprocess(env: dict | None = None) -> dict:
         paths.append(existing)
     env["PYTHONPATH"] = os.pathsep.join(paths)
 
-    logger.debug("子进程环境: PYTHONPATH=%s", env.get("PYTHONPATH"))
+    logger.debug(f"子进程环境: PYTHONPATH={env.get('PYTHONPATH')}")
     return env
 
 

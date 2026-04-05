@@ -188,7 +188,7 @@ class PluginManager:
         if show_main_window:
             self._main_window.show()
         
-        logger.info("Plugin manager started with GUI (window=%s)", show_main_window)
+        logger.info(f"Plugin manager started with GUI (window={show_main_window})")
     
     def exec_gui(self, *, show_main_window: bool = True) -> int:
         """

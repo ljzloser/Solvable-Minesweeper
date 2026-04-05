@@ -912,7 +912,7 @@ class HistoryPlugin(BasePlugin):
         )
         conn.commit()
         conn.close()
-        self.logger.info("Database created: %s", db_path)
+        self.logger.info(f"Database created: {db_path}")
 
     # ── 事件处理 ──────────────────────────────────────────
 
@@ -922,7 +922,7 @@ class HistoryPlugin(BasePlugin):
         try:
             data["raw_data"] = base64.b64decode(raw_b64) if raw_b64 else None
         except Exception as e:
-            self.logger.warning("base64 decode failed: %s", e)
+            self.logger.warning(f"base64 decode failed: {e}")
             data["raw_data"] = None
         del data["timestamp"]
         columns = ", ".join(data.keys())
@@ -938,7 +938,7 @@ class HistoryPlugin(BasePlugin):
             )
             conn.commit()
             self.logger.info(
-                "Saved: board_state=%s time=%.1fs", event.game_board_state, event.rtime
+                f"Saved: board_state={event.game_board_state} time={event.rtime:.1f}s"
             )
         finally:
             conn.close()

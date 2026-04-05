@@ -221,7 +221,7 @@ class BasePlugin(ABC):
             level = LogLevel(level.upper())
         self._log_level = level
         set_plugin_log_level(self._log_sink_id, level)
-        self.logger.debug("Log level changed to %s", level)
+        self.logger.debug(f"Log level changed to {level}")
 
     @property
     def plugin_icon(self) -> QIcon:

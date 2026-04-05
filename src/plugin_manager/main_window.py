@@ -889,7 +889,7 @@ class PluginManagerWindow(QMainWindow):
             else:
                 subprocess.Popen(["xdg-open", str(log_file)])
         except Exception as e:
-            logger.warning("Failed to open log file %s: %s", log_file, e)
+            logger.warning(f"Failed to open log file {log_file}: {e}")
 
     def _open_plugin_settings(self, name: str) -> None:
         """打开插件设置对话框"""
@@ -977,13 +977,13 @@ class PluginManagerWindow(QMainWindow):
     # ── 标签页弹出/嵌回 ─────────────────────────────────
 
     def _on_tab_detached(self, name: str) -> None:
-        logger.debug("Tab detached: %s", name)
+        logger.debug(f"Tab detached: {name}")
 
     def _on_tab_attached(self, name: str) -> None:
-        logger.debug("Tab attached back: %s", name)
+        logger.debug(f"Tab attached back: {name}")
 
     def _on_tab_closed(self, name: str) -> None:
-        logger.debug("Tab closed: %s", name)
+        logger.debug(f"Tab closed: {name}")
         self._closed_plugins.add(name)
 
     # ── 窗口事件 ────────────────────────────────────────
