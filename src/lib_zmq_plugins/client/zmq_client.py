@@ -283,8 +283,11 @@ class ZMQClient:
         topic = msg[0].decode("utf-8", errors="replace")
         try:
             event = self._serializer.decode_event(msg[1])
-        except Exception:
-            self._log.warning("Failed to decode event for topic: %s", topic, exc_info=True)
+        except Exception as e:
+            self._log.warning(
+                f"Failed to decode event for topic: {topic}, Exception: {e}",
+                exc_info=True,
+            )
             return
         self._notify_subscribers(topic, event)
 

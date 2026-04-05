@@ -28,6 +28,23 @@ if TYPE_CHECKING:
 logger = loguru.logger.bind(name="PluginManager")
 
 
+class _LogHandler(LogHandler):
+    def debug(self, msg: str, /, *args: object, **kwargs: object) -> None:
+        logger.debug(msg, *args, **kwargs)
+
+    def info(self, msg: str, /, *args: object, **kwargs: object) -> None:
+        logger.info(msg, *args, **kwargs)
+
+    def warning(self, msg: str, /, *args: object, **kwargs: object) -> None:
+        logger.warning(msg, *args, **kwargs)
+
+    def error(self, msg: str, /, *args: object, **kwargs: object) -> None:
+        logger.error(msg, *args, **kwargs)
+
+    def critical(self, msg: str, /, *args: object, **kwargs: object) -> None:
+        logger.critical(msg, *args, **kwargs)
+
+
 class PluginManager:
     """
     插件管理器
@@ -307,10 +324,9 @@ def run_plugin_manager_process(
         退出代码
     """
     manager = PluginManager(
-        endpoint=endpoint,
-        plugin_dirs=plugin_dirs,
+        endpoint=endpoint, plugin_dirs=plugin_dirs, log_handler=_LogHandler()
     )
-    
+
     try:
         if with_gui:
             return manager.exec_gui(show_main_window=show_main_window)
@@ -323,5 +339,5 @@ def run_plugin_manager_process(
         pass
     finally:
         manager.stop()
-    
+
     return 0

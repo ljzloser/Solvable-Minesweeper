@@ -112,6 +112,32 @@ def get_all_plugin_dirs() -> list[Path]:
     return get_builtin_plugin_dirs() + get_user_plugin_dirs()
 
 
+def get_plugin_data_dir(plugin_class: type | str) -> Path:
+    """
+    获取指定插件的专属数据目录（可写）
+
+    根据传入的插件类或名称，在 data/plugin_data/ 下创建对应子目录。
+    每个插件拥有独立的数据空间，互不干扰。
+
+    - 开发模式: <project>/data/plugin_data/<plugin_name>/
+    - 打包模式:   <exe所在目录>/data/plugin_data/<plugin_name>/
+
+    Args:
+        plugin_class: 插件类或插件名称字符串
+
+    Returns:
+        插件的专属数据目录路径
+    """
+    if isinstance(plugin_class, type):
+        name = plugin_class.__name__
+    else:
+        name = str(plugin_class)
+
+    plugin_data_dir = get_data_dir() / "plugin_data" / name
+    plugin_data_dir.mkdir(parents=True, exist_ok=True)
+    return plugin_data_dir
+
+
 # ── 环境变量补丁（给子进程使用） ───────────────────────
 
 def patch_sys_path_for_frozen() -> None:

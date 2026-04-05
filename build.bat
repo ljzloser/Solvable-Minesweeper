@@ -10,11 +10,16 @@ if exist "%OUT%\plugin_manager" rmdir /s /q "%OUT%\plugin_manager"
 
 echo.
 echo [1/3] metaminsweeper.exe
-pyinstaller --noconfirm --name metaminsweeper --windowed --distpath %OUT% src\main.py
+pyinstaller --noconfirm --name metaminsweeper --windowed --distpath %OUT% ^
+    --icon src/media/cat.ico ^
+    --clean ^
+    --paths src ^
+    --add-data "src/media;media" ^
+    src\main.py
 
 echo.
 echo [2/3] plugin_manager.exe
-pyinstaller --noconfirm --name plugin_manager --windowed --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --distpath %OUT% src\plugin_manager\_run.py
+pyinstaller --noconfirm --name plugin_manager --windowed --hidden-import sqlite3 --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --distpath %OUT% src\plugin_manager\_run.py
 
 echo.
 echo [3/3] Copy resources to metaminsweeper\
