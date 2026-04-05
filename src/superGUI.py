@@ -9,10 +9,18 @@ from ui.ui_main_board import Ui_MainWindow
 from pathlib import Path
 from gameScoreBoard import gameScoreBoardManager
 from country_name import country_name
-import os
+import os, sys
 from typing import List, Tuple
 
-version = "元3.2.1"
+version = "元3.2.2"
+
+def resource_path(relative_path: str) -> Path:
+    """获取资源文件路径（开发环境 + PyInstaller）
+    用于qm文件和media
+    """
+    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return base_path / relative_path
+
 
 class IniConfig:
     def __init__(self, file_path):
@@ -175,6 +183,7 @@ class Ui_MainWindow(Ui_MainWindow):
             # 没权限，改用 %APPDATA%\你的程序名\
             self.setting_path = Path(os.environ['APPDATA']) / ('MetaMineSweeper' + version[1:])
             self.setting_path.mkdir(parents=True, exist_ok=True)
+        # r_path是打包后_internal外面那一层，和exe同一级
         self.r_path = r_path
             
         # 录像保存位置
@@ -189,22 +198,22 @@ class Ui_MainWindow(Ui_MainWindow):
         self.record_setting = IniConfig(record_path)
 
 
-        self.ico_path = str(r_path.with_name('media').joinpath('cat.ico'))
-        self.smileface_path = str(r_path.with_name('media').joinpath('smileface.svg'))
-        self.clickface_path = str(r_path.with_name('media').joinpath('clickface.svg'))
-        self.lostface_path = str(r_path.with_name('media').joinpath('lostface.svg'))
-        self.winface_path = str(r_path.with_name('media').joinpath('winface.svg'))
-        self.smilefacedown_path = str(r_path.with_name('media').joinpath('smilefacedown.svg'))
-        self.LED0_path = str(r_path.with_name('media').joinpath('LED0.png'))
-        self.LED1_path = str(r_path.with_name('media').joinpath('LED1.png'))
-        self.LED2_path = str(r_path.with_name('media').joinpath('LED2.png'))
-        self.LED3_path = str(r_path.with_name('media').joinpath('LED3.png'))
-        self.LED4_path = str(r_path.with_name('media').joinpath('LED4.png'))
-        self.LED5_path = str(r_path.with_name('media').joinpath('LED5.png'))
-        self.LED6_path = str(r_path.with_name('media').joinpath('LED6.png'))
-        self.LED7_path = str(r_path.with_name('media').joinpath('LED7.png'))
-        self.LED8_path = str(r_path.with_name('media').joinpath('LED8.png'))
-        self.LED9_path = str(r_path.with_name('media').joinpath('LED9.png'))
+        self.ico_path = str(resource_path('media') / 'cat.ico')
+        self.smileface_path = str(resource_path('media') / 'smileface.svg')
+        self.clickface_path = str(resource_path('media') / 'clickface.svg')
+        self.lostface_path = str(resource_path('media') / 'lostface.svg')
+        self.winface_path = str(resource_path('media') / 'winface.svg')
+        self.smilefacedown_path = str(resource_path('media') / 'smilefacedown.svg')
+        self.LED0_path = str(resource_path('media') / 'LED0.png')
+        self.LED1_path = str(resource_path('media') / 'LED1.png')
+        self.LED2_path = str(resource_path('media') / 'LED2.png')
+        self.LED3_path = str(resource_path('media') / 'LED3.png')
+        self.LED4_path = str(resource_path('media') / 'LED4.png')
+        self.LED5_path = str(resource_path('media') / 'LED5.png')
+        self.LED6_path = str(resource_path('media') / 'LED6.png')
+        self.LED7_path = str(resource_path('media') / 'LED7.png')
+        self.LED8_path = str(resource_path('media') / 'LED8.png')
+        self.LED9_path = str(resource_path('media') / 'LED9.png')
 
 
         self.mainWindow.setWindowIcon(QIcon(self.ico_path))
@@ -426,8 +435,8 @@ class Ui_MainWindow(Ui_MainWindow):
 
     def minimumWindow(self):
         # 最小化展示窗口，并固定尺寸
-        self.label.setFixedSize(QtCore.QSize(self.pixSize*self.column + 8,
-                                             self.pixSize*self.row + 8))
+        self.label.setFixedSize(QtCore.QSize(self.pixSize*self.column,
+                                             self.pixSize*self.row))
         self.windowSizeState = 'tight'
         self.timer_ = QTimer()
         self.timer_.timeout.connect(self.__minimumWindow)
@@ -447,7 +456,7 @@ class Ui_MainWindow(Ui_MainWindow):
             language = self.language
         app = QApplication.instance()
         if language != "zh_CN":
-            self.trans.load(str(self.r_path.with_name(language + '.qm')))
+            self.trans.load(str(resource_path(language + '.qm')))
             app.installTranslator(self.trans)
             self.retranslateUi(self.mainWindow)
             self.score_board_manager.retranslateUi(self.score_board_manager.ui.QWidget)
@@ -493,7 +502,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self._minenum = self.game_setting.get_or_set_value("DEFAULT/minenum", 99, int)
         self.mineUnFlagedNum = self.minenum
         # “自动重开比例”，大于等于该比例时，不自动重开。负数表示禁用。0相当于禁用，但可以编辑。
-        self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", 30, int)
+        self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", -30, int)
         # self.allow_auto_replay = self.game_setting.get_or_set_value("DEFAULT/allow_auto_replay", True, bool)
         self.auto_notification = self.game_setting.get_or_set_value("DEFAULT/auto_notification", True, bool)
         self.player_identifier = self.game_setting.get_or_set_value("DEFAULT/player_identifier", "匿名玩家(anonymous player)", str)
@@ -551,11 +560,22 @@ class Ui_MainWindow(Ui_MainWindow):
         self.record_setting.sync()
 
     def set_country_flag(self, country = None):
+        '''
+        设置右下角国旗图案。尽一切可能解析录像中的国旗。
+        例如，在vsweep中，国家是用户手动输入的，可能出现”中国“、”China“、”china“、”CN“、
+        ”cn“等情况，全部应该要正确解析。
+        不修改self.country变量
+        '''
         if country == None:
             country = self.country
-        # 设置右下角国旗图案
+        if country == None:
+            self.label_flag.clear()
+            self.label_flag.update()
+            return
         if country not in country_name:
-            file_path = self.r_path.with_name('media') / (country.lower() + ".svg")
+            country = country.capitalize()
+        if country not in country_name:
+            file_path = resource_path('media') / (country.lower() + ".svg")
             if os.path.exists(file_path):
                 flag_name = file_path
             else:
@@ -563,7 +583,7 @@ class Ui_MainWindow(Ui_MainWindow):
                 self.label_flag.update()
                 return
         else:
-            flag_name = self.r_path.with_name('media') / (country_name[country] + ".svg")
+            flag_name = resource_path('media') / (country_name[country] + ".svg")
         pixmap = QPixmap(str(flag_name)).scaled(51, 31)
         self.label_flag.setPixmap(pixmap)
         self.label_flag.update()

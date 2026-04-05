@@ -149,6 +149,12 @@ QSlider::add-page:horizontal:disabled, QSlider::sub-page:horizontal:disabled, QS
           <height>40</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>重播</string>
         </property>
@@ -156,9 +162,10 @@ QSlider::add-page:horizontal:disabled, QSlider::sub-page:horizontal:disabled, QS
          <number>0</number>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(media/replay.svg);
-QPushButton::hover{
-	background-color: rgb(170, 255, 255);
+         <string notr="true">QPushButton {
+    background-color: rgba(0,0,0,0);
+    border: none;
+    image: url(media/replay.svg);
 }</string>
         </property>
         <property name="text">
@@ -174,6 +181,12 @@ QPushButton::hover{
           <height>40</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>40</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>播放/暂停</string>
         </property>
@@ -181,7 +194,11 @@ QPushButton::hover{
          <number>0</number>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(media/play.svg);</string>
+         <string notr="true">QPushButton {
+    background-color: rgba(0,0,0,0);
+    border: none;
+    image: url(media/play.svg);
+}</string>
         </property>
         <property name="text">
          <string/>
@@ -319,6 +336,11 @@ background-color: rgb(240, 240, 240);</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QTabWidget::pane { margin: 0px; border: 0px; }
+QTabBar::tab {
+    font-family: &quot;Microsoft YaHei&quot;, &quot;微软雅黑&quot;, &quot;Segoe UI&quot;, Arial, sans-serif;
+    font-size: 9pt;
+    height: 22px;
+}
 </string>
      </property>
      <property name="currentIndex">

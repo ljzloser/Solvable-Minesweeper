@@ -22,9 +22,52 @@ class Ui_Form(object):
         Form.setWindowOpacity(10.0)
         self.verticalSlider = QtWidgets.QSlider(Form)
         self.verticalSlider.setGeometry(QtCore.QRect(30, 60, 22, 261))
-        self.verticalSlider.setStyleSheet("QSlider {\n"
-"    padding: 2px;\n"
-"    height: 40px;\n"
+        self.verticalSlider.setStyleSheet("QSlider::groove:vertical {\n"
+"    border: 0px solid #bbbbbb;\n"
+"    background-color: #50A6EA;\n"
+"    border-radius: 4px;\n"
+"    width: 16px;\n"
+"}\n"
+"\n"
+"QSlider::handle:vertical {\n"
+"    background: #ffffff;\n"
+"    border: 1px solid rgb(207,207,207);\n"
+"    height: 12px;\n"
+"    margin: 0 -5px;\n"
+"    border-radius: 7px;\n"
+"}\n"
+"\n"
+"/* 已滑过的部分（下方 → 滑块位置） */\n"
+"QSlider::sub-page:vertical {\n"
+"    background: qlineargradient(\n"
+"        spread:pad,\n"
+"        x1:0, y1:0,\n"
+"        x2:0, y2:1,\n"
+"        stop:0 #ddd5d5,\n"
+"        stop:0.5 #dad3d3,\n"
+"        stop:1 #ddd5d5\n"
+"    );\n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"/* 未滑过的部分（滑块位置 → 顶部） */\n"
+"QSlider::add-page:vertical {\n"
+"    background: qlineargradient(\n"
+"        spread:pad,\n"
+"        x1:0, y1:1,\n"
+"        x2:0, y2:0,\n"
+"        stop:0 #50A6EA,\n"
+"        stop:0.5 #87C1F1,\n"
+"        stop:1 #50A6EA\n"
+"    );\n"
+"    \n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"/* 禁用态 */\n"
+"QSlider::add-page:vertical:disabled,\n"
+"QSlider::sub-page:vertical:disabled {\n"
+"    background: #b9b9b9;\n"
 "}\n"
 "")
         self.verticalSlider.setOrientation(QtCore.Qt.Vertical)
@@ -40,7 +83,7 @@ class Ui_Form(object):
         font.setWeight(75)
         self.label_4.setFont(font)
         self.label_4.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
-        self.label_4.setText("32")
+        self.label_4.setText("20")
         self.label_4.setAlignment(QtCore.Qt.AlignCenter)
         self.label_4.setObjectName("label_4")
         self.label_5 = QtWidgets.QLabel(Form)

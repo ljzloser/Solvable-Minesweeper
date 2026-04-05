@@ -44,9 +44,52 @@
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QSlider {
-    padding: 2px;
-    height: 40px;
+    <string notr="true">QSlider::groove:vertical {
+    border: 0px solid #bbbbbb;
+    background-color: #50A6EA;
+    border-radius: 4px;
+    width: 16px;
+}
+
+QSlider::handle:vertical {
+    background: #ffffff;
+    border: 1px solid rgb(207,207,207);
+    height: 12px;
+    margin: 0 -5px;
+    border-radius: 7px;
+}
+
+/* 已滑过的部分（下方 → 滑块位置） */
+QSlider::sub-page:vertical {
+    background: qlineargradient(
+        spread:pad,
+        x1:0, y1:0,
+        x2:0, y2:1,
+        stop:0 #ddd5d5,
+        stop:0.5 #dad3d3,
+        stop:1 #ddd5d5
+    );
+    border-radius: 4px;
+}
+
+/* 未滑过的部分（滑块位置 → 顶部） */
+QSlider::add-page:vertical {
+    background: qlineargradient(
+        spread:pad,
+        x1:0, y1:1,
+        x2:0, y2:0,
+        stop:0 #50A6EA,
+        stop:0.5 #87C1F1,
+        stop:1 #50A6EA
+    );
+    
+    border-radius: 4px;
+}
+
+/* 禁用态 */
+QSlider::add-page:vertical:disabled,
+QSlider::sub-page:vertical:disabled {
+    background: #b9b9b9;
 }
 </string>
    </property>
@@ -81,7 +124,7 @@
     <enum>Qt::PreventContextMenu</enum>
    </property>
    <property name="text">
-    <string notr="true">32</string>
+    <string notr="true">20</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

@@ -93,18 +93,25 @@ class Ui_Form(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.pushButton_replay = QtWidgets.QPushButton(self.widget)
         self.pushButton_replay.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_replay.setMaximumSize(QtCore.QSize(40, 40))
         self.pushButton_replay.setToolTipDuration(0)
-        self.pushButton_replay.setStyleSheet("border-image: url(media/replay.svg);\n"
-"QPushButton::hover{\n"
-"    background-color: rgb(170, 255, 255);\n"
+        self.pushButton_replay.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(0,0,0,0);\n"
+"    border: none;\n"
+"    image: url(media/replay.svg);\n"
 "}")
         self.pushButton_replay.setText("")
         self.pushButton_replay.setObjectName("pushButton_replay")
         self.horizontalLayout.addWidget(self.pushButton_replay)
         self.pushButton_play = QtWidgets.QPushButton(self.widget)
         self.pushButton_play.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_play.setMaximumSize(QtCore.QSize(40, 40))
         self.pushButton_play.setToolTipDuration(0)
-        self.pushButton_play.setStyleSheet("border-image: url(media/play.svg);")
+        self.pushButton_play.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(0,0,0,0);\n"
+"    border: none;\n"
+"    image: url(media/play.svg);\n"
+"}")
         self.pushButton_play.setText("")
         self.pushButton_play.setObjectName("pushButton_play")
         self.horizontalLayout.addWidget(self.pushButton_play)
@@ -162,6 +169,11 @@ class Ui_Form(object):
         self.tabWidget = QtWidgets.QTabWidget(Form)
         self.tabWidget.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.tabWidget.setStyleSheet("QTabWidget::pane { margin: 0px; border: 0px; }\n"
+"QTabBar::tab {\n"
+"    font-family: \"Microsoft YaHei\", \"微软雅黑\", \"Segoe UI\", Arial, sans-serif;\n"
+"    font-size: 9pt;\n"
+"    height: 22px;\n"
+"}\n"
 "")
         self.tabWidget.setTabsClosable(True)
         self.tabWidget.setMovable(True)
