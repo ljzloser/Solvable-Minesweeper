@@ -169,6 +169,4 @@ old/
 src/plugins/*/*.json
 src/plugins/*/*.db
 .vscode/
-src/history.db
-history_show_fields.json
-src/out.json
+data/*

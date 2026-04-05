@@ -12,15 +12,15 @@ import mineSweeperGUI as mineSweeperGUI
 import ms_toollib as ms
 import ctypes
 # from ctypes import wintypes
-from mp_plugins.context import AppContext
-from mp_plugins.events import *
-from mp_plugins import PluginManager
 from pathlib import Path
 from utils import get_paths, patch_env
 
+# 插件系统（新）
+from plugin_manager import GameServerBridge
+from plugin_manager.app_paths import get_env_for_subprocess
+import subprocess
+
 os.environ["QT_FONT_DPI"] = "96"
-
-
 
 
 def on_new_connection(localServer: QLocalServer):
@@ -150,19 +150,53 @@ if __name__ == "__main__":
         localServer.newConnection.connect(
             lambda: on_new_connection(localServer=localServer)
         )
-        env = patch_env()
-        context = AppContext(name="Metasweeper", version="1.0.0", display_name="元扫雷",
-                             plugin_dir=(Path(get_paths()) /
-                                         "plugins").as_posix(),
-                             app_dir=get_paths()
-                             )
-        PluginManager.instance().context = context
-
-        PluginManager.instance().start(Path(get_paths()) / "plugins", env)
         mainWindow = mainWindowGUI.MainWindow()
         ui = mineSweeperGUI.MineSweeperGUI(mainWindow, sys.argv)
         ui.mainWindow.show()
-        # ui.mainWindow.game_setting = ui.game_setting
+
+        # ── 启动 ZMQ Server + 插件管理器 ──
+        game_server = GameServerBridge(ui)
+
+        # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
+        if getattr(sys, 'frozen', False):
+            base_dir = os.path.dirname(sys.executable)
+            plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
+            if not os.path.exists(plugin_exe):
+                QtWidgets.QMessageBox.warning(
+                    mainWindow, "Plugin Manager",
+                    f"plugin_manager.exe not found:\n{plugin_exe}\n\nPlugins will be disabled.",
+                )
+                plugin_process = None
+            else:
+                cmd = [plugin_exe, "--mode", "tray"]
+                cwd = base_dir
+                try:
+                    plugin_process = subprocess.Popen(
+                        cmd, cwd=cwd, env=get_env_for_subprocess(),
+                    )
+                except Exception as e:
+                    QtWidgets.QMessageBox.warning(
+                        mainWindow, "Plugin Manager",
+                        f"Failed to start plugin_manager:\n{e}",
+                    )
+                    plugin_process = None
+        else:
+            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray"]
+            cwd = os.path.dirname(os.path.abspath(__file__))
+            try:
+                plugin_process = subprocess.Popen(
+                    cmd, cwd=cwd, env=get_env_for_subprocess(),
+                )
+            except Exception as e:
+                print(f"[WARN] Failed to start plugin_manager: {e}")
+                plugin_process = None
+
+        ui._plugin_process = plugin_process  # 保存引用，防止被 GC
+
+        # 连接信号：插件发来的新游戏指令 → 主线程处理
+        game_server.signals.new_game_requested.connect(lambda r, c, m: None)  # TODO: 接入游戏逻辑
+
+        game_server.start()
 
         # _translate = QtCore.QCoreApplication.translate
         hwnd = int(ui.mainWindow.winId())
@@ -170,11 +204,18 @@ if __name__ == "__main__":
         SetWindowDisplayAffinity = ctypes.windll.user32.SetWindowDisplayAffinity
         ui.disable_screenshot = lambda: ... if SetWindowDisplayAffinity(
             hwnd, 0x00000011) else 1/0
-        ui.enable_screenshot = lambda: ... if SetWindowDisplayAffinity(
-            hwnd, 0x00000000) else 1/0
-        app.aboutToQuit.connect(PluginManager.instance().stop)
+        ui.enable_screenshot = lambda: (
+            ... if SetWindowDisplayAffinity(hwnd, 0x00000000) else 1 / 0
+        )
+
+        def _cleanup():
+            game_server.stop()
+            if plugin_process is not None and plugin_process.poll() is None:
+                plugin_process.terminate()
+                plugin_process.wait(timeout=5)
+
+        app.aboutToQuit.connect(_cleanup)
         sys.exit(app.exec_())
-        ...
     # except:
     #     pass
 
