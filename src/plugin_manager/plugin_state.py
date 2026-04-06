@@ -45,15 +45,15 @@ class PluginStateManager:
     def load(self) -> None:
         """从 JSON 文件加载状态"""
         if not self._file.exists():
-            logger.info("State file not found: %s (will create on save)", self._file)
+            logger.info(f"State file not found: {self._file} (will create on save)")
             return
         try:
             raw: dict[str, dict[str, Any]] = json.loads(self._file.read_text("utf-8"))
             for name, d in raw.items():
                 self._states[name] = PluginState(**{k: v for k, v in d.items() if k in asdict(_DEFAULT)})
-            logger.info("Loaded state for %d plugin(s)", len(self._states))
+            logger.info(f"Loaded state for {len(self._states)} plugin(s)")
         except Exception as e:
-            logger.error("Failed to load state from %s: %s", self._file, e)
+            logger.error(f"Failed to load state from {self._file}: {e}")
 
     def save(self) -> None:
         """写入 JSON 文件（仅在有变更时）"""
@@ -67,9 +67,9 @@ class PluginStateManager:
                 encoding="utf-8",
             )
             self._dirty = False
-            logger.info("Saved state for %d plugin(s)", len(self._states))
+            logger.info(f"Saved state for {len(self._states)} plugin(s)")
         except Exception as e:
-            logger.error("Failed to save state to %s: %s", self._file, e)
+            logger.error(f"Failed to save state to {self._file}: {e}")
 
     # ── 查询 / 修改 ─────────────────────────────────────
 

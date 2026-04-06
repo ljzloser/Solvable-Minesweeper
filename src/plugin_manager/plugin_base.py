@@ -18,7 +18,7 @@ _E = TypeVar("_E", bound="BaseEvent")
 if TYPE_CHECKING:
     from PyQt5.QtGui import QIcon
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen, QColor, QBrush, QFont
 
 from lib_zmq_plugins.shared.base import BaseEvent, get_event_tag
@@ -169,30 +169,40 @@ class BasePlugin(ABC):
             log_config=info.log_config,  # 插件可自定义轮转策略
         )
         self._log_level: LogLevel = info.log_level  # 当前日志级别
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 属性
     # ═══════════════════════════════════════════════════════════════════
-    
+
     @property
     def info(self) -> PluginInfo:
         return self._info
-    
+
     @property
     def name(self) -> str:
         return self._info.name
-    
+
     @property
     def is_enabled(self) -> bool:
         return self._info.enabled
-    
+
     @property
     def widget(self) -> QWidget | None:
         return self._widget
-    
+
     @property
     def client(self) -> ZMQClient | None:
         return self._client
+
+    @property
+    def data_dir(self) -> "Path":
+        """插件专属数据目录（可写），自动根据插件类名创建"""
+        from pathlib import Path
+        from .app_paths import get_plugin_data_dir
+
+        if not hasattr(self, "_data_dir"):
+            self._data_dir = get_plugin_data_dir(type(self))
+        return self._data_dir
 
     @property
     def log_level(self) -> LogLevel:
@@ -211,7 +221,7 @@ class BasePlugin(ABC):
             level = LogLevel(level.upper())
         self._log_level = level
         set_plugin_log_level(self._log_sink_id, level)
-        self.logger.debug("Log level changed to %s", level)
+        self.logger.debug(f"Log level changed to {level}")
 
     @property
     def plugin_icon(self) -> QIcon:
@@ -219,47 +229,47 @@ class BasePlugin(ABC):
         if self._info.icon:
             return self._info.icon
         return make_plugin_icon()
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 生命周期
     # ═══════════════════════════════════════════════════════════════════
-    
+
     def set_client(self, client: ZMQClient) -> None:
         self._client = client
-    
+
     def set_event_dispatcher(self, dispatcher: EventDispatcher) -> None:
         self._event_dispatcher = dispatcher
-    
+
     def initialize(self) -> None:
         """初始化插件"""
         if self._initialized:
             return
-        
+
         self._setup_subscriptions()
         self._widget = self._create_widget()
         self._initialized = True
         self.on_initialized()
-    
+
     def shutdown(self) -> None:
         """关闭插件"""
         if not self._initialized:
             return
-        
+
         self.on_shutdown()
-        
+
         if self._event_dispatcher:
             self._event_dispatcher.unsubscribe_all(self)
-        
+
         if self._widget:
             self._widget.deleteLater()
             self._widget = None
-        
+
         self._initialized = False
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 抽象方法
     # ═══════════════════════════════════════════════════════════════════
-    
+
     @abstractmethod
     def _setup_subscriptions(self) -> None:
         """
@@ -270,27 +280,27 @@ class BasePlugin(ABC):
             self.subscribe(BoardUpdateEvent, self._on_board_update)
         """
         pass
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 可选重写
     # ═══════════════════════════════════════════════════════════════════
-    
+
     def _create_widget(self) -> QWidget | None:
         """创建界面组件，返回 None 表示无界面"""
         return None
-    
+
     def on_initialized(self) -> None:
         """插件初始化完成回调"""
         pass
-    
+
     def on_shutdown(self) -> None:
         """插件关闭前回调"""
         pass
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 事件订阅（使用事件类）
     # ═══════════════════════════════════════════════════════════════════
-    
+
     def subscribe(
         self,
         event_class: type[_E],
@@ -306,43 +316,43 @@ class BasePlugin(ABC):
         if self._event_dispatcher:
             tag = get_event_tag(event_class)
             self._event_dispatcher.subscribe(tag, handler, self._info.priority, self)
-    
+
     def unsubscribe(self, event_class: type[BaseEvent]) -> None:
         """取消订阅事件"""
         if self._event_dispatcher:
             tag = get_event_tag(event_class)
             self._event_dispatcher.unsubscribe(tag, self)
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 指令发送
     # ═══════════════════════════════════════════════════════════════════
-    
+
     def send_command(self, command: Any) -> None:
         """发送控制指令到主进程（异步）"""
         if self._client:
             self._client.send_command(command)
-    
+
     def request(self, command: Any, timeout: float = 5.0) -> Any:
         """发送请求并等待响应（同步）"""
         if self._client:
             return self._client.request(command, timeout)
         return None
-    
+
     # ═══════════════════════════════════════════════════════════════════
     # 辅助
     # ═══════════════════════════════════════════════════════════════════
-    
+
     def enable(self) -> None:
         """启用插件"""
         self._info.enabled = True
         if not self._initialized:
             self.initialize()
-    
+
     def disable(self) -> None:
         """禁用插件"""
         self._info.enabled = False
         if self._initialized:
             self.shutdown()
-    
+
     def __repr__(self) -> str:
         return f"<Plugin {self._info.name} v{self._info.version}>"

@@ -156,6 +156,7 @@ if __name__ == "__main__":
 
         # ── 启动 ZMQ Server + 插件管理器 ──
         game_server = GameServerBridge(ui)
+        ui.gameServerBridge = game_server
 
         # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
         if getattr(sys, 'frozen', False):

@@ -6,6 +6,8 @@ import msgspec
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
+from plugin_manager.server_bridge import GameServerBridge
+from shared_types.events import VideoSaveEvent
 import superGUI
 import gameAbout
 import gameSettings
@@ -146,6 +148,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 不带后缀、有绝对路径的、不含最后次数的文件名
         # C:/path/zhangsan_20251111_190114_
         self.old_evfs_filename = ""
+        self.gameServerBridge: GameServerBridge = None
 
     @property
     def pixSize(self):
@@ -557,6 +560,16 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         status = utils.GameBoardState(ms_board.game_board_state)
         if status == utils.GameBoardState.Win:
             self.dump_evf_file_data()
+            event = VideoSaveEvent()
+            data = msgspec.structs.asdict(event)
+            for key in data:
+                if hasattr(ms_board, key):
+                    if key == "raw_data":
+                        data[key] = base64.b64encode(ms_board.raw_data).decode("utf-8")
+                        continue
+                    data[key] = getattr(ms_board, key)
+            event = VideoSaveEvent(**data)
+            self.gameServerBridge._server.publish(VideoSaveEvent, event)
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()

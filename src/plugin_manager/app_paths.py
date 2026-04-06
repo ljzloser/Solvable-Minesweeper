@@ -87,7 +87,7 @@ def get_builtin_plugin_dirs() -> list[Path]:
     plugin_dir = bundle / "plugins"
     if plugin_dir.is_dir():
         return [plugin_dir]
-    logger.warning("内置插件目录不存在: %s", plugin_dir)
+    logger.warning(f"内置插件目录不存在: {plugin_dir}")
     return []
 
 
@@ -112,6 +112,32 @@ def get_all_plugin_dirs() -> list[Path]:
     return get_builtin_plugin_dirs() + get_user_plugin_dirs()
 
 
+def get_plugin_data_dir(plugin_class: type | str) -> Path:
+    """
+    获取指定插件的专属数据目录（可写）
+
+    根据传入的插件类或名称，在 data/plugin_data/ 下创建对应子目录。
+    每个插件拥有独立的数据空间，互不干扰。
+
+    - 开发模式: <project>/data/plugin_data/<plugin_name>/
+    - 打包模式:   <exe所在目录>/data/plugin_data/<plugin_name>/
+
+    Args:
+        plugin_class: 插件类或插件名称字符串
+
+    Returns:
+        插件的专属数据目录路径
+    """
+    if isinstance(plugin_class, type):
+        name = plugin_class.__name__
+    else:
+        name = str(plugin_class)
+
+    plugin_data_dir = get_data_dir() / "plugin_data" / name
+    plugin_data_dir.mkdir(parents=True, exist_ok=True)
+    return plugin_data_dir
+
+
 # ── 环境变量补丁（给子进程使用） ───────────────────────
 
 def patch_sys_path_for_frozen() -> None:
@@ -127,7 +153,7 @@ def patch_sys_path_for_frozen() -> None:
     bundle = str(get_bundle_dir())
     if bundle not in sys.path:
         sys.path.insert(0, bundle)
-        logger.debug("已将 bundle 目录加入 sys.path: %s", bundle)
+        logger.debug(f"已将 bundle 目录加入 sys.path: {bundle}")
 
 
 def get_env_for_subprocess(env: dict | None = None) -> dict:
@@ -149,7 +175,7 @@ def get_env_for_subprocess(env: dict | None = None) -> dict:
         paths.append(existing)
     env["PYTHONPATH"] = os.pathsep.join(paths)
 
-    logger.debug("子进程环境: PYTHONPATH=%s", env.get("PYTHONPATH"))
+    logger.debug(f"子进程环境: PYTHONPATH={env.get('PYTHONPATH')}")
     return env
 
 
