@@ -2,7 +2,9 @@
 事件分发器
 
 负责将事件分发给订阅了该事件的插件
-支持优先级排序和异常隔离
+- 非阻塞：dispatch() 将事件投递到各插件的独立队列后立即返回
+- 每个插件在自己的线程中串行消费事件（由 BasePlugin.run() 负责）
+- 支持优先级排序和异常隔离
 """
 from __future__ import annotations
 
@@ -29,13 +31,14 @@ class HandlerEntry:
 
 class EventDispatcher:
     """
-    事件分发器
+    事件分发器（非阻塞投递模式）
     
     功能：
     - 管理事件订阅
     - 按优先级分发事件
-    - 异常隔离（一个处理函数出错不影响其他）
-    - 线程安全
+    - dispatch() 不阻塞：将事件投递到各插件的队列，立即返回
+    - 异常隔离通过各插件线程自行处理
+    - 背压控制：队列满时丢弃事件并记录警告
     """
     
     def __init__(self):
@@ -56,7 +59,7 @@ class EventDispatcher:
             event_type: 事件类型名称
             handler: 事件处理函数
             priority: 优先级（数值越小越先执行）
-            plugin: 所属插件（用于取消订阅）
+            plugin: 所属插件（用于取消订阅和队列投递）
         """
         with self._lock:
             entry = HandlerEntry(
@@ -104,7 +107,7 @@ class EventDispatcher:
     
     def dispatch(self, event_type: str, event: Any) -> None:
         """
-        分发事件给所有订阅者
+        非阻塞分发事件：将事件投递到各插件的独立队列，立即返回
         
         Args:
             event_type: 事件类型名称
@@ -126,31 +129,25 @@ class EventDispatcher:
             if entry.plugin and not entry.plugin.is_enabled:
                 continue
             
-            try:
-                entry.handler(event)
-            except Exception as e:
-                plugin_name = entry.plugin.name if entry.plugin else "unknown"
-                logger.error(
-                    f"Handler error in plugin '{plugin_name}' "
-                    f"for event '{event_type}': {e}",
-                    exc_info=True,
-                )
-    
-    def dispatch_async(self, event_type: str, event: Any) -> None:
-        """
-        异步分发事件（在新线程中执行）
-        
-        Args:
-            event_type: 事件类型名称
-            event: 事件数据
-        """
-        thread = threading.Thread(
-            target=self.dispatch,
-            args=(event_type, event),
-            daemon=True,
-        )
-        thread.start()
-    
+            if entry.plugin is not None:
+                # 投递到插件队列（非阻塞）
+                success = entry.plugin._enqueue_event(entry.handler, event)
+                if not success:
+                    logger.warning(
+                        f"Dropped event '{event_type}' for plugin "
+                        f"'{entry.plugin.name}' (queue full)"
+                    )
+            else:
+                # 无归属插件的 handler（兜底），在调用者线程同步执行
+                try:
+                    entry.handler(event)
+                except Exception as e:
+                    logger.error(
+                        f"Handler error (no-plugin) for event "
+                        f"'{event_type}': {e}",
+                        exc_info=True,
+                    )
+
     def get_handlers(self, event_type: str) -> list[HandlerEntry]:
         """获取某事件的所有处理函数"""
         with self._lock:
