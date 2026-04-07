@@ -18,6 +18,7 @@ import sys
 import inspect
 from datetime import datetime
 from pathlib import Path
+import time
 from typing import Any
 
 import msgspec
@@ -815,8 +816,6 @@ class HistoryMainWidget(QWidget):
 # ═══════════════════════════════════════════════════════════════════
 # 插件主体
 # ═══════════════════════════════════════════════════════════════════
-class History_Signal(QObject):
-    video_save_over = pyqtSignal()
 
 
 class HistoryPlugin(BasePlugin):
@@ -826,7 +825,7 @@ class HistoryPlugin(BasePlugin):
     - 后台：监听 VideoSaveEvent，写入 SQLite
     - 界面：提供筛选、分页、播放/导出功能
     """
-
+    video_save_over = pyqtSignal()
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
@@ -840,7 +839,6 @@ class HistoryPlugin(BasePlugin):
 
     def __init__(self, info):
         super().__init__(info)
-        self._signal = History_Signal()
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(VideoSaveEvent, self._on_video_save)
@@ -849,11 +847,12 @@ class HistoryPlugin(BasePlugin):
         db_path = self.data_dir / "history.db"
         config_path = self.data_dir / "history_show_fields.json"
         self._widget = HistoryMainWidget(db_path, config_path)
-        self._signal.video_save_over.connect(self._widget.query_button.click)
+        self.video_save_over.connect(self._widget.query_button.click)
         return self._widget
 
     def on_initialized(self) -> None:
         self._init_db()
+        time.sleep(10)
         self.logger.info("历史记录插件已初始化")
 
     # ── 数据库 ──────────────────────────────────────────────
@@ -942,4 +941,4 @@ class HistoryPlugin(BasePlugin):
             )
         finally:
             conn.close()
-        self._signal.video_save_over.emit()
+        self.video_save_over.emit()

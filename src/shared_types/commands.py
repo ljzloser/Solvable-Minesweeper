@@ -13,6 +13,13 @@ class NewGameCommand(BaseCommand, tag="new_game"):
     mines: int = 99
 
 
-COMMAND_TYPES = [
-    NewGameCommand,
-]
+class MouseClickCommand(BaseCommand, tag="mouse_click"):
+    """鼠标点击指令"""
+
+    row: int = 0
+    col: int = 0
+    button: int = 0
+    modifiers: int = 0
+
+
+COMMAND_TYPES = [NewGameCommand, MouseClickCommand]

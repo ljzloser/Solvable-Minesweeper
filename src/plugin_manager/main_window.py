@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QTimer
-from PyQt5.QtGui import QMouseEvent, QIcon, QPixmap
+from PyQt5.QtGui import QColor, QMouseEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -39,7 +39,7 @@ from PyQt5.QtWidgets import (
 )
 
 from .plugin_state import PluginStateManager, PluginState
-from .plugin_base import WindowMode, LogLevel
+from .plugin_base import PluginLifecycle, WindowMode, LogLevel
 from .app_paths import get_data_dir
 
 if TYPE_CHECKING:
@@ -213,6 +213,15 @@ class DetachableTabWidget(QTabWidget):
         window.activateWindow()
 
         self.tab_detached.emit(name)
+
+    def _cleanup_detached(self, name: str) -> None:
+        """安全清理 detached 窗口引用"""
+        if name in self._detached_windows:
+            w = self._detached_windows[name]
+            w.blockSignals(True)
+            w.close()
+            w.deleteLater()
+            del self._detached_windows[name]
 
     def _attach_tab(self, name: str) -> None:
         """将弹出的窗口嵌回标签页"""
@@ -444,6 +453,10 @@ class PluginManagerWindow(QMainWindow):
         # 应用已保存的状态到插件
         self._apply_saved_states()
 
+        # 连接所有插件的 ready 信号，就绪后自动刷新列表
+        for p in self._manager.plugins.values():
+            p.ready.connect(lambda _p=p: self._on_plugin_ready(_p))
+
         self._refresh_plugin_list()
 
         # 定时刷新连接状态
@@ -672,6 +685,13 @@ class PluginManagerWindow(QMainWindow):
 
     # ── 插件列表 ────────────────────────────────────────
 
+    def _on_plugin_ready(self, plugin) -> None:
+        """插件初始化完成，刷新列表显示"""
+        self._refresh_plugin_list()
+        self.statusBar().showMessage(
+            self.tr("插件 {name} 就绪").format(name=plugin.name), 2000
+        )
+
     def _refresh_plugin_list(self) -> None:
         """刷新插件列表和标签页"""
         t = self._tab_widget
@@ -696,12 +716,23 @@ class PluginManagerWindow(QMainWindow):
             li = QListWidgetItem(p.name)
             li.setData(Qt.UserRole, name)
             li.setIcon(p.plugin_icon)
-            # 已禁用的用灰色
-            if not p.is_enabled:
-                li.setForeground(Qt.gray)
+
+            lc = p.lifecycle
+
+            # 根据生命周期状态显示
+            if lc == PluginLifecycle.INITIALIZING:
+                li.setForeground(QColor("#f57c00"))  # 橙色：初始化中
+                li.setText(f"{p.name} (⏳ 初始化中...)")
+            elif not p.is_enabled:
+                li.setForeground(Qt.gray)  # 灰色：已禁用
+            elif lc == PluginLifecycle.SHUTTING_DOWN:
+                li.setForeground(QColor("#c62828"))  # 红色：关闭中
+                li.setText(f"{p.name} (⏸ 关闭中...)")
+
             lst.addItem(li)
 
-            if p.widget and name not in t._detached_windows and name not in self._closed_plugins:
+            # 只有就绪状态才创建窗口（INITIALIZING/STOPPED 不创建）
+            if p.lifecycle == PluginLifecycle.READY and p.widget and name not in t._detached_windows and name not in self._closed_plugins:
                 st = self._effective_state(name)
                 if st.window_mode == WindowMode.DETACHED:
                     t.add_detachable_tab(p.widget, name, icon=p.plugin_icon)
@@ -748,11 +779,13 @@ class PluginManagerWindow(QMainWindow):
         menu = QMenu(self)
         t = self._tab_widget
 
-        # 启用/禁用
+        # 启用/禁用（非就绪状态不可切换，但 STOPPED 可以重新启用）
+        lc = plugin.lifecycle
+        can_control = lc in (PluginLifecycle.READY, PluginLifecycle.STOPPED)
         act_enable = menu.addAction("✅ " + self.tr("启用"))
         act_disable = menu.addAction("❌ " + self.tr("禁用"))
-        act_enable.setEnabled(not plugin.is_enabled)
-        act_disable.setEnabled(plugin.is_enabled)
+        act_enable.setEnabled(can_control and not plugin.is_enabled)
+        act_disable.setEnabled(lc == PluginLifecycle.READY and plugin.is_enabled)
         act_enable.triggered.connect(lambda: self._toggle_plugin(name, True))
         act_disable.triggered.connect(lambda: self._toggle_plugin(name, False))
 
@@ -777,9 +810,10 @@ class PluginManagerWindow(QMainWindow):
         act_open = menu.addAction("🖥 " + self.tr("打开窗口"))
         act_close = menu.addAction("🚫 " + self.tr("关闭窗口"))
 
-        can_open = (has_closed or (not has_tab and plugin.widget is not None))
+        # 窗口操作只有就绪状态才可用
+        can_open = lc == PluginLifecycle.READY and (has_closed or (not has_tab and plugin.widget is not None))
         act_open.setEnabled(can_open)
-        act_close.setEnabled(has_tab or has_detached)
+        act_close.setEnabled(lc == PluginLifecycle.READY and (has_tab or has_detached))
 
         # 打开日志文件
         act_log = menu.addAction("📋 " + self.tr("打开日志"))
@@ -801,6 +835,8 @@ class PluginManagerWindow(QMainWindow):
         if enable:
             self._manager.enable_plugin(name)
         else:
+            # 禁用时先关闭窗口（处理 detached 窗口清理），再 shutdown
+            self._close_plugin_window(name)
             self._manager.disable_plugin(name)
         self._sync_state(name, enabled=enable)
         self._refresh_plugin_list()
@@ -830,15 +866,6 @@ class PluginManagerWindow(QMainWindow):
         if name in self._closed_plugins:
             self._closed_plugins.discard(name)
             t.add_detachable_tab(plugin.widget, name, icon=plugin.plugin_icon)
-
-    def _cleanup_detached(self, name: str) -> None:
-        """安全清理 detached 窗口引用"""
-        if name in self._detached_windows:
-            w = self._detached_windows[name]
-            w.blockSignals(True)   # 阻止 closeEvent 再次触发 embed_requested
-            w.close()
-            w.deleteLater()
-            del self._detached_windows[name]
 
     def _close_plugin_window(self, name: str) -> None:
         """关闭插件窗口（不销毁）"""
@@ -904,6 +931,7 @@ class PluginManagerWindow(QMainWindow):
                 if new_state.enabled:
                     self._manager.enable_plugin(name)
                 else:
+                    self._close_plugin_window(name)
                     self._manager.disable_plugin(name)
             # 立即应用日志级别
             plugin = self._manager.plugins.get(name)

@@ -6,22 +6,17 @@ from __future__ import annotations
 from lib_zmq_plugins.shared.base import BaseEvent
 
 
-class GameStartedEvent(BaseEvent, tag="game_started"):
-    """游戏开始事件"""
-    rows: int = 0
-    cols: int = 0
-    mines: int = 0
-
-
-class GameEndedEvent(BaseEvent, tag="game_ended"):
-    """游戏结束事件"""
-    is_win: bool = False
-    time: float = 0.0
+class GameStatusChange(BaseEvent, tag="game_status"):
+    last_status: int = 0
+    cuurent_status: int = 0
 
 
 class BoardUpdateEvent(BaseEvent, tag="board_update"):
-    """局面刷新事件"""
-    board: list[list[int]] = []
+    pass
+
+
+class ConetxtChangeEvent(BaseEvent, tag="context_change"):
+    pass
 
 
 class VideoSaveEvent(BaseEvent, tag="video_save"):
@@ -60,8 +55,8 @@ class VideoSaveEvent(BaseEvent, tag="video_save"):
     corr: float = 0
     thrp: float = 0
     ioe: float = 0
-    is_official: bool = 0
-    is_fair: bool = 0
+    is_official: bool = False
+    is_fair: bool = False
     op: int = 0
     isl: int = 0
     pluck: float = 0
@@ -69,8 +64,6 @@ class VideoSaveEvent(BaseEvent, tag="video_save"):
 
 
 EVENT_TYPES = [
-    GameStartedEvent,
-    GameEndedEvent,
     BoardUpdateEvent,
     VideoSaveEvent,
 ]
