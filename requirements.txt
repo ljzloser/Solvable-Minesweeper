@@ -5,3 +5,4 @@ msgspec>=0.20.0
 zmq>=0.0.0
 pywin32
 loguru
+debugpy
