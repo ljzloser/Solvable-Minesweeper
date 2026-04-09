@@ -65,6 +65,14 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 │   └── my_complex/             # 或包形式插件
 │       ├── __init__.py
 │       └── utils.py
+├── shared_types/               # 共享类型定义
+│   ├── events.py               # 事件类型
+│   ├── commands.py             # 指令类型
+│   └── services/               # 👈 服务接口定义
+│       └── history.py          # HistoryService 接口
+├── plugin_manager/             # 插件管理器模块
+│   ├── plugin_base.py          # 👈 BasePlugin 基类
+│   └── service_registry.py     # 服务注册表
 ├── user_plugins/               # 备用用户插件目录
 ├── data/
 │   ├── logs/                   # 日志输出（自动创建）
@@ -435,7 +443,57 @@ self.run_on_gui(some_function, arg1, arg2, keyword_arg=value)
 
 两种方式的底层原理相同 —— 都是通过 QueuedConnection 将调用投递到 Qt 主线程的事件循环。
 
-### 5.5 日志记录
+### 5.5 服务通讯 API（插件间调用）
+
+插件间通过**服务接口**进行类型安全的调用，服务方法会在**服务提供者线程**执行，线程安全。
+
+```python
+# ════════════════════════════════════════
+# 1. 注册服务（服务提供者）
+# ════════════════════════════════════════
+def on_initialized(self):
+    # 注册服务，显式指定 Protocol 类型
+    self.register_service(self, protocol=MyService)
+
+# ════════════════════════════════════════
+# 2. 检查服务是否存在
+# ════════════════════════════════════════
+if self.has_service(MyService):
+    # 服务可用
+    pass
+
+# ════════════════════════════════════════
+# 3. 获取服务代理（推荐）
+# ════════════════════════════════════════
+service = self.get_service_proxy(MyService)
+
+# 调用服务方法（IDE 完整补全，在服务提供者线程执行）
+data = service.get_data(123)        # 同步调用，阻塞等待结果
+all_data = service.list_data(100)   # 超时默认 10 秒
+
+# ════════════════════════════════════════
+# 4. 异步调用（非阻塞）
+# ════════════════════════════════════════
+future = self.call_service_async(MyService, "get_data", 123)
+# 做其他事情...
+result = future.result(timeout=5.0)  # 阻塞等待结果
+```
+
+**服务相关方法：**
+
+| 方法 | 说明 |
+|------|------|
+| `register_service(self, protocol=MyService)` | 注册服务（在 `on_initialized` 中调用） |
+| `has_service(MyService)` | 检查服务是否可用 |
+| `get_service_proxy(MyService)` | 获取服务代理对象（推荐） |
+| `call_service_async(MyService, "method", *args)` | 异步调用，返回 Future |
+
+**注意事项：**
+- 服务方法在**服务提供者线程**执行，调用方无需关心线程安全
+- **死锁风险**：不要让两个插件互相调用对方的服务
+- 服务接口中不要暴露删除等敏感操作
+
+### 5.6 日志记录
 
 ```python
 # 每个 BasePlugin 实例都有绑定好的 logger，直接使用即可
@@ -449,7 +507,7 @@ self.logger.error("错误信息")
 #   <data_dir>/logs/plugin_manager.log   （主日志）
 ```
 
-### 5.6 PluginInfo 配置项
+### 5.7 PluginInfo 配置项
 
 ```python
 @dataclass
@@ -730,11 +788,74 @@ def on_initialized(self):
 
 ### Q4: 插件之间如何通信？
 
-目前插件间没有直接的通信 API。间接方式：
+插件间通过**服务接口（Protocol）**进行类型安全的通讯。
 
-- **通过主进程中转**：插件 A 发送 Command → 主进程处理 → 触发 Event → 插件 B 收到
-- **通过文件系统**：插件 A 写文件到公共目录 → 插件 B 定时轮询（不推荐）
-- **共享 ZMQ Client**：未来可能会支持插件间自定义频道
+#### 1. 定义服务接口
+
+在 `shared_types/services/` 目录下创建接口定义文件：
+
+```python
+# shared_types/services/my_service.py
+from typing import Protocol, runtime_checkable
+from dataclasses import dataclass
+
+@dataclass(frozen=True, slots=True)
+class MyData:
+    """数据类型（frozen 保证不可变，线程安全）"""
+    id: int
+    name: str
+
+@runtime_checkable
+class MyService(Protocol):
+    """服务接口定义"""
+    def get_data(self, id: int) -> MyData | None: ...
+    def list_data(self, limit: int = 100) -> list[MyData]: ...
+```
+
+#### 2. 服务提供者
+
+```python
+class ProviderPlugin(BasePlugin):
+    def on_initialized(self):
+        # 注册服务（显式指定 protocol）
+        self.register_service(self, protocol=MyService)
+    
+    # 实现服务接口方法
+    def get_data(self, id: int) -> MyData | None:
+        return self._db.query(id)
+    
+    def list_data(self, limit: int = 100) -> list[MyData]:
+        return self._db.query_all(limit)
+```
+
+#### 3. 服务使用者
+
+```python
+class ConsumerPlugin(BasePlugin):
+    def on_initialized(self):
+        if self.has_service(MyService):
+            # 获取服务代理（推荐）
+            self._service = self.get_service_proxy(MyService)
+    
+    def _do_something(self):
+        # 调用服务方法（IDE 完整补全，在服务提供者线程执行）
+        data = self._service.get_data(123)
+        all_data = self._service.list_data(100)
+```
+
+#### 服务调用方式
+
+| 方法 | 说明 | 推荐 |
+|------|------|------|
+| `get_service_proxy(MyService)` | 获取代理对象，方法调用在提供者线程执行 | ✅ |
+| `call_service_async(MyService, "method", *args)` | 异步调用，返回 Future | 高级用法 |
+| `has_service(MyService)` | 检查服务是否可用 | - |
+
+#### 注意事项
+
+- **死锁风险**：不要让两个插件互相调用对方的服务
+- **线程安全**：服务方法在提供者线程执行，调用方无需关心
+- **删除接口**：不要在服务接口中暴露删除等敏感操作
 
 ### Q5: 最佳实践清单
 
@@ -791,6 +912,7 @@ def on_initialized(self):
 
 from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from shared_types.events import VideoSaveEvent  # 按需导入
+from shared_types.services.my_service import MyService  # 服务接口（可选）
 
 class MyPlugin(BasePlugin):
 
@@ -811,6 +933,13 @@ class MyPlugin(BasePlugin):
 
     def on_initialized(self):        # 可选：耗时初始化
         pass                          # self.data_dir 可存放数据
+        
+        # 注册服务（如果是服务提供者）
+        # self.register_service(self, protocol=MyService)
+        
+        # 获取服务代理（如果是服务使用者）
+        # if self.has_service(MyService):
+        #     self._service = self.get_service_proxy(MyService)
 
     def on_shutdown(self):            # 可选：资源清理
         pass
