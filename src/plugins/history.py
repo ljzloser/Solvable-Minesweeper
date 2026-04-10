@@ -702,7 +702,12 @@ class HistoryTable(QWidget):
 class HistoryMainWidget(QWidget):
     """历史记录插件的主界面（作为插件的 widget 返回）"""
 
-    def __init__(self, db_path: Path, config_path: Path, parent=None):
+    def __init__(
+        self,
+        db_path: Path,
+        config_path: Path,
+        parent=None,
+    ):
         super().__init__(parent)
         self._db_path = db_path
         self._config_path = config_path
@@ -734,6 +739,7 @@ class HistoryMainWidget(QWidget):
         self.one_page_combo = QComboBox()
         self.one_page_combo.addItems(
             ["10", "20", "50", "100", "200", "500", "1000"])
+
         self.limit_label = QLabel("")
         limit_layout.addItem(
             QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -848,7 +854,7 @@ class HistoryPlugin(BasePlugin):
             author="ljzloser",
             version="1.0.0",
             icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),
-            window_mode=WindowMode.DETACHED,
+            window_mode=WindowMode.TAB,
         )
 
     def __init__(self, info):
@@ -1054,3 +1060,6 @@ class HistoryPlugin(BasePlugin):
             return deleted
         finally:
             conn.close()
+
+    def _on_config_changed(self, name: str, value: Any) -> None:
+        return super()._on_config_changed(name, value)

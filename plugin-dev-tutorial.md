@@ -11,9 +11,10 @@
 - [三、理解插件发现机制](#三理解插件发现机制)
 - [四、编写第一个插件（Hello World）](#四编写第一个插件hello-world)
 - [五、核心 API 详解](#五核心-api-详解)
-- [六、实战：带 GUI 的完整插件示例](#六实战带-gui-的完整插件示例)
-- [七、VS Code 调试指南](#七vs-code-调试指南)
-- [八、常见问题与最佳实践](#八常见问题与最佳实践)
+- [六、插件自定义配置系统](#六插件自定义配置系统)
+- [七、实战：带 GUI 的完整插件示例](#七实战带-gui-的完整插件示例)
+- [八、VS Code 调试指南](#八vs-code-调试指南)
+- [九、常见问题与最佳实践](#九常见问题与最佳实践)
 
 ---
 
@@ -344,6 +345,8 @@ class HelloPlugin(BasePlugin):
 | `self.log_level` | `LogLevel` | 当前的日志级别 |
 | `self.plugin_icon` | `QIcon` | 插件图标 |
 | `self.logger` | `loguru.Logger` | **已绑定插件名称的日志器**（直接用！） |
+| `self.other_info` | `OtherInfoBase \| None` | 插件自定义配置对象 |
+| `self.config_changed` | `pyqtSignal` | 配置变化信号，参数 `(name, value)` |
 
 ### 5.2 事件订阅 API
 
@@ -523,6 +526,7 @@ class PluginInfo:
     log_level: LogLevel = "DEBUG"          # 默认日志级别
     icon: QIcon | None = None             # 图标
     log_config: LogConfig | None = None    # 高级日志配置
+    other_info: type[OtherInfoBase] | None = None  # 👈 自定义配置类
 ```
 
 **WindowMode 含义：**
@@ -535,7 +539,265 @@ class PluginInfo:
 
 ---
 
-## 六、实战：带 GUI 的完整插件示例
+## 六、插件自定义配置系统
+
+插件可以定义自己的配置项，这些配置会：
+- 自动生成 UI 控件（在设置对话框中）
+- 自动持久化到 `data/plugin_data/<plugin_name>/config.json`
+- 支持配置变化事件通知
+
+### 6.1 配置类型一览
+
+| 类型 | UI 控件 | 用途示例 |
+|------|---------|----------|
+| `BoolConfig` | QCheckBox | 开关选项（启用/禁用功能） |
+| `IntConfig` | QSpinBox / QSlider | 整数设置（数量、超时时间） |
+| `FloatConfig` | QDoubleSpinBox | 浮点数设置（阈值、系数） |
+| `ChoiceConfig` | QComboBox | 下拉选择（主题、模式） |
+| `TextConfig` | QLineEdit | 文本输入（名称、路径、密码） |
+| `ColorConfig` | 颜色按钮 + QColorDialog | 颜色选择（主题颜色） |
+| `FileConfig` | QLineEdit + 文件对话框 | 文件路径选择 |
+| `PathConfig` | QLineEdit + 目录对话框 | 目录路径选择 |
+| `LongTextConfig` | QTextEdit | 多行文本（脚本、描述） |
+| `RangeConfig` | 两个 QSpinBox | 数值范围（最小/最大值） |
+
+### 6.2 定义配置类
+
+继承 `OtherInfoBase` 并声明配置字段：
+
+```python
+from plugin_manager.config_types import (
+    OtherInfoBase, BoolConfig, IntConfig, FloatConfig,
+    ChoiceConfig, TextConfig, ColorConfig, FileConfig,
+    PathConfig, LongTextConfig, RangeConfig,
+)
+
+class MyPluginConfig(OtherInfoBase):
+    """我的插件配置"""
+    
+    # ── 基础类型 ─────────────────────────
+    enable_auto_save = BoolConfig(
+        default=True,
+        label="自动保存",
+        description="游戏结束后自动保存录像",
+    )
+    
+    max_records = IntConfig(
+        default=100,
+        label="最大记录数",
+        min_value=10,
+        max_value=10000,
+        step=10,
+    )
+    
+    min_rtime = FloatConfig(
+        default=0.0,
+        label="最小用时筛选",
+        min_value=0.0,
+        max_value=999.0,
+        decimals=2,
+    )
+    
+    theme = ChoiceConfig(
+        default="dark",
+        label="主题",
+        choices=[
+            ("light", "明亮"),
+            ("dark", "暗黑"),
+            ("auto", "跟随系统"),
+        ],
+    )
+    
+    player_name = TextConfig(
+        default="",
+        label="玩家名称",
+        placeholder="输入名称...",
+    )
+    
+    api_token = TextConfig(
+        default="",
+        label="API Token",
+        password=True,           # 密码模式
+        placeholder="输入密钥...",
+    )
+    
+    # ── 高级类型 ─────────────────────────
+    theme_color = ColorConfig(
+        default="#1976d2",
+        label="主题颜色",
+    )
+    
+    export_file = FileConfig(
+        default="",
+        label="导出文件",
+        filter="JSON (*.json)",   # 文件过滤器
+        save_mode=True,           # 保存文件模式
+    )
+    
+    log_directory = PathConfig(
+        default="",
+        label="日志目录",
+    )
+    
+    description = LongTextConfig(
+        default="",
+        label="描述",
+        placeholder="输入描述...",
+        max_height=100,
+    )
+    
+    time_range = RangeConfig(
+        default=(0, 300),
+        label="时间范围(秒)",
+        min_value=0,
+        max_value=999,
+    )
+```
+
+### 6.3 绑定配置到插件
+
+在 `PluginInfo` 中通过 `other_info` 属性绑定：
+
+```python
+class MyPlugin(BasePlugin):
+    
+    @classmethod
+    def plugin_info(cls) -> PluginInfo:
+        return PluginInfo(
+            name="my_plugin",
+            version="1.0.0",
+            description="我的插件",
+            other_info=MyPluginConfig,  # 👈 绑定配置类
+        )
+```
+
+### 6.4 访问配置值
+
+```python
+class MyPlugin(BasePlugin):
+    
+    def on_initialized(self):
+        # 访问配置值
+        if self.other_info:
+            max_records = self.other_info.max_records
+            theme = self.other_info.theme
+            self.logger.info(f"配置: max_records={max_records}, theme={theme}")
+    
+    def _handle_event(self, event):
+        # 使用配置
+        if self.other_info and self.other_info.enable_auto_save:
+            self._save_record(event)
+```
+
+### 6.5 监听配置变化
+
+```python
+class MyPlugin(BasePlugin):
+    
+    def on_initialized(self):
+        # 连接配置变化信号
+        self.config_changed.connect(self._on_config_changed)
+    
+    def _on_config_changed(self, name: str, value: Any):
+        """配置变化时调用（在主线程执行）"""
+        self.logger.info(f"配置变化: {name} = {value}")
+        
+        if name == "theme":
+            self._apply_theme(value)
+        elif name == "max_records":
+            self._resize_buffer(value)
+```
+
+### 6.6 配置相关属性和方法
+
+| 属性/方法 | 说明 |
+|-----------|------|
+| `self.other_info` | 配置对象实例（可能为 None） |
+| `self.config_changed` | 配置变化信号，参数 `(name, value)` |
+| `self.save_config()` | 手动保存配置到文件 |
+| `self.other_info.to_dict()` | 导出配置为字典 |
+| `self.other_info.from_dict(data)` | 从字典加载配置 |
+| `self.other_info.reset_to_defaults()` | 重置为默认值 |
+
+### 6.7 配置存储位置
+
+配置自动保存到：
+```
+data/plugin_data/<plugin_name>/config.json
+```
+
+示例：
+```json
+{
+  "enable_auto_save": true,
+  "max_records": 100,
+  "theme": "dark",
+  "player_name": "Player1",
+  "theme_color": "#1976d2"
+}
+```
+
+### 6.8 自定义配置类型
+
+如果预定义的配置类型不满足需求，可以继承 `BaseConfig` 创建自定义类型：
+
+```python
+from plugin_manager.config_types.base_config import BaseConfig
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDial
+from PyQt5.QtCore import Qt
+
+class DialConfig(BaseConfig[int]):
+    """旋钮配置 → QDial 控件"""
+    widget_type = "dial"
+    
+    def __init__(
+        self,
+        default: int = 0,
+        label: str = "",
+        min_value: int = 0,
+        max_value: int = 100,
+        **kwargs,
+    ):
+        super().__init__(default, label, **kwargs)
+        self.min_value = min_value
+        self.max_value = max_value
+    
+    def create_widget(self):
+        """创建自定义 UI 控件，返回 (控件, 获取值函数, 设置值函数)"""
+        widget = QDial()
+        widget.setRange(self.min_value, self.max_value)
+        widget.setValue(int(self.default))
+        widget.setNotchesVisible(True)
+        
+        if self.description:
+            widget.setToolTip(self.description)
+        
+        return widget, widget.value, widget.setValue
+    
+    def to_storage(self, value: int) -> int:
+        return int(value)
+    
+    def from_storage(self, data) -> int:
+        return int(data)
+
+# 使用自定义配置类型
+class MyConfig(OtherInfoBase):
+    volume = DialConfig(50, "音量", min_value=0, max_value=100)
+    sensitivity = DialConfig(5, "灵敏度", min_value=1, max_value=10)
+```
+
+**自定义配置类型要点：**
+
+| 方法/属性 | 说明 |
+|-----------|------|
+| `widget_type` | 控件类型标识 |
+| `create_widget()` | 返回 `(控件, getter, setter)` 三元组 |
+| `to_storage(value)` | 将值转换为 JSON 可序列化格式 |
+| `from_storage(data)` | 从 JSON 数据恢复值 |
+
+---
+
+## 七、实战：带 GUI 的完整插件示例
 
 下面是一个更完整的示例——**实时统计面板插件**，展示计数器、表格等常见 UI 元素的用法：
 
@@ -712,7 +974,7 @@ class StatsPlugin(BasePlugin):
 ```
 ---
 
-## 七、VS Code 调试指南
+## 八、VS Code 调试指南
 
 ### 最简开发方式（推荐）
 
@@ -749,7 +1011,7 @@ code <安装目录>
 
 ---
 
-## 八、常见问题与最佳实践
+## 九、常见问题与最佳实践
 
 ### Q1: 我的插件为什么没有被加载？
 
@@ -774,6 +1036,33 @@ code <安装目录>
 某些纯 Python 库可以直接将源码放入插件的目录中（包形式插件），然后正常 import。但这不是长久之计。
 
 ### Q3: 如何存储插件的持久化数据？
+
+**方式一：使用配置系统（推荐）**
+
+定义配置类并绑定到插件，配置会自动保存和加载：
+
+```python
+class MyConfig(OtherInfoBase):
+    setting1 = BoolConfig(True, "设置1")
+    setting2 = IntConfig(100, "设置2")
+
+class MyPlugin(BasePlugin):
+    @classmethod
+    def plugin_info(cls) -> PluginInfo:
+        return PluginInfo(name="my_plugin", other_info=MyConfig)
+    
+    def on_initialized(self):
+        # 访问配置
+        if self.other_info:
+            value = self.other_info.setting1
+    
+    def on_shutdown(self):
+        # 配置在设置对话框确认时自动保存
+        # 也可以手动保存
+        self.save_config()
+```
+
+**方式二：使用 self.data_dir**
 
 使用 `self.data_dir` —— 它指向 `<exe_dir>/data/plugin_data/<PluginClassName>/`：
 
@@ -911,8 +1200,14 @@ class ConsumerPlugin(BasePlugin):
 # ═══ 最小可行插件模板 ═══
 
 from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_manager.config_types import OtherInfoBase, BoolConfig, IntConfig  # 可选
 from shared_types.events import VideoSaveEvent  # 按需导入
 from shared_types.services.my_service import MyService  # 服务接口（可选）
+
+# ═══ 配置类定义（可选） ═══
+class MyConfig(OtherInfoBase):
+    enable_feature = BoolConfig(True, "启用功能")
+    max_count = IntConfig(100, "最大数量", min_value=1, max_value=1000)
 
 class MyPlugin(BasePlugin):
 
@@ -923,6 +1218,7 @@ class MyPlugin(BasePlugin):
             description="插件描述",
             window_mode=WindowMode.TAB,  # TAB / DETACHED / CLOSED
             icon=make_plugin_icon("#1976D2", "M"),
+            other_info=MyConfig,         # 👈 绑定配置类（可选）
         )
 
     def _setup_subscriptions(self) -> None:
@@ -940,6 +1236,13 @@ class MyPlugin(BasePlugin):
         # 获取服务代理（如果是服务使用者）
         # if self.has_service(MyService):
         #     self._service = self.get_service_proxy(MyService)
+        
+        # 连接配置变化信号（可选）
+        # self.config_changed.connect(self._on_config_changed)
+        
+        # 访问配置值（可选）
+        # if self.other_info:
+        #     max_count = self.other_info.max_count
 
     def on_shutdown(self):            # 可选：资源清理
         pass
