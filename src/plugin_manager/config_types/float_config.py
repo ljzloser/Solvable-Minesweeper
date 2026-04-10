@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QDoubleSpinBox
 
 from .base_config import BaseConfig
@@ -44,8 +45,8 @@ class FloatConfig(BaseConfig[float]):
 
     def create_widget(
         self,
-    ) -> tuple[QDoubleSpinBox, Callable[[], float], Callable[[float], None]]:
-        """创建 QDoubleSpinBox 控件"""
+    ) -> tuple[QDoubleSpinBox, Callable[[], float], Callable[[float], None], QObject]:
+        """创建 QDoubleSpinBox 控件，返回 (控件, getter, setter, 信号)"""
         widget = QDoubleSpinBox()
         widget.setRange(self.min_value, self.max_value)
         widget.setValue(self.default)
@@ -53,7 +54,7 @@ class FloatConfig(BaseConfig[float]):
         widget.setDecimals(self.decimals)
         if self.description:
             widget.setToolTip(self.description)
-        return widget, widget.value, widget.setValue
+        return widget, widget.value, widget.setValue, widget.valueChanged
 
     def to_storage(self, value: float) -> float:
         """转换为存储格式"""

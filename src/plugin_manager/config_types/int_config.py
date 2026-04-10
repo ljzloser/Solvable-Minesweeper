@@ -46,8 +46,10 @@ class IntConfig(BaseConfig[int]):
 
     def create_widget(
         self,
-    ) -> tuple[QSpinBox | QSlider, Callable[[], int], Callable[[int], None]]:
-        """创建 QSpinBox 或 QSlider 控件"""
+    ) -> tuple[QSpinBox | QSlider, Callable[[], int], Callable[[int], None], QObject]:
+        """创建 QSpinBox 或 QSlider 控件，返回 (控件, getter, setter, 信号)"""
+        from PyQt5.QtCore import QObject
+        
         if self.use_slider:
             widget = QSlider(Qt.Horizontal)
             widget.setRange(self.min_value, self.max_value)
@@ -55,7 +57,7 @@ class IntConfig(BaseConfig[int]):
             widget.setSingleStep(self.step)
             if self.description:
                 widget.setToolTip(self.description)
-            return widget, widget.value, widget.setValue
+            return widget, widget.value, widget.setValue, widget.valueChanged
         else:
             widget = QSpinBox()
             widget.setRange(self.min_value, self.max_value)
@@ -63,7 +65,7 @@ class IntConfig(BaseConfig[int]):
             widget.setSingleStep(self.step)
             if self.description:
                 widget.setToolTip(self.description)
-            return widget, widget.value, widget.setValue
+            return widget, widget.value, widget.setValue, widget.valueChanged
 
     def to_storage(self, value: int) -> int:
         """转换为存储格式"""

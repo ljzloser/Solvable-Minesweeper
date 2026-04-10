@@ -7,9 +7,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSpinBox, QLabel
 
 from .base_config import BaseConfig
+
+
+class RangeChangeSignal(QObject):
+    """范围变化信号发射器"""
+    changed = pyqtSignal()
 
 
 @dataclass
@@ -45,13 +51,17 @@ class RangeConfig(BaseConfig[tuple[int, int]]):
 
     def create_widget(
         self,
-    ) -> tuple[QWidget, Callable[[], tuple[int, int]], Callable[[tuple[int, int]], None]]:
-        """创建范围选择器"""
+    ) -> tuple[QWidget, Callable[[], tuple[int, int]], Callable[[tuple[int, int]], None], QObject]:
+        """创建范围选择器，返回 (控件, getter, setter, 信号)"""
 
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
+
+        # 创建信号发射器，并保存为容器的属性（防止垃圾回收）
+        signal_emitter = RangeChangeSignal(parent=container)
+        changed_signal = signal_emitter.changed
 
         # 最小值
         min_spin = QSpinBox()
@@ -76,6 +86,10 @@ class RangeConfig(BaseConfig[tuple[int, int]]):
         layout.addWidget(sep)
         layout.addWidget(max_spin)
 
+        # 连接两个 spinbox 的值变化信号到统一的 changed 信号
+        min_spin.valueChanged.connect(lambda: changed_signal.emit())
+        max_spin.valueChanged.connect(lambda: changed_signal.emit())
+
         def get_value() -> tuple[int, int]:
             return (min_spin.value(), max_spin.value())
 
@@ -84,7 +98,7 @@ class RangeConfig(BaseConfig[tuple[int, int]]):
                 min_spin.setValue(int(value[0]))
                 max_spin.setValue(int(value[1]))
 
-        return container, get_value, set_value
+        return container, get_value, set_value, changed_signal
 
     def to_storage(self, value: tuple[int, int]) -> list[int]:
         """转换为存储格式（JSON 不支持元组）"""

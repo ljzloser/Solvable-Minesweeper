@@ -8,20 +8,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QDoubleSpinBox,
     QFormLayout,
     QLabel,
     QScrollArea,
-    QSlider,
-    QSpinBox,
     QVBoxLayout,
     QWidget,
-    QLineEdit,
-    QTextEdit,
 )
 
 from .config_types.base_config import BaseConfig
@@ -56,6 +49,7 @@ class OtherInfoWidget(QWidget):
         self._widgets: dict[str, QWidget] = {}
         self._getters: dict[str, Callable[[], Any]] = {}
         self._setters: dict[str, Callable[[Any], None]] = {}
+        self._signals: dict[str, QObject] = {}
 
         self._setup_ui()
 
@@ -78,7 +72,7 @@ class OtherInfoWidget(QWidget):
 
         for name, config_field in fields.items():
             # 使用 config_field 自己的 create_widget 方法
-            widget, getter, setter = config_field.create_widget()
+            widget, getter, setter, signal = config_field.create_widget()
 
             # 设置当前值
             current = getattr(self._other_info, name)
@@ -94,35 +88,27 @@ class OtherInfoWidget(QWidget):
             self._widgets[name] = widget
             self._getters[name] = getter
             self._setters[name] = setter
+            self._signals[name] = signal
 
             # 连接变化信号
-            self._connect_change_signal(widget, name)
+            self._connect_change_signal(signal, name)
 
-    def _connect_change_signal(self, widget: QWidget, name: str) -> None:
+    def _connect_change_signal(self, signal: QObject, name: str) -> None:
         """
         连接控件变化信号
 
         Args:
-            widget: 控件
+            signal: 值变化信号对象（QObject 或 pyqtSignal）
             name: 字段名
         """
-
-        def on_change() -> None:
+        def on_change(*args) -> None:
             self._on_changed(name)
 
-        if isinstance(widget, QCheckBox):
-            widget.stateChanged.connect(on_change)
-        elif isinstance(widget, QComboBox):
-            widget.currentIndexChanged.connect(on_change)
-        elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-            widget.valueChanged.connect(on_change)
-        elif isinstance(widget, QSlider):
-            widget.valueChanged.connect(on_change)
-        elif isinstance(widget, QLineEdit):
-            widget.textChanged.connect(on_change)
-        elif isinstance(widget, QTextEdit):
-            widget.textChanged.connect(on_change)
-        # 其他复杂控件（如 ColorConfig, FileConfig, RangeConfig）由自身内部处理
+        # 信号可能是 QObject（有 connect 方法）或信号的 bound signal
+        try:
+            signal.connect(on_change)
+        except (TypeError, AttributeError):
+            pass  # 如果信号连接失败，忽略
 
     def _on_changed(self, name: str) -> None:
         """

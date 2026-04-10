@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, ClassVar, Generic, TypeVar
 
 from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal, QObject
 
 T = TypeVar("T")
 
@@ -47,12 +48,15 @@ class BaseConfig(ABC, Generic[T]):
             self.label = ""
 
     @abstractmethod
-    def create_widget(self) -> tuple[QWidget, Callable[[], T], Callable[[T], None]]:
+    def create_widget(self) -> tuple[QWidget, Callable[[], T], Callable[[T], None], QObject]:
         """
         创建 PyQt 控件
 
         Returns:
-            (控件, 获取值函数, 设置值函数)
+            (控件, 获取值函数, 设置值函数, 值变化信号对象)
+            
+            信号对象应该是一个有 connect 方法的 QObject（如 pyqtSignal）。
+            当值变化时，配置系统会自动连接这个信号来同步值。
         """
         pass
 

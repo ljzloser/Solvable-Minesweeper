@@ -5,8 +5,10 @@ Hello World 示例插件
 """
 from __future__ import annotations
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit
-from PyQt5.QtCore import pyqtSignal
+from typing import Any
+
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QDial
+from PyQt5.QtCore import pyqtSignal, Qt
 
 from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from plugin_manager.config_types import (
@@ -21,8 +23,65 @@ from plugin_manager.config_types import (
     PathConfig,
     LongTextConfig,
     RangeConfig,
+    BaseConfig,
 )
 from shared_types.events import VideoSaveEvent
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 自定义配置类型示例
+# ═══════════════════════════════════════════════════════════════════
+
+
+class DialConfig(BaseConfig[int]):
+    """
+    自定义配置类型: 旋钮控件 → QDial
+    
+    演示如何继承 BaseConfig 创建自定义配置类型
+    """
+    widget_type = "dial"
+    
+    def __init__(
+        self,
+        default: int = 50,
+        label: str = "",
+        min_value: int = 0,
+        max_value: int = 100,
+        notch_step: int = 10,
+        **kwargs,
+    ):
+        super().__init__(default, label, **kwargs)
+        self.min_value = min_value
+        self.max_value = max_value
+        self.notch_step = notch_step
+    
+    def create_widget(self):
+        """创建 QDial 控件，返回 (控件, getter, setter, 信号)"""
+        from PyQt5.QtCore import QObject
+        
+        widget = QDial()
+        widget.setRange(self.min_value, self.max_value)
+        widget.setValue(int(self.default))
+        widget.setNotchesVisible(True)
+        widget.setSingleStep(self.notch_step)
+        widget.setPageStep(self.notch_step * 2)
+        widget.setMinimumSize(60, 60)
+        widget.setMaximumSize(100, 100)
+        
+        if self.description:
+            widget.setToolTip(self.description)
+        
+        # 返回控件、getter、setter、以及 valueChanged 信号
+        return widget, widget.value, widget.setValue, widget.valueChanged
+    
+    def to_storage(self, value: int) -> int:
+        return int(value)
+    
+    def from_storage(self, data: Any) -> int:
+        try:
+            return int(data)
+        except (ValueError, TypeError):
+            return int(self.default)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -189,6 +248,24 @@ class HelloPluginConfig(OtherInfoBase):
         description="只记录此 3BV 范围内的游戏",
         min_value=0,
         max_value=9999,
+    )
+
+    # ── 自定义配置类型: DialConfig → QDial ─────────────
+    volume = DialConfig(
+        default=50,
+        label="音量",
+        description="自定义旋钮控件示例",
+        min_value=0,
+        max_value=100,
+        notch_step=10,
+    )
+    sensitivity = DialConfig(
+        default=5,
+        label="灵敏度",
+        description="响应灵敏度设置",
+        min_value=1,
+        max_value=10,
+        notch_step=1,
     )
 
 

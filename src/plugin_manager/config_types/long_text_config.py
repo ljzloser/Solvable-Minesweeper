@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QTextEdit
 
 from .base_config import BaseConfig
@@ -39,8 +40,8 @@ class LongTextConfig(BaseConfig[str]):
         """确保默认值是字符串"""
         self.default = str(self.default) if self.default else ""
 
-    def create_widget(self) -> tuple[QTextEdit, Callable[[], str], Callable[[str], None]]:
-        """创建多行文本编辑器"""
+    def create_widget(self) -> tuple[QTextEdit, Callable[[], str], Callable[[str], None], QObject]:
+        """创建多行文本编辑器，返回 (控件, getter, setter, 信号)"""
         widget = QTextEdit()
         widget.setPlainText(str(self.default))
         widget.setMaximumHeight(self.max_height)
@@ -51,7 +52,7 @@ class LongTextConfig(BaseConfig[str]):
         if self.description:
             widget.setToolTip(self.description)
 
-        return widget, widget.toPlainText, widget.setPlainText
+        return widget, widget.toPlainText, widget.setPlainText, widget.textChanged
 
     def to_storage(self, value: str) -> str:
         """转换为存储格式"""

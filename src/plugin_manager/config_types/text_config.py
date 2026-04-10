@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QLineEdit
 
 from .base_config import BaseConfig
@@ -39,8 +40,8 @@ class TextConfig(BaseConfig[str]):
         """确保默认值是字符串类型"""
         self.default = str(self.default)
 
-    def create_widget(self) -> tuple[QLineEdit, Callable[[], str], Callable[[str], None]]:
-        """创建 QLineEdit 控件"""
+    def create_widget(self) -> tuple[QLineEdit, Callable[[], str], Callable[[str], None], QObject]:
+        """创建 QLineEdit 控件，返回 (控件, getter, setter, 信号)"""
         widget = QLineEdit()
         widget.setText(str(self.default))
 
@@ -53,7 +54,7 @@ class TextConfig(BaseConfig[str]):
         if self.description:
             widget.setToolTip(self.description)
 
-        return widget, widget.text, widget.setText
+        return widget, widget.text, widget.setText, widget.textChanged
 
     def to_storage(self, value: str) -> str:
         """转换为存储格式"""

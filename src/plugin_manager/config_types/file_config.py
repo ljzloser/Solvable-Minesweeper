@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 
 from .base_config import BaseConfig
@@ -39,8 +40,8 @@ class FileConfig(BaseConfig[str]):
         """确保默认值是字符串"""
         self.default = str(self.default) if self.default else ""
 
-    def create_widget(self) -> tuple[QWidget, Callable[[], str], Callable[[str], None]]:
-        """创建文件选择器"""
+    def create_widget(self) -> tuple[QWidget, Callable[[], str], Callable[[str], None], QObject]:
+        """创建文件选择器，返回 (控件, getter, setter, 信号)"""
 
         container = QWidget()
         layout = QHBoxLayout(container)
@@ -71,7 +72,7 @@ class FileConfig(BaseConfig[str]):
         layout.addWidget(line_edit, 1)
         layout.addWidget(btn)
 
-        return container, line_edit.text, line_edit.setText
+        return container, line_edit.text, line_edit.setText, line_edit.textChanged
 
     def to_storage(self, value: str) -> str:
         """转换为存储格式"""

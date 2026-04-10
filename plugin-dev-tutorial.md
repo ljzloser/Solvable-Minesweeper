@@ -763,7 +763,7 @@ class DialConfig(BaseConfig[int]):
         self.max_value = max_value
     
     def create_widget(self):
-        """创建自定义 UI 控件，返回 (控件, 获取值函数, 设置值函数)"""
+        """创建自定义 UI 控件，返回 (控件, getter, setter, 信号)"""
         widget = QDial()
         widget.setRange(self.min_value, self.max_value)
         widget.setValue(int(self.default))
@@ -772,7 +772,8 @@ class DialConfig(BaseConfig[int]):
         if self.description:
             widget.setToolTip(self.description)
         
-        return widget, widget.value, widget.setValue
+        # 返回控件、getter、setter、以及 valueChanged 信号
+        return widget, widget.value, widget.setValue, widget.valueChanged
     
     def to_storage(self, value: int) -> int:
         return int(value)
@@ -791,9 +792,30 @@ class MyConfig(OtherInfoBase):
 | 方法/属性 | 说明 |
 |-----------|------|
 | `widget_type` | 控件类型标识 |
-| `create_widget()` | 返回 `(控件, getter, setter)` 三元组 |
+| `create_widget()` | 返回 `(控件, getter, setter, 信号)` 四元组 |
 | `to_storage(value)` | 将值转换为 JSON 可序列化格式 |
 | `from_storage(data)` | 从 JSON 数据恢复值 |
+
+**信号对象说明：**
+
+信号对象可以是：
+- Qt 控件的内置信号（如 `widget.valueChanged`、`widget.textChanged`）
+- 自定义 `pyqtSignal`（需要通过 QObject 子类定义）
+
+```python
+# 方式一：使用控件的内置信号
+return widget, widget.value, widget.setValue, widget.valueChanged
+
+# 方式二：自定义信号（复杂控件）
+from PyQt5.QtCore import QObject, pyqtSignal
+
+class MySignal(QObject):
+    changed = pyqtSignal()
+
+signal_emitter = MySignal(parent=container)  # parent 防止垃圾回收
+# ... 控件变化时调用 signal_emitter.changed.emit()
+return container, get_value, set_value, signal_emitter.changed
+```
 
 ---
 

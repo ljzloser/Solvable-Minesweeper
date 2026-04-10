@@ -7,11 +7,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QPushButton, QColorDialog, QHBoxLayout, QWidget
 
 from .base_config import BaseConfig
+
+
+class ColorChangeSignal(QObject):
+    """颜色变化信号发射器"""
+    changed = pyqtSignal()
 
 
 @dataclass
@@ -37,14 +42,17 @@ class ColorConfig(BaseConfig[str]):
         if not self.default.startswith("#"):
             self.default = "#" + self.default
 
-    def create_widget(self) -> tuple[QWidget, Callable[[], str], Callable[[str], None]]:
-        """创建颜色选择按钮"""
+    def create_widget(self) -> tuple[QWidget, Callable[[], str], Callable[[str], None], QObject]:
+        """创建颜色选择按钮，返回 (控件, getter, setter, 信号)"""
 
-        # 创建容器
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
+
+        # 创建信号发射器，并保存为容器的属性（防止垃圾回收）
+        signal_emitter = ColorChangeSignal(parent=container)
+        changed_signal = signal_emitter.changed
 
         # 颜色预览按钮
         btn = QPushButton()
@@ -70,6 +78,7 @@ class ColorConfig(BaseConfig[str]):
                 current_color[0] = color_str
                 btn.setStyleSheet(f"background-color: {color_str}; border: 1px solid #999;")
                 text_btn.setText(color_str)
+                changed_signal.emit()
 
         btn.clicked.connect(on_click)
         text_btn.clicked.connect(on_click)
@@ -83,7 +92,7 @@ class ColorConfig(BaseConfig[str]):
                 btn.setStyleSheet(f"background-color: {value}; border: 1px solid #999;")
                 text_btn.setText(value)
 
-        return container, get_value, set_value
+        return container, get_value, set_value, changed_signal
 
     def to_storage(self, value: str) -> str:
         """转换为存储格式"""
