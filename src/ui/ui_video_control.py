@@ -24,7 +24,7 @@ class Ui_Form(object):
         self.verticalLayout.setSpacing(5)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalSlider_time = QtWidgets.QSlider(Form)
-        self.horizontalSlider_time.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.horizontalSlider_time.setFocusPolicy(QtCore.Qt.NoFocus)
         self.horizontalSlider_time.setAutoFillBackground(False)
         self.horizontalSlider_time.setStyleSheet("QSlider::groove {\n"
 "    border: 0px solid #bbbbbb;\n"
