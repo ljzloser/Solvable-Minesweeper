@@ -18,7 +18,7 @@ from lib_zmq_plugins.shared.base import BaseEvent, get_event_tag
 from shared_types import EVENT_TYPES, COMMAND_TYPES
 
 from .event_dispatcher import EventDispatcher
-from .plugin_base import BasePlugin
+from plugin_sdk.plugin_base import BasePlugin
 from .plugin_loader import PluginLoader
 from .app_paths import get_all_plugin_dirs, patch_sys_path_for_frozen
 
@@ -144,9 +144,28 @@ class PluginManager:
         self._client.connect()
         self._setup_zmq_subscriptions()
         self._initialize_plugins()
+        self._validate_control_authorizations()
         
         self._started = True
         logger.info("Plugin manager started")
+    
+    def _validate_control_authorizations(self) -> None:
+        """验证控制授权配置，清除无效插件的授权"""
+        from plugin_sdk.control_auth import ControlAuthorizationManager
+        
+        auth_manager = ControlAuthorizationManager.instance()
+        
+        # 获取已加载的插件名称
+        loaded_plugins = set(self._plugins.keys())
+        
+        # 验证并清除无效授权
+        removed = auth_manager.validate_authorizations(loaded_plugins)
+        
+        if removed:
+            logger.warning(f"控制授权已清除（插件未加载）: {removed}")
+        
+        # 保存更新后的配置
+        auth_manager.save()
     
     def stop(self) -> None:
         """停止插件管理器"""

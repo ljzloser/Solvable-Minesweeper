@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING, Any, Callable
 
 import loguru
 
-from .service_registry import ServiceRegistry
+from plugin_sdk.service_registry import ServiceRegistry
 
 if TYPE_CHECKING:
-    from .plugin_base import BasePlugin
+    from plugin_sdk.plugin_base import BasePlugin
 
 logger = loguru.logger.bind(name="EventDispatcher")
 

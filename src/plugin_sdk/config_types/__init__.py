@@ -22,7 +22,7 @@
         time_range = RangeConfig((0, 300), "时间范围(秒)")
 """
 
-from .base_config import BaseConfig
+from .base_config import BaseConfig, ConfigWidgetBase, ConfigWidgetWrapper
 from .bool_config import BoolConfig
 from .int_config import IntConfig
 from .float_config import FloatConfig
@@ -37,6 +37,8 @@ from .other_info import OtherInfoBase
 
 __all__ = [
     "BaseConfig",
+    "ConfigWidgetBase",
+    "ConfigWidgetWrapper",
     "BoolConfig",
     "IntConfig",
     "FloatConfig",

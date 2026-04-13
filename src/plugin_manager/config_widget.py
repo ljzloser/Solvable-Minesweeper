@@ -6,19 +6,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QObject, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QFormLayout,
     QLabel,
     QScrollArea,
-    QVBoxLayout,
     QWidget,
 )
 
-from .config_types.base_config import BaseConfig
-from .config_types.other_info import OtherInfoBase
+from plugin_sdk.config_types.base_config import ConfigWidgetBase
+from plugin_sdk.config_types.other_info import OtherInfoBase
 
 if TYPE_CHECKING:
     pass
@@ -46,10 +45,7 @@ class OtherInfoWidget(QWidget):
         """
         super().__init__(parent)
         self._other_info = other_info
-        self._widgets: dict[str, QWidget] = {}
-        self._getters: dict[str, Callable[[], Any]] = {}
-        self._setters: dict[str, Callable[[Any], None]] = {}
-        self._signals: dict[str, QObject] = {}
+        self._widgets: dict[str, ConfigWidgetBase] = {}
 
         self._setup_ui()
 
@@ -72,11 +68,11 @@ class OtherInfoWidget(QWidget):
 
         for name, config_field in fields.items():
             # 使用 config_field 自己的 create_widget 方法
-            widget, getter, setter, signal = config_field.create_widget()
+            widget = config_field.create_widget()
 
             # 设置当前值
             current = getattr(self._other_info, name)
-            setter(current)
+            widget.set_value(current)
 
             # 创建标签
             label = QLabel(config_field.label)
@@ -86,29 +82,9 @@ class OtherInfoWidget(QWidget):
 
             # 保存引用
             self._widgets[name] = widget
-            self._getters[name] = getter
-            self._setters[name] = setter
-            self._signals[name] = signal
 
             # 连接变化信号
-            self._connect_change_signal(signal, name)
-
-    def _connect_change_signal(self, signal: QObject, name: str) -> None:
-        """
-        连接控件变化信号
-
-        Args:
-            signal: 值变化信号对象（QObject 或 pyqtSignal）
-            name: 字段名
-        """
-        def on_change(*args) -> None:
-            self._on_changed(name)
-
-        # 信号可能是 QObject（有 connect 方法）或信号的 bound signal
-        try:
-            signal.connect(on_change)
-        except (TypeError, AttributeError):
-            pass  # 如果信号连接失败，忽略
+            widget.value_change.connect(lambda *_, n=name: self._on_changed(n))
 
     def _on_changed(self, name: str) -> None:
         """
@@ -117,22 +93,23 @@ class OtherInfoWidget(QWidget):
         Args:
             name: 字段名
         """
-        value = self._getters[name]()
+        widget = self._widgets[name]
+        value = widget.get_value()
         # 只发射 UI 信号，不修改配置对象
         # 配置将在 apply_to_config() 时统一应用
         self.config_changed.emit(name, value)
 
     def apply_to_config(self) -> None:
         """将所有 UI 值同步到 OtherInfo 配置对象（此时才触发变化回调）"""
-        for name, getter in self._getters.items():
+        for name, widget in self._widgets.items():
             # 设置配置值，此时会触发 OtherInfoBase 的变化回调
-            setattr(self._other_info, name, getter())
+            setattr(self._other_info, name, widget.get_value())
 
     def refresh_from_config(self) -> None:
         """从 OtherInfo 配置对象刷新 UI 值"""
-        for name, setter in self._setters.items():
+        for name, widget in self._widgets.items():
             value = getattr(self._other_info, name)
-            setter(value)
+            widget.set_value(value)
 
     @property
     def other_info(self) -> OtherInfoBase:

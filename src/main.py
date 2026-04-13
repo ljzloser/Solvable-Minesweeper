@@ -16,8 +16,9 @@ from pathlib import Path
 from utils import get_paths, patch_env
 
 # 插件系统（新）
-from plugin_manager import GameServerBridge
+from plugin_sdk import GameServerBridge
 from plugin_manager.app_paths import get_env_for_subprocess
+from shared_types.commands import NewGameCommand
 import subprocess
 
 os.environ["QT_FONT_DPI"] = "96"
@@ -56,7 +57,8 @@ def cli_check_file(file_path: str) -> int:
             for root, _, files in os.walk(file_path):
                 for file in files:
                     if file.endswith((".evf", ".evfs")):
-                        evf_evfs_files.append(os.path.abspath(os.path.join(root, file)))
+                        evf_evfs_files.append(
+                            os.path.abspath(os.path.join(root, file)))
 
         if not evf_evfs_files:
             result["error"] = "must be evf or evfs files or directory"
@@ -80,7 +82,8 @@ def cli_check_file(file_path: str) -> int:
                         checksum = ui.checksum_guard.get_checksum(
                             video.raw_data[: -(len(video.checksum) + 2)]
                         )
-                        evf_evfs_files[ide] = (e, 0 if list(video.checksum) == list(checksum) else 1)
+                        evf_evfs_files[ide] = (e, 0 if list(
+                            video.checksum) == list(checksum) else 1)
                 elif e.endswith(".evfs"):
                     videos = ms.Evfs(e)
                     try:
@@ -92,14 +95,16 @@ def cli_check_file(file_path: str) -> int:
                             evf_evfs_files[ide] = (e, 2)
                             continue
 
-                        checksum = ui.checksum_guard.get_checksum(videos[0].evf_video.raw_data)
+                        checksum = ui.checksum_guard.get_checksum(
+                            videos[0].evf_video.raw_data)
                         if list(videos[0].checksum) != list(checksum):
                             evf_evfs_files[ide] = (e, 1)
                             continue
 
                         for idcell, cell in enumerate(videos[1:]):
                             checksum = ui.checksum_guard.get_checksum(
-                                cell.evf_video.raw_data + videos[idcell - 1].checksum
+                                cell.evf_video.raw_data +
+                                videos[idcell - 1].checksum
                             )
                             if list(cell.evf_video.checksum) != list(checksum):
                                 evf_evfs_files[ide] = (e, 1)
@@ -114,7 +119,8 @@ def cli_check_file(file_path: str) -> int:
                     if isinstance(item, tuple) and len(item) == 2
                 ]
 
-    output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out.json")
+    output_file = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "out.json")
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
@@ -155,8 +161,6 @@ if __name__ == "__main__":
         ui.mainWindow.show()
 
         # ── 启动 ZMQ Server + 插件管理器 ──
-        game_server = GameServerBridge(ui)
-        ui.gameServerBridge = game_server
 
         # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
         if getattr(sys, 'frozen', False):
@@ -194,10 +198,16 @@ if __name__ == "__main__":
 
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 
-        # 连接信号：插件发来的新游戏指令 → 主线程处理
-        game_server.signals.new_game_requested.connect(lambda r, c, m: None)  # TODO: 接入游戏逻辑
-
-        game_server.start()
+        GameServerBridge.instance().start()
+        
+        # 注册控制命令处理器（自动在主线程执行）
+        def handle_new_game(cmd: NewGameCommand):
+            print(f"[NewGameCommand] rows={cmd.rows}, cols={cmd.cols}, mines={cmd.mines}")
+            ui.setBoard_and_start(cmd.rows, cmd.cols, cmd.mines)
+            from lib_zmq_plugins.shared.base import CommandResponse
+            return CommandResponse(request_id=cmd.request_id, success=True)
+        
+        GameServerBridge.instance().register_handler(NewGameCommand, handle_new_game)
 
         # _translate = QtCore.QCoreApplication.translate
         hwnd = int(ui.mainWindow.winId())
@@ -210,7 +220,7 @@ if __name__ == "__main__":
         )
 
         def _cleanup():
-            game_server.stop()
+            GameServerBridge.instance().stop()
             if plugin_process is not None and plugin_process.poll() is None:
                 plugin_process.terminate()
                 plugin_process.wait(timeout=5)

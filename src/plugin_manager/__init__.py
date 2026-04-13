@@ -7,60 +7,27 @@
 - 动态加载插件
 - 独立的主界面窗口
 - 插件自定义配置系统
+
+模块结构：
+- plugin_sdk: 插件开发 SDK（BasePlugin, config_types, service_registry）
+- plugin_manager: 插件管理器内部实现（PluginManager, EventDispatcher, MainWindow）
 """
 
-from .plugin_base import BasePlugin, PluginInfo, make_plugin_icon, WindowMode, LogLevel
 from .logging_setup import LogConfig
 from .plugin_manager import PluginManager, run_plugin_manager_process
 from .event_dispatcher import EventDispatcher
 from .plugin_loader import PluginLoader
-from .server_bridge import GameServerBridge
 from .main_window import PluginManagerWindow
-from .config_types import (
-    BaseConfig,
-    BoolConfig,
-    IntConfig,
-    FloatConfig,
-    ChoiceConfig,
-    TextConfig,
-    ColorConfig,
-    FileConfig,
-    PathConfig,
-    LongTextConfig,
-    RangeConfig,
-    OtherInfoBase,
-)
 from .config_widget import OtherInfoWidget, OtherInfoScrollArea
 from .config_manager import PluginConfigManager
 
 __all__ = [
-    # 核心类
-    "BasePlugin",
-    "PluginInfo",
-    "WindowMode",
-    "LogLevel",
     "LogConfig",
-    "make_plugin_icon",
-    # 管理器
     "PluginManager",
     "PluginManagerWindow",
     "EventDispatcher",
     "PluginLoader",
-    "GameServerBridge",
     "run_plugin_manager_process",
-    # 配置系统
-    "BaseConfig",
-    "BoolConfig",
-    "IntConfig",
-    "FloatConfig",
-    "ChoiceConfig",
-    "TextConfig",
-    "ColorConfig",
-    "FileConfig",
-    "PathConfig",
-    "LongTextConfig",
-    "RangeConfig",
-    "OtherInfoBase",
     "OtherInfoWidget",
     "OtherInfoScrollArea",
     "PluginConfigManager",

@@ -63,17 +63,19 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 ├── plugin_manager.exe          # 插件管理器
 ├── plugins/                    # 👈 用户插件放这里！
 │   ├── my_hello.py             # 你的插件（单文件）
-│   └── my_complex/             # 或包形式插件
-│       ├── __init__.py
-│       └── utils.py
-├── shared_types/               # 共享类型定义
-│   ├── events.py               # 事件类型
-│   ├── commands.py             # 指令类型
+│   ├── my_complex/             # 或包形式插件
+│   │   ├── __init__.py
+│   │   └── utils.py
 │   └── services/               # 👈 服务接口定义
 │       └── history.py          # HistoryService 接口
-├── plugin_manager/             # 插件管理器模块
+├── plugin_sdk/                 # 插件开发 SDK
 │   ├── plugin_base.py          # 👈 BasePlugin 基类
-│   └── service_registry.py     # 服务注册表
+│   ├── service_registry.py     # 服务注册表
+│   └── config_types/           # 配置类型
+├── shared_types/               # 共享类型定义
+│   ├── events.py               # 事件类型
+│   └── commands.py             # 指令类型
+├── plugin_manager/             # 插件管理器内部模块
 ├── user_plugins/               # 备用用户插件目录
 ├── data/
 │   ├── logs/                   # 日志输出（自动创建）
@@ -144,6 +146,7 @@ plugins/
 ### 3.3 自动发现规则
 
 - 文件/目录名以 `_` 开头的会被跳过（如 `_template.py`）
+- `services` 目录会被跳过（它是服务接口定义，不是插件）
 - 单个 `.py` 文件中可以定义多个继承 `BasePlugin` 的类，都会被加载
 - 包形式插件中，只有 `__init__.py` 中导出的 `BasePlugin` 子类会被发现
 
@@ -167,7 +170,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit
 from PyQt5.QtCore import Qt, pyqtSignal
 
 # 导入插件基类和辅助类型
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 
 # 导入可用的事件类型
 from shared_types.events import VideoSaveEvent
@@ -382,7 +385,96 @@ result = self.request(some_query_command, timeout=5.0)
 | `NewGameCommand` | 开始新游戏 | `rows`, `cols`, `mines` |
 | `MouseClickCommand` | 模拟鼠标点击 | `row`, `col`, `button`, `modifiers` |
 
-### 5.4 线程安全的 GUI 更新（重要！）
+### 5.4 控制授权系统（重要！）
+
+为了防止多个插件同时发送冲突的控制指令，系统实现了**控制授权机制**：
+
+- 每个**控制命令类型**只能授权给**一个插件**
+- 未获得授权的插件发送该命令会被拒绝
+- 授权变更时会通知相关插件
+
+#### 声明需要的控制权限
+
+在 `PluginInfo` 中通过 `required_controls` 字段声明：
+
+```python
+from shared_types.commands import NewGameCommand, MouseClickCommand
+
+class MyPlugin(BasePlugin):
+    
+    @classmethod
+    def plugin_info(cls) -> PluginInfo:
+        return PluginInfo(
+            name="my_plugin",
+            description="需要控制权限的插件",
+            required_controls=[NewGameCommand],  # 👈 声明需要的控制权限
+        )
+```
+
+#### 检查和响应授权状态
+
+```python
+class MyPlugin(BasePlugin):
+    
+    def on_initialized(self) -> None:
+        # 检查当前是否有权限
+        has_auth = self.has_control_auth(NewGameCommand)
+        self.logger.info(f"NewGameCommand 权限: {has_auth}")
+        
+        # 更新 UI 状态
+        self.run_on_gui(self._update_ui_auth, has_auth)
+    
+    def on_control_auth_changed(
+        self,
+        command_type: type,
+        granted: bool,
+    ) -> None:
+        """
+        控制权限变更回调
+        
+        Args:
+            command_type: 命令类型
+            granted: True 表示获得权限，False 表示失去权限
+        """
+        if command_type == NewGameCommand:
+            if granted:
+                self.logger.info("获得了 NewGameCommand 控制权限")
+            else:
+                self.logger.warning("失去了 NewGameCommand 控制权限")
+                # 停止正在进行的操作
+                self._stop_auto_play()
+            
+            # 更新 UI
+            self.run_on_gui(self._update_ui_auth, granted)
+    
+    def _on_button_click(self) -> None:
+        # 发送前可以检查权限（不检查也行，无权限时 send_command 会自动拒绝）
+        if self.has_control_auth(NewGameCommand):
+            self.send_command(NewGameCommand(rows=16, cols=30, mines=99))
+        else:
+            self.logger.warning("没有 NewGameCommand 权限")
+```
+
+#### 控制授权相关方法
+
+| 方法 | 说明 |
+|------|------|
+| `has_control_auth(command_type)` | 检查是否有该控制类型的权限 |
+| `on_control_auth_changed(cmd_type, granted)` | 权限变更回调（覆写） |
+| `PluginInfo.required_controls` | 声明需要的控制权限 |
+
+#### 用户授权操作
+
+用户通过插件管理器工具栏的 **"🔐 控制授权"** 按钮管理授权：
+
+1. 点击按钮打开授权对话框
+2. 选择要授权的控制类型
+3. 从下拉列表中选择插件（只显示声明了该控制权限的插件）
+4. 确认后生效
+
+授权配置会持久化到 `data/control_authorization.json`。
+
+### 5.5 线程安全的 GUI 更新（重要！）
 
 > **为什么需要跨线程机制？**
 >
@@ -466,7 +558,19 @@ if self.has_service(MyService):
     pass
 
 # ════════════════════════════════════════
-# 3. 获取服务代理（推荐）
+# 3. 等待服务就绪（推荐）
+# ════════════════════════════════════════
+# 如果服务提供者可能在消费者之后初始化，使用 wait_for_service
+service = self.wait_for_service(MyService, timeout=10.0)
+if service:
+    # 服务可用
+    data = service.get_data(123)
+else:
+    # 服务未就绪
+    self.logger.warning("MyService 未就绪")
+
+# ════════════════════════════════════════
+# 4. 获取服务代理（已知服务存在时）
 # ════════════════════════════════════════
 service = self.get_service_proxy(MyService)
 
@@ -475,7 +579,7 @@ data = service.get_data(123)        # 同步调用，阻塞等待结果
 all_data = service.list_data(100)   # 超时默认 10 秒
 
 # ════════════════════════════════════════
-# 4. 异步调用（非阻塞）
+# 5. 异步调用（非阻塞）
 # ════════════════════════════════════════
 future = self.call_service_async(MyService, "get_data", 123)
 # 做其他事情...
@@ -488,7 +592,8 @@ result = future.result(timeout=5.0)  # 阻塞等待结果
 |------|------|
 | `register_service(self, protocol=MyService)` | 注册服务（在 `on_initialized` 中调用） |
 | `has_service(MyService)` | 检查服务是否可用 |
-| `get_service_proxy(MyService)` | 获取服务代理对象（推荐） |
+| `wait_for_service(MyService, timeout=10.0)` | 等待服务就绪并获取代理（推荐） |
+| `get_service_proxy(MyService)` | 获取服务代理对象（已知存在时） |
 | `call_service_async(MyService, "method", *args)` | 异步调用，返回 Future |
 
 **注意事项：**
@@ -566,7 +671,7 @@ class PluginInfo:
 继承 `OtherInfoBase` 并声明配置字段：
 
 ```python
-from plugin_manager.config_types import (
+from plugin_sdk import (
     OtherInfoBase, BoolConfig, IntConfig, FloatConfig,
     ChoiceConfig, TextConfig, ColorConfig, FileConfig,
     PathConfig, LongTextConfig, RangeConfig,
@@ -742,9 +847,9 @@ data/plugin_data/<plugin_name>/config.json
 如果预定义的配置类型不满足需求，可以继承 `BaseConfig` 创建自定义类型：
 
 ```python
-from plugin_manager.config_types.base_config import BaseConfig
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QDial
-from PyQt5.QtCore import Qt
+from plugin_sdk.config_types import BaseConfig, ConfigWidgetBase, ConfigWidgetWrapper
+from PyQt5.QtWidgets import QDial
+from typing import Any
 
 class DialConfig(BaseConfig[int]):
     """旋钮配置 → QDial 控件"""
@@ -762,8 +867,8 @@ class DialConfig(BaseConfig[int]):
         self.min_value = min_value
         self.max_value = max_value
     
-    def create_widget(self):
-        """创建自定义 UI 控件，返回 (控件, getter, setter, 信号)"""
+    def create_widget(self) -> ConfigWidgetBase:
+        """创建自定义 UI 控件，返回 ConfigWidgetBase 实例"""
         widget = QDial()
         widget.setRange(self.min_value, self.max_value)
         widget.setValue(int(self.default))
@@ -772,14 +877,23 @@ class DialConfig(BaseConfig[int]):
         if self.description:
             widget.setToolTip(self.description)
         
-        # 返回控件、getter、setter、以及 valueChanged 信号
-        return widget, widget.value, widget.setValue, widget.valueChanged
+        # 使用 ConfigWidgetWrapper 包装控件
+        # 参数：控件, getter, setter, 信号
+        return ConfigWidgetWrapper(
+            widget,
+            widget.value,      # getter
+            widget.setValue,   # setter
+            widget.valueChanged  # 信号
+        )
     
     def to_storage(self, value: int) -> int:
         return int(value)
     
-    def from_storage(self, data) -> int:
-        return int(data)
+    def from_storage(self, data: Any) -> int:
+        try:
+            return int(data)
+        except (ValueError, TypeError):
+            return int(self.default)
 
 # 使用自定义配置类型
 class MyConfig(OtherInfoBase):
@@ -792,29 +906,53 @@ class MyConfig(OtherInfoBase):
 | 方法/属性 | 说明 |
 |-----------|------|
 | `widget_type` | 控件类型标识 |
-| `create_widget()` | 返回 `(控件, getter, setter, 信号)` 四元组 |
+| `create_widget()` | 返回 `ConfigWidgetBase` 实例 |
 | `to_storage(value)` | 将值转换为 JSON 可序列化格式 |
 | `from_storage(data)` | 从 JSON 数据恢复值 |
 
-**信号对象说明：**
+**ConfigWidgetBase 接口：**
 
-信号对象可以是：
-- Qt 控件的内置信号（如 `widget.valueChanged`、`widget.textChanged`）
-- 自定义 `pyqtSignal`（需要通过 QObject 子类定义）
+`create_widget()` 必须返回一个实现了以下接口的对象：
+
+| 方法/信号 | 说明 |
+|-----------|------|
+| `get_value() -> Any` | 获取当前值 |
+| `set_value(value: Any)` | 设置当前值 |
+| `value_change` | `pyqtSignal(object)` 值变化信号 |
+
+**使用 ConfigWidgetWrapper：**
+
+对于简单的包装需求，可以使用 `ConfigWidgetWrapper`：
 
 ```python
-# 方式一：使用控件的内置信号
-return widget, widget.value, widget.setValue, widget.valueChanged
+return ConfigWidgetWrapper(widget, getter, setter, signal)
+```
 
-# 方式二：自定义信号（复杂控件）
-from PyQt5.QtCore import QObject, pyqtSignal
+**创建自定义 ConfigWidgetBase 子类：**
 
-class MySignal(QObject):
-    changed = pyqtSignal()
+对于复杂控件，可以创建 `ConfigWidgetBase` 的子类：
 
-signal_emitter = MySignal(parent=container)  # parent 防止垃圾回收
-# ... 控件变化时调用 signal_emitter.changed.emit()
-return container, get_value, set_value, signal_emitter.changed
+```python
+from plugin_sdk.config_types import ConfigWidgetBase
+from PyQt5.QtCore import pyqtSignal
+
+class MyCustomWidget(ConfigWidgetBase):
+    """自定义配置控件"""
+    
+    # 子类会继承 value_change = pyqtSignal(object) 信号
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # 创建内部控件...
+    
+    def get_value(self) -> Any:
+        """获取当前值"""
+        return self._internal_widget.value()
+    
+    def set_value(self, value: Any) -> None:
+        """设置当前值"""
+        self._internal_widget.setValue(value)
+        self.value_change.emit(value)  # 发射信号
 ```
 
 ---
@@ -842,7 +980,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QFont
 
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from shared_types.events import VideoSaveEvent, BoardUpdateEvent
 
 
@@ -1103,10 +1241,10 @@ def on_initialized(self):
 
 #### 1. 定义服务接口
 
-在 `shared_types/services/` 目录下创建接口定义文件：
+在 `plugins/services/` 目录下创建接口定义文件：
 
 ```python
-# shared_types/services/my_service.py
+# plugins/services/my_service.py
 from typing import Protocol, runtime_checkable
 from dataclasses import dataclass
 
@@ -1126,6 +1264,8 @@ class MyService(Protocol):
 #### 2. 服务提供者
 
 ```python
+from plugins.services.my_service import MyService, MyData
+
 class ProviderPlugin(BasePlugin):
     def on_initialized(self):
         # 注册服务（显式指定 protocol）
@@ -1142,16 +1282,36 @@ class ProviderPlugin(BasePlugin):
 #### 3. 服务使用者
 
 ```python
+from plugins.services.my_service import MyService, MyData
+
 class ConsumerPlugin(BasePlugin):
     def on_initialized(self):
-        if self.has_service(MyService):
-            # 获取服务代理（推荐）
-            self._service = self.get_service_proxy(MyService)
+        # 方式一：等待服务就绪（推荐）
+        self._service = self.wait_for_service(MyService, timeout=10.0)
+        if self._service is None:
+            self.logger.warning("MyService 未就绪")
     
     def _do_something(self):
-        # 调用服务方法（IDE 完整补全，在服务提供者线程执行）
-        data = self._service.get_data(123)
-        all_data = self._service.list_data(100)
+        if self._service:
+            # 调用服务方法（IDE 完整补全，在服务提供者线程执行）
+            data = self._service.get_data(123)
+            all_data = self._service.list_data(100)
+```
+
+#### 4. 等待服务就绪
+
+如果服务提供者可能在消费者之后初始化，可以使用 `wait_for_service`：
+
+```python
+def on_initialized(self):
+    # 等待服务就绪，最多 10 秒
+    service = self.wait_for_service(MyService, timeout=10.0)
+    if service:
+        # 服务可用
+        data = service.get_data(123)
+    else:
+        # 服务未就绪，可以稍后重试或降级处理
+        self.logger.warning("MyService 未就绪")
 ```
 
 #### 服务调用方式
@@ -1221,10 +1381,11 @@ class ConsumerPlugin(BasePlugin):
 ```python
 # ═══ 最小可行插件模板 ═══
 
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
-from plugin_manager.config_types import OtherInfoBase, BoolConfig, IntConfig  # 可选
+from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import OtherInfoBase, BoolConfig, IntConfig  # 配置类型（可选）
 from shared_types.events import VideoSaveEvent  # 按需导入
-from shared_types.services.my_service import MyService  # 服务接口（可选）
+from shared_types.commands import NewGameCommand  # 控制命令（可选）
+from plugins.services.my_service import MyService  # 服务接口（可选）
 
 # ═══ 配置类定义（可选） ═══
 class MyConfig(OtherInfoBase):
@@ -1241,6 +1402,7 @@ class MyPlugin(BasePlugin):
             window_mode=WindowMode.TAB,  # TAB / DETACHED / CLOSED
             icon=make_plugin_icon("#1976D2", "M"),
             other_info=MyConfig,         # 👈 绑定配置类（可选）
+            required_controls=[NewGameCommand],  # 👈 声明控制权限（可选）
         )
 
     def _setup_subscriptions(self) -> None:
@@ -1265,11 +1427,19 @@ class MyPlugin(BasePlugin):
         # 访问配置值（可选）
         # if self.other_info:
         #     max_count = self.other_info.max_count
+        
+        # 检查控制权限（可选）
+        # has_auth = self.has_control_auth(NewGameCommand)
 
     def on_shutdown(self):            # 可选：资源清理
+        pass
+
+    def on_control_auth_changed(self, cmd_type: type, granted: bool):
+        """控制权限变更回调（可选覆写）"""
         pass
 
     def _handle_event(self, event):
         self.logger.info(f"收到事件: {event}")  # 用 logger 不用 print
         # self.run_on_gui(gui_func, *args)      # GUI 更新走这
+        # self.send_command(NewGameCommand(...))  # 发送控制命令
 ```
