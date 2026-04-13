@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -34,6 +35,8 @@ from PyQt5.QtWidgets import (
     QStatusBar,
     QSystemTrayIcon,
     QTabBar,
+    QTableWidget,
+    QTableWidgetItem,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -43,6 +46,7 @@ from PyQt5.QtWidgets import (
 
 from .plugin_state import PluginStateManager, PluginState
 from plugin_sdk.plugin_base import PluginLifecycle, WindowMode, LogLevel
+from plugin_sdk.control_auth import ControlAuthorizationManager
 from .app_paths import get_data_dir
 
 if TYPE_CHECKING:
@@ -73,6 +77,8 @@ class DetachedPluginWindow(QDialog):
         self._plugin_name = plugin_name
         self._widget = widget
         self._icon: QIcon | None = None
+        self._dragging = False
+        self._drag_offset = QPoint()
 
         self.setWindowTitle(f"{plugin_name} - {self.tr('插件')}")
         self.setMinimumSize(400, 300)
@@ -100,6 +106,31 @@ class DetachedPluginWindow(QDialog):
         layout.addWidget(widget)
         widget.setVisible(True)
         widget.show()
+    
+    def start_drag(self, global_pos: QPoint) -> None:
+        """启动拖拽模式（从外部调用）"""
+        self._dragging = True
+        # 计算鼠标相对于窗口左上角的偏移
+        self._drag_offset = global_pos - self.pos()
+        # 捕获鼠标
+        self.grabMouse()
+    
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self._dragging = True
+            self._drag_offset = event.globalPos() - self.pos()
+        super().mousePressEvent(event)
+    
+    def mouseMoveEvent(self, event) -> None:
+        if self._dragging and event.buttons() & Qt.LeftButton:
+            self.move(event.globalPos() - self._drag_offset)
+        super().mouseMoveEvent(event)
+    
+    def mouseReleaseEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self._dragging = False
+            self.releaseMouse()
+        super().mouseReleaseEvent(event)
 
     def closeEvent(self, event) -> None:
         """关闭时发出嵌入请求信号，不销毁 widget"""
@@ -211,8 +242,18 @@ class DetachableTabWidget(QTabWidget):
         self._detached_windows[name] = window
 
         if pos is not None:
-            window.move(pos)
-        window.show()
+            # 先显示窗口以获取正确的尺寸
+            window.show()
+            # 将标题栏中心移动到鼠标位置
+            # 水平居中，垂直方向标题栏高度约 30px
+            title_height = window.frameGeometry().height() - window.height()
+            new_x = pos.x() - window.width() // 2
+            new_y = pos.y() - title_height // 2
+            window.move(new_x, new_y)
+            # 启动拖拽模式，让窗口跟随鼠标
+            window.start_drag(pos)
+        else:
+            window.show()
         window.activateWindow()
 
         self.tab_detached.emit(name)
@@ -457,6 +498,182 @@ class PluginSettingsDialog(QDialog):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# 控制授权配置对话框
+# ═══════════════════════════════════════════════════════════════════
+
+class ControlAuthorizationDialog(QDialog):
+    """
+    控制授权配置对话框
+    
+    管理插件对控制命令的使用权限。
+    只显示声明了需要该控制权限的插件。
+    """
+    
+    def __init__(
+        self,
+        plugin_controls: dict[str, list[type]],
+        parent=None,
+    ):
+        """
+        Args:
+            plugin_controls: {plugin_name: [command_type, ...]}
+                插件声明需要的控制权限
+        """
+        super().__init__(parent)
+        self._plugin_controls = plugin_controls
+        self._auth_manager = ControlAuthorizationManager.instance()
+        
+        self.setWindowTitle(self.tr("控制授权配置"))
+        self.setMinimumWidth(500)
+        self.setMinimumHeight(300)
+        
+        self._setup_ui()
+        self._load_authorizations()
+    
+    def _setup_ui(self) -> None:
+        layout = QVBoxLayout(self)
+        
+        # 说明文字
+        info_label = QLabel(self.tr(
+            "每个控制命令只能授权给一个插件。\n"
+            "未授权的控制命令，所有插件都不能使用。\n"
+            "下拉列表仅显示声明了该权限的插件。"
+        ))
+        info_label.setStyleSheet("color: gray; padding: 8px;")
+        layout.addWidget(info_label)
+        
+        # 表格
+        self._table = QTableWidget()
+        self._table.setColumnCount(3)
+        self._table.setHorizontalHeaderLabels([
+            self.tr("控制命令"),
+            self.tr("授权插件"),
+            self.tr("状态"),
+        ])
+        self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self._table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self._table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+        self._table.setColumnWidth(2, 80)
+        self._table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self._table.setAlternatingRowColors(True)
+        layout.addWidget(self._table)
+        
+        # 按钮
+        btns = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        btns.accepted.connect(self._on_accept)
+        btns.rejected.connect(self.reject)
+        layout.addWidget(btns)
+    
+    def _load_authorizations(self) -> None:
+        """加载授权状态到表格"""
+        control_types = self._auth_manager.get_all_control_types()
+        status = self._auth_manager.get_authorization_status()
+        
+        self._table.setRowCount(len(control_types))
+        self._combos: list[QComboBox] = []
+        
+        for row, cmd_type in enumerate(control_types):
+            try:
+                tag = self._auth_manager._get_tag(cmd_type)
+            except ValueError:
+                continue
+            
+            # 控制命令名称
+            name_item = QTableWidgetItem(cmd_type.__name__)
+            name_item.setData(Qt.UserRole, cmd_type)  # 存储类型
+            self._table.setItem(row, 0, name_item)
+            
+            # 找出声明了该控制权限的插件
+            eligible_plugins = [
+                plugin_name
+                for plugin_name, controls in self._plugin_controls.items()
+                if any(
+                    self._is_same_command_type(cmd_type, c)
+                    for c in controls
+                )
+            ]
+            
+            # 插件下拉框
+            combo = QComboBox()
+            combo.addItem(self.tr("未授权"), None)  # index 0 = 未授权
+            
+            if eligible_plugins:
+                for plugin_name in sorted(eligible_plugins):
+                    combo.addItem(plugin_name, plugin_name)
+            else:
+                # 没有插件声明需要该权限，禁用下拉框
+                combo.setEnabled(False)
+            
+            # 设置当前值
+            current_plugin = status.get(tag)
+            if current_plugin and current_plugin in eligible_plugins:
+                idx = combo.findData(current_plugin)
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+            
+            self._table.setCellWidget(row, 1, combo)
+            self._combos.append(combo)
+            
+            # 状态显示
+            self._update_status(row, current_plugin, eligible_plugins)
+            
+            # 连接下拉框变化
+            combo.currentIndexChanged.connect(lambda _, r=row: self._on_combo_changed(r))
+    
+    def _is_same_command_type(self, type1: type, type2: type) -> bool:
+        """判断两个命令类型是否相同（通过 tag）"""
+        try:
+            tag1 = self._auth_manager._get_tag(type1)
+            tag2 = self._auth_manager._get_tag(type2)
+            return tag1 == tag2
+        except ValueError:
+            return type1 is type2
+    
+    def _update_status(
+        self,
+        row: int,
+        plugin_name: str | None,
+        eligible_plugins: list[str],
+    ) -> None:
+        """更新状态列"""
+        if not eligible_plugins:
+            status_item = QTableWidgetItem(self.tr("无申请"))
+            status_item.setForeground(QColor("#9e9e9e"))
+        elif plugin_name:
+            status_item = QTableWidgetItem(self.tr("● 已授权"))
+            status_item.setForeground(QColor("#4caf50"))
+        else:
+            status_item = QTableWidgetItem(self.tr("○ 未授权"))
+            status_item.setForeground(QColor("#ff9800"))
+        self._table.setItem(row, 2, status_item)
+    
+    def _on_combo_changed(self, row: int) -> None:
+        """下拉框变化时更新状态"""
+        combo = self._table.cellWidget(row, 1)
+        plugin_name = combo.currentData()
+        self._update_status(row, plugin_name, [])  # 简化，不重新计算 eligible_plugins
+    
+    def _on_accept(self) -> None:
+        """确定按钮：保存授权"""
+        for row in range(self._table.rowCount()):
+            name_item = self._table.item(row, 0)
+            combo = self._table.cellWidget(row, 1)
+            
+            cmd_type = name_item.data(Qt.UserRole)
+            plugin_name = combo.currentData()
+            
+            if plugin_name is None:
+                self._auth_manager.revoke(cmd_type)
+            else:
+                self._auth_manager.authorize(cmd_type, plugin_name)
+        
+        self._auth_manager.save()
+        self.accept()
+
+
+# ═══════════════════════════════════════════════════════════════════
 # 主窗口
 # ═══════════════════════════════════════════════════════════════════
 
@@ -525,6 +742,13 @@ class PluginManagerWindow(QMainWindow):
         self._debug_btn.setCheckable(True)
         self._debug_btn.setToolTip(self.tr("开启/关闭远程调试 (debugpy)"))
         toolbar.addWidget(self._debug_btn)
+
+        toolbar.addSeparator()
+
+        # 控制授权按钮
+        self._control_auth_btn = QPushButton("🔐 " + self.tr("控制授权"))
+        self._control_auth_btn.setToolTip(self.tr("配置插件控制命令权限"))
+        toolbar.addWidget(self._control_auth_btn)
 
         # ── 主布局：左侧插件列表 + 右侧标签页 ──
         main_splitter = QWidget()
@@ -646,6 +870,23 @@ class PluginManagerWindow(QMainWindow):
 
         # 调试开关
         self._debug_btn.toggled.connect(self._toggle_debug)
+
+        # 控制授权按钮
+        self._control_auth_btn.clicked.connect(self._open_control_auth_dialog)
+
+    def _open_control_auth_dialog(self) -> None:
+        """打开控制授权配置对话框"""
+        # 获取插件声明需要的控制权限
+        plugin_controls: dict[str, list[type]] = {}
+        
+        for p in self._manager.plugins.values():
+            if p.lifecycle == PluginLifecycle.READY:
+                required = p.info.required_controls or []
+                if required:
+                    plugin_controls[p.name] = required
+        
+        dialog = ControlAuthorizationDialog(plugin_controls, self)
+        dialog.exec_()
 
     # ── 连接状态 ────────────────────────────────────────
 

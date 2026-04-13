@@ -7,6 +7,7 @@
 - config_types: 配置类型
 - service_registry: 服务注册
 - server_bridge: 服务端桥接（主进程使用）
+- control_auth: 控制授权管理
 """
 
 from .plugin_base import (
@@ -23,6 +24,7 @@ from .service_registry import (
     ServiceAlreadyRegisteredError,
 )
 from .server_bridge import GameServerBridge
+from .control_auth import ControlAuthorizationManager
 
 # 配置类型
 from .config_types import (
@@ -56,6 +58,8 @@ __all__ = [
     "ServiceAlreadyRegisteredError",
     # 服务端桥接
     "GameServerBridge",
+    # 控制授权
+    "ControlAuthorizationManager",
     # 配置类型
     "BaseConfig",
     "ConfigWidgetBase",

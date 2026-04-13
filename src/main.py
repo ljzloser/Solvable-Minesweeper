@@ -18,6 +18,7 @@ from utils import get_paths, patch_env
 # 插件系统（新）
 from plugin_sdk import GameServerBridge
 from plugin_manager.app_paths import get_env_for_subprocess
+from shared_types.commands import NewGameCommand
 import subprocess
 
 os.environ["QT_FONT_DPI"] = "96"
@@ -198,6 +199,15 @@ if __name__ == "__main__":
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 
         GameServerBridge.instance().start()
+        
+        # 注册控制命令处理器（自动在主线程执行）
+        def handle_new_game(cmd: NewGameCommand):
+            print(f"[NewGameCommand] rows={cmd.rows}, cols={cmd.cols}, mines={cmd.mines}")
+            ui.setBoard_and_start(cmd.rows, cmd.cols, cmd.mines)
+            from lib_zmq_plugins.shared.base import CommandResponse
+            return CommandResponse(request_id=cmd.request_id, success=True)
+        
+        GameServerBridge.instance().register_handler(NewGameCommand, handle_new_game)
 
         # _translate = QtCore.QCoreApplication.translate
         hwnd = int(ui.mainWindow.winId())

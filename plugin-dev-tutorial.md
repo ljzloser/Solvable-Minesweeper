@@ -385,7 +385,96 @@ result = self.request(some_query_command, timeout=5.0)
 | `NewGameCommand` | 开始新游戏 | `rows`, `cols`, `mines` |
 | `MouseClickCommand` | 模拟鼠标点击 | `row`, `col`, `button`, `modifiers` |
 
-### 5.4 线程安全的 GUI 更新（重要！）
+### 5.4 控制授权系统（重要！）
+
+为了防止多个插件同时发送冲突的控制指令，系统实现了**控制授权机制**：
+
+- 每个**控制命令类型**只能授权给**一个插件**
+- 未获得授权的插件发送该命令会被拒绝
+- 授权变更时会通知相关插件
+
+#### 声明需要的控制权限
+
+在 `PluginInfo` 中通过 `required_controls` 字段声明：
+
+```python
+from shared_types.commands import NewGameCommand, MouseClickCommand
+
+class MyPlugin(BasePlugin):
+    
+    @classmethod
+    def plugin_info(cls) -> PluginInfo:
+        return PluginInfo(
+            name="my_plugin",
+            description="需要控制权限的插件",
+            required_controls=[NewGameCommand],  # 👈 声明需要的控制权限
+        )
+```
+
+#### 检查和响应授权状态
+
+```python
+class MyPlugin(BasePlugin):
+    
+    def on_initialized(self) -> None:
+        # 检查当前是否有权限
+        has_auth = self.has_control_auth(NewGameCommand)
+        self.logger.info(f"NewGameCommand 权限: {has_auth}")
+        
+        # 更新 UI 状态
+        self.run_on_gui(self._update_ui_auth, has_auth)
+    
+    def on_control_auth_changed(
+        self,
+        command_type: type,
+        granted: bool,
+    ) -> None:
+        """
+        控制权限变更回调
+        
+        Args:
+            command_type: 命令类型
+            granted: True 表示获得权限，False 表示失去权限
+        """
+        if command_type == NewGameCommand:
+            if granted:
+                self.logger.info("获得了 NewGameCommand 控制权限")
+            else:
+                self.logger.warning("失去了 NewGameCommand 控制权限")
+                # 停止正在进行的操作
+                self._stop_auto_play()
+            
+            # 更新 UI
+            self.run_on_gui(self._update_ui_auth, granted)
+    
+    def _on_button_click(self) -> None:
+        # 发送前可以检查权限（不检查也行，无权限时 send_command 会自动拒绝）
+        if self.has_control_auth(NewGameCommand):
+            self.send_command(NewGameCommand(rows=16, cols=30, mines=99))
+        else:
+            self.logger.warning("没有 NewGameCommand 权限")
+```
+
+#### 控制授权相关方法
+
+| 方法 | 说明 |
+|------|------|
+| `has_control_auth(command_type)` | 检查是否有该控制类型的权限 |
+| `on_control_auth_changed(cmd_type, granted)` | 权限变更回调（覆写） |
+| `PluginInfo.required_controls` | 声明需要的控制权限 |
+
+#### 用户授权操作
+
+用户通过插件管理器工具栏的 **"🔐 控制授权"** 按钮管理授权：
+
+1. 点击按钮打开授权对话框
+2. 选择要授权的控制类型
+3. 从下拉列表中选择插件（只显示声明了该控制权限的插件）
+4. 确认后生效
+
+授权配置会持久化到 `data/control_authorization.json`。
+
+### 5.5 线程安全的 GUI 更新（重要！）
 
 > **为什么需要跨线程机制？**
 >
@@ -1295,6 +1384,7 @@ def on_initialized(self):
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from plugin_sdk import OtherInfoBase, BoolConfig, IntConfig  # 配置类型（可选）
 from shared_types.events import VideoSaveEvent  # 按需导入
+from shared_types.commands import NewGameCommand  # 控制命令（可选）
 from plugins.services.my_service import MyService  # 服务接口（可选）
 
 # ═══ 配置类定义（可选） ═══
@@ -1312,6 +1402,7 @@ class MyPlugin(BasePlugin):
             window_mode=WindowMode.TAB,  # TAB / DETACHED / CLOSED
             icon=make_plugin_icon("#1976D2", "M"),
             other_info=MyConfig,         # 👈 绑定配置类（可选）
+            required_controls=[NewGameCommand],  # 👈 声明控制权限（可选）
         )
 
     def _setup_subscriptions(self) -> None:
@@ -1336,11 +1427,19 @@ class MyPlugin(BasePlugin):
         # 访问配置值（可选）
         # if self.other_info:
         #     max_count = self.other_info.max_count
+        
+        # 检查控制权限（可选）
+        # has_auth = self.has_control_auth(NewGameCommand)
 
     def on_shutdown(self):            # 可选：资源清理
+        pass
+
+    def on_control_auth_changed(self, cmd_type: type, granted: bool):
+        """控制权限变更回调（可选覆写）"""
         pass
 
     def _handle_event(self, event):
         self.logger.info(f"收到事件: {event}")  # 用 logger 不用 print
         # self.run_on_gui(gui_func, *args)      # GUI 更新走这
+        # self.send_command(NewGameCommand(...))  # 发送控制命令
 ```

@@ -144,9 +144,28 @@ class PluginManager:
         self._client.connect()
         self._setup_zmq_subscriptions()
         self._initialize_plugins()
+        self._validate_control_authorizations()
         
         self._started = True
         logger.info("Plugin manager started")
+    
+    def _validate_control_authorizations(self) -> None:
+        """验证控制授权配置，清除无效插件的授权"""
+        from plugin_sdk.control_auth import ControlAuthorizationManager
+        
+        auth_manager = ControlAuthorizationManager.instance()
+        
+        # 获取已加载的插件名称
+        loaded_plugins = set(self._plugins.keys())
+        
+        # 验证并清除无效授权
+        removed = auth_manager.validate_authorizations(loaded_plugins)
+        
+        if removed:
+            logger.warning(f"控制授权已清除（插件未加载）: {removed}")
+        
+        # 保存更新后的配置
+        auth_manager.save()
     
     def stop(self) -> None:
         """停止插件管理器"""

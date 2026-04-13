@@ -20,7 +20,7 @@ from concurrent.futures import Future
 import threading
 from abc import abstractmethod
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, TypeVar, cast
 
@@ -180,6 +180,8 @@ class PluginInfo:
     log_config: "LogConfig | None" = None  # 日志轮转配置，None 使用全局默认值
     # 插件自定义配置类（继承自 OtherInfoBase）
     other_info: type["OtherInfoBase"] | None = None
+    # 声明需要的控制权限（命令类型列表）
+    required_controls: list[type] = field(default_factory=list)
 
 
 class BasePlugin(QThread):
@@ -502,10 +504,39 @@ class BasePlugin(QThread):
         self._widget = self._create_widget()
         self._lifecycle = PluginLifecycle.INITIALIZING
 
+        # 连接控制授权变更信号
+        self._connect_control_auth_signal()
+
         # 启动插件的事件处理线程（on_initialized 在 run 中执行）
         self._stop_requested.clear()
         self.start()
         self.logger.debug(f"Plugin thread launched: {self.name}")
+
+    def _connect_control_auth_signal(self) -> None:
+        """连接控制授权变更信号"""
+        from .control_auth import ControlAuthorizationManager
+
+        auth_manager = ControlAuthorizationManager.instance()
+
+        def on_auth_changed(tag: str, plugin_name: str, granted: bool) -> None:
+            # 只处理与当前插件相关的授权变更
+            if plugin_name != self.name:
+                return
+
+            # 查找对应的命令类型
+            for cmd_type in auth_manager.get_all_control_types():
+                try:
+                    cmd_tag = auth_manager._get_tag(cmd_type)
+                    if cmd_tag == tag:
+                        # 在主线程调用回调
+                        self.run_on_gui(
+                            self.on_control_auth_changed, cmd_type, granted
+                        )
+                        break
+                except ValueError:
+                    continue
+
+        auth_manager.authorization_changed.connect(on_auth_changed)
 
     def shutdown(self) -> None:
         """关闭插件并停止事件处理线程"""
@@ -611,6 +642,23 @@ class BasePlugin(QThread):
         """插件关闭前回调"""
         pass
 
+    def on_control_auth_changed(
+        self,
+        command_type: type,
+        granted: bool,
+    ) -> None:
+        """
+        控制权限变更回调
+
+        当插件获得或失去某个控制命令的权限时调用。
+        子类可以覆写此方法以响应权限变化。
+
+        Args:
+            command_type: 命令类型
+            granted: True 表示获得权限，False 表示失去权限
+        """
+        pass
+
     # ═══════════════════════════════════════════════════════════════════
     # 事件订阅（使用事件类）
     # ═══════════════════════════════════════════════════════════════════
@@ -636,13 +684,68 @@ class BasePlugin(QThread):
     # 指令发送
     # ═══════════════════════════════════════════════════════════════════
 
-    def send_command(self, command: Any) -> None:
-        """发送控制指令到主进程（异步）"""
-        if self._client:
-            self._client.send_command(command)
+    def has_control_auth(self, command_type: type) -> bool:
+        """
+        检查当前插件是否有该控制类型的权限
 
-    def request(self, command: Any, timeout: float = 5.0) -> Any:
-        """发送请求并等待响应（同步）"""
+        Args:
+            command_type: 命令类型
+
+        Returns:
+            True 表示有权限
+        """
+        from .control_auth import ControlAuthorizationManager
+        auth_manager = ControlAuthorizationManager.instance()
+        return auth_manager.is_authorized(command_type, self.name)
+
+    def _check_control_auth(self, command: Any) -> bool:
+        """检查控制权限"""
+        from .control_auth import ControlAuthorizationManager
+
+        # 获取命令的 tag
+        config = getattr(command, '__struct_config__', None)
+        if config is None:
+            self.logger.debug(f"命令无 struct_config，允许发送: {type(command)}")
+            return True  # 非结构化命令，允许发送
+
+        tag = getattr(config, 'tag', None)
+        if tag is None:
+            self.logger.debug(f"命令无 tag，允许发送: {type(command)}")
+            return True
+
+        auth_manager = ControlAuthorizationManager.instance()
+
+        # 检查授权状态
+        authorized_plugin = auth_manager.get_authorized_plugin(type(command))
+        self.logger.debug(
+            f"控制权限检查: tag={tag}, 授权给={authorized_plugin}, 当前插件={self.name}"
+        )
+
+        if not auth_manager.is_authorized(type(command), self.name):
+            self.logger.warning(
+                f"控制权限被拒绝: {tag} 未授权给 {self.name} (当前授权给: {authorized_plugin})"
+            )
+            return False
+        return True
+
+    def send_command(self, command: Any) -> None:
+        """发送控制指令到主进程（异步，带权限检查）"""
+        if not self._check_control_auth(command):
+            return
+        if self._client:
+            try:
+                self.logger.info(f"发送命令到 ZMQ: {type(command).__name__}")
+                self._client.send_command(command)
+                self.logger.info(f"命令已发送: {type(command).__name__}")
+            except Exception as e:
+                self.logger.error(f"发送命令失败: {e}", exc_info=True)
+        else:
+            self.logger.warning(f"无法发送命令: client 未初始化")
+
+    def request(self, command: Any, timeout: float = 5.0) -> CommandResponse | None:
+        """发送请求并等待响应（同步，带权限检查）"""
+        if not self._check_control_auth(command):
+            return None
         if self._client:
             return self._client.request(command, timeout)
         return None

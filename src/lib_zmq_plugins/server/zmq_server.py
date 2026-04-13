@@ -167,6 +167,8 @@ class ZMQServer:
         if isinstance(tag, type):
             tag = tag.__name__
         tag = str(tag)
+        
+        self._log.info("[Server] 收到命令: tag=%s, request_id=%s", tag, cmd.request_id)
 
         if tag == "__sync__":
             self._handle_sync(client_id, cmd)
@@ -179,6 +181,7 @@ class ZMQServer:
 
         try:
             result = handler(cmd)
+            self._log.info("[Server] handler 执行完成: tag=%s, result=%s", tag, result)
         except Exception as e:
             self._log.error("Handler error for %s: %s", tag, e, exc_info=True)
             if cmd.request_id:

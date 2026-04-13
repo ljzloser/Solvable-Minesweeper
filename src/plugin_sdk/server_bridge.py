@@ -20,6 +20,10 @@ ZMQ Server 集成模块
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, TypeVar
+import threading
+from concurrent.futures import Future
+
+from PyQt5.QtCore import QObject, pyqtSignal, Qt
 
 from lib_zmq_plugins.server.zmq_server import ZMQServer
 from lib_zmq_plugins.shared.base import BaseEvent, BaseCommand, CommandResponse
@@ -37,19 +41,24 @@ _C = TypeVar("_C", bound=BaseCommand)
 _E = TypeVar("_E", bound=BaseEvent)
 
 
-class GameServerBridge:
+class GameServerBridge(QObject):
     """
     游戏服务端桥接器（全局单例）
     
     只负责 ZMQ 通信层封装，不绑定任何业务逻辑。
     指令处理器由外部注册。
+    
+    处理器自动在主线程中执行（通过信号槽机制）。
     """
+    
+    # 内部信号：用于调度到主线程
+    _execute_signal = pyqtSignal(object, object, object)  # (handler, cmd, future_or_none)
     
     _instance: GameServerBridge | None = None
     
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            cls._instance = QObject.__new__(cls)
             cls._instance._initialized = False
         return cls._instance
     
@@ -82,19 +91,30 @@ class GameServerBridge:
         if getattr(self, '_initialized', False):
             return
 
+        super().__init__()
+
         # 默认端点
         if endpoint is None:
             endpoint = "tcp://127.0.0.1:5555"
 
         self._endpoint = endpoint
         self._server = ZMQServer(endpoint=endpoint, log_handler=log_handler)
+        
+        # 保存主线程引用
+        self._main_thread = threading.main_thread()
+        
+        # 保存处理器
+        self._handlers: dict[str, Callable] = {}
+        
+        # 连接内部信号
+        self._execute_signal.connect(self._on_execute, Qt.QueuedConnection)
 
         # 注册类型
         self._server.register_event_types(*EVENT_TYPES)
         self._server.register_command_types(*COMMAND_TYPES)
         
         self._initialized = True
-
+    
     @property
     def endpoint(self) -> str:
         return self._endpoint
@@ -103,6 +123,22 @@ class GameServerBridge:
     def server(self) -> ZMQServer:
         """获取底层 ZMQ Server 实例"""
         return self._server
+    
+    def _on_execute(
+        self,
+        handler: Callable,
+        cmd: BaseCommand,
+        future: Future | None,
+    ) -> None:
+        """在主线程执行处理器"""
+        try:
+            result = handler(cmd)
+            if future is not None:
+                future.set_result(result)
+        except Exception as e:
+            logger.error(f"Handler error: {e}", exc_info=True)
+            if future is not None:
+                future.set_exception(e)
 
     def register_handler(
         self,
@@ -111,6 +147,8 @@ class GameServerBridge:
     ) -> None:
         """
         注册指令处理器
+        
+        处理器会自动在主线程中执行。
         
         Args:
             command_type: 指令类型
@@ -124,8 +162,28 @@ class GameServerBridge:
             
             bridge.register_handler(NewGameCommand, handle_new_game)
         """
-        # type: ignore: 泛型兼容性，实际运行时类型正确
-        self._server.register_handler(command_type, handler)  # type: ignore[arg-type]
+        # 获取 tag
+        tag = command_type.__struct_config__.tag
+        str_tag = str(tag)
+        logger.info(f"注册处理器: tag={tag}, command_type={command_type.__name__}")
+        
+        # 保存 handler
+        self._handlers[str_tag] = handler
+        
+        # 注册到 server
+        def wrapped_handler(cmd: _C) -> CommandResponse | None:
+            if cmd.request_id:
+                # 同步请求：需要等待结果
+                future: Future[CommandResponse] = Future()
+                self._execute_signal.emit(handler, cmd, future)
+                return future.result(timeout=5.0)
+            else:
+                # 异步命令：不等待结果
+                self._execute_signal.emit(handler, cmd, None)
+                return None
+        
+        self._server.register_handler(command_type, wrapped_handler)
+        logger.info(f"处理器已注册: tag={tag}")
 
     def start(self) -> None:
         """启动服务"""
