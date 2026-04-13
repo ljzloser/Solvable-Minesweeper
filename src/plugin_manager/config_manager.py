@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .config_types.other_info import OtherInfoBase
+from plugin_sdk.config_types.other_info import OtherInfoBase
 
 if TYPE_CHECKING:
     pass

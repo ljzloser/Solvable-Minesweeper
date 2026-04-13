@@ -23,12 +23,23 @@
         def _update(self):
             history = self.get_service(HistoryService)
             records = history.query_records(100)  # IDE 完整补全
+            
+4. 等待服务就绪:
+    class StatsPlugin(BasePlugin):
+        def on_initialized(self):
+            # 等待 HistoryService 就绪，最多等待 10 秒
+            history = self.wait_for_service(HistoryService, timeout=10.0)
+            if history is None:
+                self.logger.warning("HistoryService 未就绪")
+            else:
+                records = history.query_records(100)
 """
 from __future__ import annotations
 
 import threading
+import time
 from typing import TypeVar, runtime_checkable, Protocol
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import loguru
 
@@ -67,6 +78,7 @@ class ServiceRegistry:
     - 类型安全：通过 Protocol 类型获取服务
     - IDE 友好：返回类型可推断
     - 线程安全：使用 RLock 保护
+    - 等待机制：支持等待服务注册完成
     
     Usage::
     
@@ -78,11 +90,16 @@ class ServiceRegistry:
         # 获取服务（类型安全）
         history = registry.get(HistoryService)
         records = history.query_records(100)  # IDE 完整补全
+        
+        # 等待服务就绪
+        history = registry.wait_for(HistoryService, timeout=10.0)
     """
     
     def __init__(self):
         self._providers: dict[type, ServiceEntry] = {}
         self._lock = threading.RLock()
+        # 用于等待服务的条件变量
+        self._condition = threading.Condition(self._lock)
     
     def register(
         self,
@@ -101,7 +118,7 @@ class ServiceRegistry:
         Raises:
             ServiceAlreadyRegisteredError: 服务已注册
         """
-        with self._lock:
+        with self._condition:
             if protocol in self._providers:
                 raise ServiceAlreadyRegisteredError(protocol)
             
@@ -110,6 +127,8 @@ class ServiceRegistry:
                 provider=provider,
                 plugin_name=plugin_name,
             )
+            # 通知所有等待该服务的线程
+            self._condition.notify_all()
             logger.debug(
                 f"Service registered: {protocol.__name__} "
                 f"(provider: {plugin_name or 'unknown'})"
@@ -125,7 +144,7 @@ class ServiceRegistry:
         Returns:
             True 表示成功注销，False 表示服务不存在
         """
-        with self._lock:
+        with self._condition:
             if protocol in self._providers:
                 entry = self._providers.pop(protocol)
                 logger.debug(
@@ -158,7 +177,7 @@ class ServiceRegistry:
             history = registry.get(HistoryService)
             records = history.query_records(100)  # IDE 完整补全
         """
-        with self._lock:
+        with self._condition:
             entry = self._providers.get(protocol)
             if entry is None:
                 raise ServiceNotFoundError(protocol)
@@ -174,11 +193,50 @@ class ServiceRegistry:
         Returns:
             服务实例或 None
         """
-        with self._lock:
+        with self._condition:
             entry = self._providers.get(protocol)
             if entry is None:
                 return None
             return entry.provider  # type: ignore[return-value]
+    
+    def wait_for(
+        self,
+        protocol: type[_T],
+        timeout: float = 10.0,
+        poll_interval: float = 0.1,
+    ) -> _T | None:
+        """
+        等待服务注册完成并获取实例
+        
+        Args:
+            protocol: 服务接口类型
+            timeout: 最大等待时间（秒），默认 10 秒
+            poll_interval: 轮询间隔（秒），默认 0.1 秒
+            
+        Returns:
+            服务实例或 None（超时未注册）
+            
+        Usage::
+        
+            # 等待服务就绪
+            history = registry.wait_for(HistoryService, timeout=10.0)
+            if history:
+                records = history.query_records(100)
+        """
+        deadline = time.monotonic() + timeout
+        
+        with self._condition:
+            while True:
+                entry = self._providers.get(protocol)
+                if entry is not None:
+                    return entry.provider  # type: ignore[return-value]
+                
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return None
+                
+                # 等待服务注册通知，最多等待剩余时间
+                self._condition.wait(min(remaining, poll_interval))
     
     def has(self, protocol: type) -> bool:
         """
@@ -190,7 +248,7 @@ class ServiceRegistry:
         Returns:
             True 表示已注册
         """
-        with self._lock:
+        with self._condition:
             return protocol in self._providers
     
     def list_services(self) -> list[tuple[type, str]]:
@@ -200,7 +258,7 @@ class ServiceRegistry:
         Returns:
             [(protocol, plugin_name), ...]
         """
-        with self._lock:
+        with self._condition:
             return [
                 (entry.protocol, entry.plugin_name)
                 for entry in self._providers.values()
@@ -208,7 +266,7 @@ class ServiceRegistry:
     
     def clear(self) -> None:
         """清除所有服务注册"""
-        with self._lock:
+        with self._condition:
             self._providers.clear()
             logger.debug("All services unregistered")
     

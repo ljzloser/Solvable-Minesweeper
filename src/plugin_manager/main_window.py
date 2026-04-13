@@ -35,13 +35,14 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
     QTabBar,
     QTabWidget,
+    QToolBar,
     QVBoxLayout,
     QWidget,
     QDialog,
 )
 
 from .plugin_state import PluginStateManager, PluginState
-from .plugin_base import PluginLifecycle, WindowMode, LogLevel
+from plugin_sdk.plugin_base import PluginLifecycle, WindowMode, LogLevel
 from .app_paths import get_data_dir
 
 if TYPE_CHECKING:
@@ -498,7 +499,34 @@ class PluginManagerWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """构建界面"""
-        # 主布局：左侧插件列表 + 右侧标签页
+        # ── 工具栏 ──
+        toolbar = QToolBar(self.tr("工具栏"))
+        toolbar.setMovable(False)
+        self.addToolBar(toolbar)
+
+        # 连接按钮
+        btn = QPushButton(self.tr("连接"))
+        btn.setCheckable(True)
+        btn.setToolTip(self.tr("连接/断开主进程"))
+        self._conn_btn = btn
+        toolbar.addWidget(btn)
+
+        toolbar.addSeparator()
+
+        # 刷新按钮
+        self._refresh_btn = QPushButton(self.tr("刷新"))
+        self._refresh_btn.setToolTip(self.tr("刷新插件列表"))
+        toolbar.addWidget(self._refresh_btn)
+
+        toolbar.addSeparator()
+
+        # 调试按钮
+        self._debug_btn = QPushButton("🐛 Debug")
+        self._debug_btn.setCheckable(True)
+        self._debug_btn.setToolTip(self.tr("开启/关闭远程调试 (debugpy)"))
+        toolbar.addWidget(self._debug_btn)
+
+        # ── 主布局：左侧插件列表 + 右侧标签页 ──
         main_splitter = QWidget()
         main_layout = QHBoxLayout(main_splitter)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -509,15 +537,10 @@ class PluginManagerWindow(QMainWindow):
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(4, 4, 4, 4)
 
-        # 连接状态行
-        conn_row = QHBoxLayout()
-        conn_row.addWidget(QLabel(self.tr("主进程:")))
-        btn = QPushButton(self.tr("连接"))
-        btn.setCheckable(True)
-        self._conn_btn = btn
-        conn_row.addWidget(btn)
-        conn_row.addStretch()
-        left_layout.addLayout(conn_row)
+        # 标题
+        title_label = QLabel(self.tr("插件列表"))
+        title_label.setStyleSheet("font-weight: bold; padding: 4px;")
+        left_layout.addWidget(title_label)
 
         # 插件列表
         lst = QListWidget()
@@ -527,19 +550,6 @@ class PluginManagerWindow(QMainWindow):
         lst.setContextMenuPolicy(Qt.CustomContextMenu)
         self._list = lst
         left_layout.addWidget(lst)
-
-        # 刷新 + 调试按钮行
-        btn_row = QHBoxLayout()
-        self._refresh_btn = QPushButton(self.tr("刷新"))
-        btn_row.addWidget(self._refresh_btn)
-        btn_row.addStretch()
-
-        self._debug_btn = QPushButton("🐛 Debug")
-        self._debug_btn.setCheckable(True)
-        self._debug_btn.setToolTip(self.tr("开启/关闭远程调试 (debugpy)"))
-        btn_row.addWidget(self._debug_btn)
-
-        left_layout.addLayout(btn_row)
 
         left_panel.setMaximumWidth(200)
         main_layout.addWidget(left_panel)

@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import loguru
-from .plugin_base import WindowMode, LogLevel
+from plugin_sdk.plugin_base import WindowMode, LogLevel
 
 logger = loguru.logger.bind(name="PluginState")
 
@@ -45,12 +45,15 @@ class PluginStateManager:
     def load(self) -> None:
         """从 JSON 文件加载状态"""
         if not self._file.exists():
-            logger.info(f"State file not found: {self._file} (will create on save)")
+            logger.info(
+                f"State file not found: {self._file} (will create on save)")
             return
         try:
-            raw: dict[str, dict[str, Any]] = json.loads(self._file.read_text("utf-8"))
+            raw: dict[str, dict[str, Any]] = json.loads(
+                self._file.read_text("utf-8"))
             for name, d in raw.items():
-                self._states[name] = PluginState(**{k: v for k, v in d.items() if k in asdict(_DEFAULT)})
+                self._states[name] = PluginState(
+                    **{k: v for k, v in d.items() if k in asdict(_DEFAULT)})
             logger.info(f"Loaded state for {len(self._states)} plugin(s)")
         except Exception as e:
             logger.error(f"Failed to load state from {self._file}: {e}")

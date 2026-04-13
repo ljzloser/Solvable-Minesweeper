@@ -6,7 +6,7 @@ import msgspec
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
-from plugin_manager.server_bridge import GameServerBridge
+from plugin_sdk.server_bridge import GameServerBridge
 from shared_types.events import VideoSaveEvent
 import superGUI
 import gameAbout
@@ -148,7 +148,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 不带后缀、有绝对路径的、不含最后次数的文件名
         # C:/path/zhangsan_20251111_190114_
         self.old_evfs_filename = ""
-        self.gameServerBridge: GameServerBridge = None
 
     @property
     def pixSize(self):
@@ -565,11 +564,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             for key in data:
                 if hasattr(ms_board, key):
                     if key == "raw_data":
-                        data[key] = base64.b64encode(ms_board.raw_data).decode("utf-8")
+                        data[key] = base64.b64encode(
+                            ms_board.raw_data).decode("utf-8")
                         continue
                     data[key] = getattr(ms_board, key)
             event = VideoSaveEvent(**data)
-            self.gameServerBridge._server.publish(VideoSaveEvent, event)
+            GameServerBridge.instance().send_event(event)
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()
@@ -642,7 +642,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             if not country:
                 country = "XX"
             elif len(country) == 2 and country.isalpha() and country.isascii():
-                file_path = superGUI.resource_path('media') / (country.lower() + ".svg")
+                file_path = superGUI.resource_path(
+                    'media') / (country.lower() + ".svg")
                 if os.path.exists(file_path):
                     country = country.upper()
             elif country in country_name:
@@ -1051,7 +1052,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 board_key = i
                 break
 
-        params = self.predefinedBoardPara[0] if isinstance(board_key, tuple) else self.predefinedBoardPara[board_key]
+        params = self.predefinedBoardPara[0] if isinstance(
+            board_key, tuple) else self.predefinedBoardPara[board_key]
         self.pixSize = params['pixsize']
         self.gameMode = params['gamemode']
         self.board_constraint = params['board_constraint']
@@ -1402,8 +1404,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def closeEvent_(self):
         self.unlimit_cursor()
-        self.game_setting.set_value("DEFAULT/mainWinTop", str(self.mainWindow.y()))
-        self.game_setting.set_value("DEFAULT/mainWinLeft", str(self.mainWindow.x()))
+        self.game_setting.set_value(
+            "DEFAULT/mainWinTop", str(self.mainWindow.y()))
+        self.game_setting.set_value(
+            "DEFAULT/mainWinLeft", str(self.mainWindow.x()))
         self.game_setting.set_value("DEFAULT/row", str(self.row))
         self.game_setting.set_value("DEFAULT/column", str(self.column))
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))

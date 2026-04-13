@@ -14,9 +14,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import pyqtSignal
 
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from shared_types.events import VideoSaveEvent
-from shared_types.services.history import HistoryService, GameRecord
+from plugins.services.history import HistoryService, GameRecord
 
 
 class StatsPanel(QWidget):
@@ -28,7 +28,8 @@ class StatsPanel(QWidget):
         super().__init__(parent)
         self._total_games = 0
         self._best_time = float('inf')
-        self._stats_by_level = defaultdict(lambda: {"count": 0, "best_time": float('inf')})
+        self._stats_by_level = defaultdict(
+            lambda: {"count": 0, "best_time": float('inf')})
 
         self._setup_ui()
         self._signal_refresh.connect(self._do_refresh)
@@ -51,7 +52,8 @@ class StatsPanel(QWidget):
 
         self._table = QTableWidget()
         self._table.setColumnCount(4)
-        self._table.setHorizontalHeaderLabels(["Level", "Time(s)", "3BV", "Clicks"])
+        self._table.setHorizontalHeaderLabels(
+            ["Level", "Time(s)", "3BV", "Clicks"])
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self._table.setAlternatingRowColors(True)
         self._table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -62,14 +64,17 @@ class StatsPanel(QWidget):
     @staticmethod
     def _make_stat_card(title: str, value: str, color: str) -> QWidget:
         card = QWidget()
-        card.setStyleSheet(f"background: {color}; border-radius: 8px; padding: 8px;")
+        card.setStyleSheet(
+            f"background: {color}; border-radius: 8px; padding: 8px;")
         layout = QVBoxLayout(card)
         layout.setContentsMargins(12, 8, 12, 8)
 
         lbl_title = QLabel(title)
-        lbl_title.setStyleSheet("color: rgba(255,255,255,0.8); font-size: 12px;")
+        lbl_title.setStyleSheet(
+            "color: rgba(255,255,255,0.8); font-size: 12px;")
         lbl_value = QLabel(value)
-        lbl_value.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
+        lbl_value.setStyleSheet(
+            "color: white; font-size: 24px; font-weight: bold;")
 
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_value)
@@ -132,7 +137,8 @@ class StatsPlugin(BasePlugin):
 
     def on_initialized(self) -> None:
         # 检查 HistoryService 是否可用
-        if self.has_service(HistoryService):
+        history = self.wait_for_service(HistoryService, 10)
+        if history is not None:
             self.logger.info("HistoryService 已连接")
             self._load_history_stats()
         else:
@@ -143,7 +149,7 @@ class StatsPlugin(BasePlugin):
         try:
             # 获取服务代理对象（IDE 友好）
             history = self.get_service_proxy(HistoryService)
-            
+
             # 直接调用方法（IDE 完整补全）
             total = history.get_record_count()
             self.logger.info(f"历史记录总数: {total}")

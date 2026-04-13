@@ -1,41 +1,19 @@
 """
-历史记录插件
-
-功能：
-- 监听 VideoSaveEvent，将游戏录像数据持久化到 SQLite 数据库
-- 提供 GUI 界面：表格浏览、筛选、分页、播放/导出录像
-- 使用 self.data_dir 存储数据库文件（每个插件独立目录）
+UI 组件
 """
 
 from __future__ import annotations
 
-import base64
 import json
 import math
 import sqlite3
 import subprocess
 import sys
-import inspect
 from datetime import datetime
 from pathlib import Path
-import time
 from typing import Any
 
-import msgspec
-
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
-from plugin_manager.app_paths import get_executable_dir
-from shared_types.events import VideoSaveEvent
-from shared_types.services.history import HistoryService, GameRecord
-
-from PyQt5.QtCore import (
-    QObject,
-    Qt,
-    QCoreApplication,
-    QAbstractTableModel,
-    QModelIndex,
-    pyqtSignal,
-)
+from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QCloseEvent as _QCloseEvent
 from PyQt5.QtWidgets import (
     QWidget,
@@ -43,8 +21,6 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QMenu,
     QAction,
-    QTableWidgetItem,
-    QHeaderView,
     QTableView,
     QMessageBox,
     QFileDialog,
@@ -58,272 +34,20 @@ from PyQt5.QtWidgets import (
     QSpacerItem,
     QSizePolicy,
     QLabel,
+    QHeaderView,
 )
+
+from plugin_manager.app_paths import get_executable_dir
+
+from .models import HistoryData, LogicSymbol, CompareSymbol
+from .table_model import HistoryTableModel
 
 _translate = QCoreApplication.translate
 
 
-# ── 枚举定义（替代原 utils 中的枚举）─────────────────────
-
-
-class LogicSymbol:
-    And = 0
-    Or = 1
-
-    _LABELS = {0: _translate("Form", "与"), 1: _translate("Form", "或")}
-    _SQL = {0: "and", 1: "or"}
-
-    @classmethod
-    def display_names(cls):
-        return [cls._LABELS[cls.And], cls._LABELS[cls.Or]]
-
-    @classmethod
-    def from_display_name(cls, name: str):
-        for v, n in cls._LABELS.items():
-            if n == name:
-                return cls(v)
-        raise ValueError(name)
-
-    def __init__(self, value: int):
-        self.value = value
-
-    @property
-    def display_name(self):
-        return self._LABELS[self.value]
-
-    @property
-    def to_sql(self):
-        return self._SQL[self.value]
-
-
-class CompareSymbol:
-    Equal = 0
-    NotEqual = 1
-    GreaterThan = 2
-    LessThan = 3
-    GreaterThanOrEqual = 4
-    LessThanOrEqual = 5
-    Contains = 6
-    NotContains = 7
-
-    _LABELS = {
-        0: _translate("Form", "等于"),
-        1: _translate("Form", "不等于"),
-        2: _translate("Form", "大于"),
-        3: _translate("Form", "小于"),
-        4: _translate("Form", "大于等于"),
-        5: _translate("Form", "小于等于"),
-        6: _translate("Form", "包含"),
-        7: _translate("Form", "不包含"),
-    }
-    _SQL = {
-        0: "=",
-        1: "!=",
-        2: ">",
-        3: "<",
-        4: ">=",
-        5: "<=",
-        6: "in",
-        7: "not in",
-    }
-
-    @classmethod
-    def display_names(cls):
-        return [cls._LABELS[i] for i in range(len(cls._LABELS))]
-
-    @classmethod
-    def from_display_name(cls, name: str):
-        for v, n in cls._LABELS.items():
-            if n == name:
-                return cls(v)
-        raise ValueError(name)
-
-    def __init__(self, value: int):
-        self.value = value
-
-    @property
-    def display_name(self):
-        return self._LABELS[self.value]
-
-    @property
-    def to_sql(self):
-        return self._SQL[self.value]
-
-
-# ── 数据模型 ───────────────────────────────────────────────
-
-
-class HistoryData:
-    """历史记录数据行（纯数据类，用类属性定义字段）"""
-
-    replay_id: int = 0
-    game_board_state: int = 0
-    rtime: float = 0
-    left: int = 0
-    right: int = 0
-    double: int = 0
-    left_s: float = 0.0
-    right_s: float = 0.0
-    double_s: float = 0.0
-    level: int = 0
-    cl: int = 0
-    cl_s: float = 0.0
-    ce: int = 0
-    ce_s: float = 0.0
-    rce: int = 0
-    lce: int = 0
-    dce: int = 0
-    bbbv: int = 0
-    bbbv_solved: int = 0
-    bbbv_s: float = 0.0
-    flag: int = 0
-    path: float = 0.0
-    etime: float = 0
-    start_time: int = 0
-    end_time: int = 0
-    mode: int = 0
-    software: str = ""
-    player_identifier: str = ""
-    race_identifier: str = ""
-    uniqueness_identifier: str = ""
-    stnb: float = 0.0
-    corr: float = 0.0
-    thrp: float = 0.0
-    ioe: float = 0.0
-    is_official: int = 0
-    is_fair: int = 0
-    op: int = 0
-    isl: int = 0
-    pluck: float = 0.0
-
-    @classmethod
-    def get_field_value(cls, field_name: str):
-        for name, value in inspect.getmembers(cls):
-            if (
-                not name.startswith("__")
-                and not callable(value)
-                and not name.startswith("_")
-                and name == field_name
-            ):
-                return value
-
-    @classmethod
-    def fields(cls):
-        return [
-            name
-            for name, value in inspect.getmembers(cls)
-            if not name.startswith("__")
-            and not callable(value)
-            and not name.startswith("_")
-        ]
-
-    @classmethod
-    def query_all(cls):
-        return f"select {','.join(cls.fields())} from history"
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        instance = cls()
-        for name, value in inspect.getmembers(cls):
-            if (
-                not name.startswith("__")
-                and not callable(value)
-                and not name.startswith("_")
-            ):
-                new_value = data.get(name)
-                # 时间戳字段转换
-                if (
-                    name in ("etime",)
-                    and isinstance(new_value, (int, float))
-                    and new_value
-                ):
-                    value = new_value
-                elif (
-                    name in ("start_time", "end_time")
-                    and isinstance(new_value, (int, float))
-                    and new_value
-                ):
-                    value = datetime.fromtimestamp(new_value / 1_000_000)
-                elif isinstance(value, float):
-                    value = round(new_value, 4)
-                else:
-                    value = new_value
-                setattr(instance, name, value)
-        return instance
-
-
-# ── Table Model ────────────────────────────────────────────
-
-
-class HistoryTableModel(QAbstractTableModel):
-    def __init__(
-        self,
-        data: list[HistoryData],
-        headers: list[str],
-        show_fields: set[str],
-        parent=None,
-    ):
-        super().__init__(parent)
-        self._data = data
-        self._headers = headers
-        self._show_fields = show_fields
-        self._visible_headers = [h for h in headers if h in show_fields]
-
-    def rowCount(self, parent=None):
-        return len(self._data)
-
-    def columnCount(self, parent=None):
-        return len(self._visible_headers)
-
-    def data(self, index: QModelIndex, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        row = index.row()
-        col = index.column()
-        if row >= len(self._data) or col >= len(self._visible_headers):
-            return None
-
-        if role == Qt.DisplayRole:
-            field_name = self._visible_headers[col]
-            value = getattr(self._data[row], field_name)
-            if isinstance(value, datetime):
-                return value.strftime("%Y-%m-%d %H:%M:%S.%f")
-            else:
-                return str(value)
-
-        elif role == Qt.UserRole:
-            field_name = self._visible_headers[col]
-            return getattr(self._data[row], field_name)
-
-        elif role == Qt.TextAlignmentRole:
-            return Qt.AlignCenter | Qt.AlignVCenter
-
-        return None
-
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role=Qt.DisplayRole
-    ):
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            if section < len(self._visible_headers):
-                return self._visible_headers[section]
-        return None
-
-    def update_data(self, data: list[HistoryData]):
-        self.beginResetModel()
-        self._data = data
-        self.endResetModel()
-
-    def update_show_fields(self, show_fields: set[str]):
-        self.beginResetModel()
-        self._show_fields = show_fields
-        self._visible_headers = [h for h in self._headers if h in show_fields]
-        self.endResetModel()
-
-
-# ── 筛选控件 ──────────────────────────────────────────────
-
-
 class FilterWidget(QWidget):
+    """筛选条件控件"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         vbox = QVBoxLayout(self)
@@ -535,10 +259,9 @@ class FilterWidget(QWidget):
         return filter_str
 
 
-# ── 历史记录表格 ──────────────────────────────────────────
-
-
 class HistoryTable(QWidget):
+    """历史记录表格"""
+
     HEADERS = [
         "replay_id",
         "game_board_state",
@@ -672,7 +395,7 @@ class HistoryTable(QWidget):
         temp_filename = exec_dir / "tmp.evf"
         self.save_evf(str(temp_filename))
 
-        exe = exec_dir / "metaminsweeper.exe"
+        exe = exec_dir / "metaminesweeper.exe"
         main_py = exec_dir / "main.py"
 
         if main_py.exists():
@@ -682,7 +405,7 @@ class HistoryTable(QWidget):
             subprocess.Popen([str(exe), str(temp_filename)])
         else:
             QMessageBox.warning(
-                self, "错误", "找不到主程序 (main.py 或 metaminsweeper.exe)"
+                self, "错误", "找不到主程序 (main.py 或 metaminesweeper.exe)"
             )
 
     def export_row(self):
@@ -694,9 +417,6 @@ class HistoryTable(QWidget):
         )
         if file_path:
             self.save_evf(file_path)
-
-
-# ── 主界面容器 ────────────────────────────────────────────
 
 
 class HistoryMainWidget(QWidget):
@@ -829,237 +549,3 @@ class HistoryMainWidget(QWidget):
         with open(self._config_path, "w") as f:
             json.dump(list(self.table.showFields), f)
         super().closeEvent(event)
-
-
-# ═══════════════════════════════════════════════════════════════════
-# 插件主体
-# ═══════════════════════════════════════════════════════════════════
-
-
-class HistoryPlugin(BasePlugin):
-    """
-    历史记录插件
-
-    - 后台：监听 VideoSaveEvent，写入 SQLite
-    - 界面：提供筛选、分页、播放/导出功能
-    - 服务：提供 HistoryService 接口供其他插件查询历史记录
-    """
-    video_save_over = pyqtSignal()
-
-    @classmethod
-    def plugin_info(cls) -> PluginInfo:
-        return PluginInfo(
-            name="history",
-            description="游戏历史记录（SQLite 持久化）",
-            author="ljzloser",
-            version="1.0.0",
-            icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),
-            window_mode=WindowMode.TAB,
-        )
-
-    def __init__(self, info):
-        super().__init__(info)
-
-    def _setup_subscriptions(self) -> None:
-        self.subscribe(VideoSaveEvent, self._on_video_save)
-
-    def _create_widget(self) -> QWidget:
-        db_path = self.data_dir / "history.db"
-        config_path = self.data_dir / "history_show_fields.json"
-        self._widget = HistoryMainWidget(db_path, config_path)
-        self.video_save_over.connect(self._widget.query_button.click)
-        return self._widget
-
-    def on_initialized(self) -> None:
-        self._init_db()
-        self.register_service(self, protocol=HistoryService)
-        self.logger.info("历史记录插件已初始化，HistoryService 已注册")
-
-    # ── 数据库 ──────────────────────────────────────────────
-
-    def _init_db(self) -> None:
-        db_path = self.data_dir / "history.db"
-        if db_path.exists():
-            return
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE history (
-                replay_id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                game_board_state  INTEGER,
-                rtime            REAL,
-                left             INTEGER,
-                right            INTEGER,
-                double           INTEGER,
-                left_s           REAL,
-                right_s          REAL,
-                double_s         REAL,
-                level            INTEGER,
-                cl               INTEGER,
-                cl_s             REAL,
-                ce               REAL,
-                ce_s             REAL,
-                rce              INTEGER,
-                lce              INTEGER,
-                dce              INTEGER,
-                bbbv             INTEGER,
-                bbbv_solved      INTEGER,
-                bbbv_s           REAL,
-                flag             INTEGER,
-                path             REAL,
-                etime            INTEGER,
-                start_time       INTEGER,
-                end_time         INTEGER,
-                mode             INTEGER,
-                software         TEXT,
-                player_identifier   TEXT,
-                race_identifier     TEXT,
-                uniqueness_identifier TEXT,
-                stnb             REAL,
-                corr             REAL,
-                thrp             REAL,
-                ioe              REAL,
-                is_official      INTEGER,
-                is_fair          INTEGER,
-                op               INTEGER,
-                isl              INTEGER,
-                pluck            REAL,
-                raw_data         BLOB
-            )
-        """
-        )
-        conn.commit()
-        conn.close()
-        self.logger.info(f"Database created: {db_path}")
-
-    # ── 事件处理 ──────────────────────────────────────────
-
-    def _on_video_save(self, event: VideoSaveEvent) -> None:
-        data: dict[str, Any] = msgspec.structs.asdict(event)
-        raw_b64 = data.get("raw_data", "")
-        try:
-            data["raw_data"] = base64.b64decode(raw_b64) if raw_b64 else None
-        except Exception as e:
-            self.logger.warning(f"base64 decode failed: {e}")
-            data["raw_data"] = None
-        del data["timestamp"]
-        columns = ", ".join(data.keys())
-        placeholders = ", ".join(f":{k}" for k in data.keys())
-
-        db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        try:
-            cursor = conn.cursor()
-            cursor.execute(
-                f"INSERT INTO history ({columns}) VALUES ({placeholders})",
-                data,
-            )
-            conn.commit()
-            self.logger.info(
-                f"Saved: board_state={event.game_board_state} time={event.rtime:.1f}s"
-            )
-        finally:
-            conn.close()
-        self.video_save_over.emit()
-
-    # ═══════════════════════════════════════════════════════════════════
-    # HistoryService 接口实现
-    # ═══════════════════════════════════════════════════════════════════
-
-    def query_records(
-        self,
-        limit: int = 100,
-        offset: int = 0,
-        level: int | None = None,
-    ) -> list[GameRecord]:
-        """查询游戏记录"""
-        db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        try:
-            if level is not None:
-                cursor.execute(
-                    """
-                    SELECT * FROM history
-                    WHERE level = ?
-                    ORDER BY replay_id DESC
-                    LIMIT ? OFFSET ?
-                    """,
-                    (level, limit, offset),
-                )
-            else:
-                cursor.execute(
-                    """
-                    SELECT * FROM history
-                    ORDER BY replay_id DESC
-                    LIMIT ? OFFSET ?
-                    """,
-                    (limit, offset),
-                )
-            rows = cursor.fetchall()
-            return [GameRecord(
-                replay_id=row["replay_id"],
-                rtime=row["rtime"],
-                level=row["level"],
-                bbbv=row["bbbv"],
-                bbbv_solved=row["bbbv_solved"],
-                left=row["left"],
-                right=row["right"],
-                double=row["double"],
-                cl=row["cl"],
-                ce=row["ce"],
-                flag=row["flag"],
-                game_board_state=row["game_board_state"],
-                mode=row["mode"],
-                software=row["software"] or "",
-                start_time=row["start_time"],
-                end_time=row["end_time"],
-            ) for row in rows]
-        finally:
-            conn.close()
-
-    def get_record_count(self, level: int | None = None) -> int:
-        """获取记录总数"""
-        db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        try:
-            if level is not None:
-                cursor.execute(
-                    "SELECT COUNT(*) FROM history WHERE level = ?", (level,)
-                )
-            else:
-                cursor.execute("SELECT COUNT(*) FROM history")
-            return cursor.fetchone()[0]
-        finally:
-            conn.close()
-
-    def get_last_record(self) -> GameRecord | None:
-        """获取最近一条记录"""
-        records = self.query_records(limit=1)
-        return records[0] if records else None
-
-    def delete_record(self, record_id: int) -> bool:
-        """删除指定记录"""
-        db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        try:
-            cursor.execute(
-                "DELETE FROM history WHERE replay_id = ?", (record_id,)
-            )
-            conn.commit()
-            deleted = cursor.rowcount > 0
-            if deleted:
-                self.logger.info(f"Deleted record: {record_id}")
-            return deleted
-        finally:
-            conn.close()
-
-    def _on_config_changed(self, name: str, value: Any) -> None:
-        return super()._on_config_changed(name, value)

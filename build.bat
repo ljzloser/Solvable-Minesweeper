@@ -25,6 +25,7 @@ echo.
 echo [3/3] Copy resources to metaminsweeper\
 copy /y "%OUT%\plugin_manager\plugin_manager.exe" "%DEST%\"
 xcopy /e /y /i "%OUT%\plugin_manager\_internal" "%DEST%\_internal" >nul
+xcopy /e /y /i "src\plugin_sdk" "%DEST%\plugin_sdk" >nul
 xcopy /e /y /i "src\plugin_manager" "%DEST%\plugin_manager" >nul
 xcopy /e /y /i "src\plugins" "%DEST%\plugins" >nul
 xcopy /e /y /i "src\shared_types" "%DEST%\shared_types" >nul

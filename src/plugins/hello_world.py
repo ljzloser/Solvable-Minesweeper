@@ -10,8 +10,11 @@ from typing import Any
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QDial
 from PyQt5.QtCore import pyqtSignal, Qt
 
-from plugin_manager import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
-from plugin_manager.config_types import (
+from plugin_sdk import (
+    BasePlugin,
+    PluginInfo,
+    make_plugin_icon,
+    WindowMode,
     OtherInfoBase,
     BoolConfig,
     IntConfig,
@@ -24,6 +27,8 @@ from plugin_manager.config_types import (
     LongTextConfig,
     RangeConfig,
     BaseConfig,
+    ConfigWidgetBase,
+    ConfigWidgetWrapper,
 )
 from shared_types.events import VideoSaveEvent
 
@@ -55,10 +60,8 @@ class DialConfig(BaseConfig[int]):
         self.max_value = max_value
         self.notch_step = notch_step
     
-    def create_widget(self):
-        """创建 QDial 控件，返回 (控件, getter, setter, 信号)"""
-        from PyQt5.QtCore import QObject
-        
+    def create_widget(self) -> ConfigWidgetBase:
+        """创建 QDial 控件"""
         widget = QDial()
         widget.setRange(self.min_value, self.max_value)
         widget.setValue(int(self.default))
@@ -71,8 +74,7 @@ class DialConfig(BaseConfig[int]):
         if self.description:
             widget.setToolTip(self.description)
         
-        # 返回控件、getter、setter、以及 valueChanged 信号
-        return widget, widget.value, widget.setValue, widget.valueChanged
+        return ConfigWidgetWrapper(widget, widget.value, widget.setValue, widget.valueChanged)
     
     def to_storage(self, value: int) -> int:
         return int(value)

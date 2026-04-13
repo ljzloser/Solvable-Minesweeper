@@ -18,7 +18,7 @@ from lib_zmq_plugins.shared.base import BaseEvent, get_event_tag
 from shared_types import EVENT_TYPES, COMMAND_TYPES
 
 from .event_dispatcher import EventDispatcher
-from .plugin_base import BasePlugin
+from plugin_sdk.plugin_base import BasePlugin
 from .plugin_loader import PluginLoader
 from .app_paths import get_all_plugin_dirs, patch_sys_path_for_frozen
 

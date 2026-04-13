@@ -5,12 +5,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
-from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QComboBox
 
-from .base_config import BaseConfig
+from .base_config import BaseConfig, ConfigWidgetWrapper
 
 
 @dataclass
@@ -40,8 +39,8 @@ class ChoiceConfig(BaseConfig[str]):
         """确保默认值是字符串类型"""
         self.default = str(self.default)
 
-    def create_widget(self) -> tuple[QComboBox, Callable[[], str], Callable[[str], None], QObject]:
-        """创建 QComboBox 控件，返回 (控件, getter, setter, 信号)"""
+    def create_widget(self) -> ConfigWidgetWrapper:
+        """创建 QComboBox 控件"""
 
         widget = QComboBox()
         for value, text in self.choices:
@@ -64,7 +63,7 @@ class ChoiceConfig(BaseConfig[str]):
             if idx >= 0:
                 widget.setCurrentIndex(idx)
 
-        return widget, get_value, set_value, widget.currentIndexChanged
+        return ConfigWidgetWrapper(widget, get_value, set_value, widget.currentIndexChanged)
 
     def to_storage(self, value: str) -> str:
         """转换为存储格式"""
