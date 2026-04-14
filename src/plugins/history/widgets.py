@@ -48,8 +48,9 @@ _translate = QCoreApplication.translate
 class FilterWidget(QWidget):
     """筛选条件控件"""
 
-    def __init__(self, parent=None):
+    def __init__(self, float_decimals: int = 2, parent=None):
         super().__init__(parent)
+        self._float_decimals = float_decimals
         vbox = QVBoxLayout(self)
         self.table = QTableWidget(self)
         self.table.setColumnCount(6)
@@ -63,6 +64,10 @@ class FilterWidget(QWidget):
         self.table.setSelectionMode(QTableView.SingleSelection)
         vbox.addWidget(self.table)
         self.setLayout(vbox)
+    
+    def set_float_decimals(self, decimals: int) -> None:
+        """动态设置小数位数"""
+        self._float_decimals = decimals
 
     def show_context_menu(self, pos):
         menu = QMenu(self)
@@ -128,15 +133,27 @@ class FilterWidget(QWidget):
             row, 3, self._build_value_widget(compare, field_cls))
 
     def _build_value_widget(self, compare: CompareSymbol, field_value: Any):
+        from shared_types.enums import BaseDiaPlayEnum
+        
         if compare not in (CompareSymbol.Contains, CompareSymbol.NotContains):
-            if isinstance(field_value, int):
+            if isinstance(field_value, BaseDiaPlayEnum):
+                w = QComboBox(self)
+                # 获取该枚举类的所有成员的 display_name
+                enum_cls = field_value.__class__
+                w.addItems([e.display_name for e in enum_cls])
+                return w
+            elif isinstance(field_value, int):
                 return QSpinBox(self)
             elif isinstance(field_value, float):
-                return QDoubleSpinBox(self)
+                w = QDoubleSpinBox(self)
+                w.setDecimals(self._float_decimals)
+                return w
             elif isinstance(field_value, str):
                 return QLineEdit(self)
             elif isinstance(field_value, datetime):
-                return QDateTimeEdit(self)
+                w = QDateTimeEdit(self)
+                w.setDateTime(datetime.now())  # 默认当前时间
+                return w
         return QLineEdit(self)
 
     def add_row(self):
@@ -194,8 +211,21 @@ class FilterWidget(QWidget):
                 return None
 
             # 获取值
+            from shared_types.enums import BaseDiaPlayEnum
             if isinstance(value_w, QComboBox):
-                value = value_w.currentText()
+                # 如果字段是 Enum 类型，需要获取对应的枚举值
+                if isinstance(field_init_value, BaseDiaPlayEnum):
+                    enum_cls = field_init_value.__class__
+                    display_name = value_w.currentText()
+                    # 找到对应的枚举成员
+                    for e in enum_cls:
+                        if e.display_name == display_name:
+                            value = str(e.value)
+                            break
+                    else:
+                        value = value_w.currentText()
+                else:
+                    value = value_w.currentText()
             elif isinstance(value_w, QDateTimeEdit):
                 value = int(
                     value_w.dateTime().toPyDateTime().timestamp() * 1_000_000)
@@ -426,6 +456,7 @@ class HistoryMainWidget(QWidget):
         self,
         db_path: Path,
         config_path: Path,
+        float_decimals: int = 2,
         parent=None,
     ):
         super().__init__(parent)
@@ -446,7 +477,7 @@ class HistoryMainWidget(QWidget):
         )
 
         # 筛选 + 表格
-        self.filter_widget = FilterWidget(self)
+        self.filter_widget = FilterWidget(float_decimals, self)
         self.table = HistoryTable(self._get_show_fields(), db_path, self)
 
         # 分页
@@ -549,3 +580,7 @@ class HistoryMainWidget(QWidget):
         with open(self._config_path, "w") as f:
             json.dump(list(self.table.showFields), f)
         super().closeEvent(event)
+    
+    def set_float_decimals(self, decimals: int) -> None:
+        """动态设置小数位数"""
+        self.filter_widget.set_float_decimals(decimals)

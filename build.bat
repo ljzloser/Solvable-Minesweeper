@@ -37,6 +37,9 @@ xcopy /e /y /i "%SP%\debugpy" "%DEST%\_internal\debugpy" >nul
 xcopy /e /y /i "%SP%\msgspec" "%DEST%\_internal\msgspec" >nul 2>nul
 xcopy /e /y /i "%SP%\setuptools" "%DEST%\_internal\setuptools" >nul 2>nul
 
+echo [5/5] Copy plugin-dev-tutorial.md
+copy /y "plugin-dev-tutorial.md" "%DEST%\" >nul
+
 echo.
 echo Done! Both in: %OUT%\
 pause

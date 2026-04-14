@@ -156,3 +156,24 @@ def set_plugin_log_level(sink_id: int, level: str = "DEBUG") -> None:
         if level_info is not None:
             handler._levelno = level_info.no  # type: ignore[union-attr]
             handler._levelname = level.upper()  # type: ignore[union-attr]
+
+
+def set_console_log_level(level: str = "DEBUG") -> None:
+    """
+    动态修改控制台日志输出的级别
+
+    Args:
+        level: 新的日志级别 ("TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+    """
+    global _console_sink_id
+    if _console_sink_id is None:
+        return
+    
+    config = loguru.logger._core
+    handler = config.handlers.get(_console_sink_id)
+    if handler is not None:
+        levels = config.levels
+        level_info = levels.get(level.upper())
+        if level_info is not None:
+            handler._levelno = level_info.no  # type: ignore[union-attr]
+            handler._levelname = level.upper()  # type: ignore[union-attr]
