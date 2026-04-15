@@ -170,3 +170,4 @@ src/plugins/*/*.json
 src/plugins/*/*.db
 .vscode/
 data/*
+.iflow/

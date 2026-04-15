@@ -553,7 +553,7 @@ class BasePlugin(QThread):
         # 等待线程结束（最多 2 秒）
         # on_shutdown 已在 run() 末尾的插件线程中执行
         if not self.wait(2000):
-            self.logger.warning(
+            self.logger.debug(
                 f"Plugin thread did not stop in time: {self.name}")
             self.terminate()  # 强制终止
             # 注意：强制终止可能导致未完成的 Future 永久阻塞
@@ -569,7 +569,7 @@ class BasePlugin(QThread):
                     self.logger.debug(
                         f"Unregistered service: {protocol.__name__}")
                 except Exception as e:
-                    self.logger.warning(
+                    self.logger.debug(
                         f"Failed to unregister service {protocol.__name__}: {e}")
             self._registered_protocols.clear()
 
@@ -602,7 +602,7 @@ class BasePlugin(QThread):
         """
         with self._queue_lock:
             if len(self._event_queue) >= self.MAX_QUEUE_SIZE:
-                self.logger.warning(
+                self.logger.debug(
                     f"Event queue full ({self.MAX_QUEUE_SIZE}), dropping event"
                 )
                 return False
@@ -722,7 +722,7 @@ class BasePlugin(QThread):
         )
 
         if not auth_manager.is_authorized(type(command), self.name):
-            self.logger.warning(
+            self.logger.debug(
                 f"控制权限被拒绝: {tag} 未授权给 {self.name} (当前授权给: {authorized_plugin})"
             )
             return False
@@ -734,13 +734,13 @@ class BasePlugin(QThread):
             return
         if self._client:
             try:
-                self.logger.info(f"发送命令到 ZMQ: {type(command).__name__}")
+                self.logger.debug(f"发送命令到 ZMQ: {type(command).__name__}")
                 self._client.send_command(command)
-                self.logger.info(f"命令已发送: {type(command).__name__}")
+                self.logger.debug(f"命令已发送: {type(command).__name__}")
             except Exception as e:
                 self.logger.error(f"发送命令失败: {e}", exc_info=True)
         else:
-            self.logger.warning(f"无法发送命令: client 未初始化")
+            self.logger.debug(f"无法发送命令: client 未初始化")
 
     def request(self, command: Any, timeout: float = 5.0) -> CommandResponse | None:
         """发送请求并等待响应（同步，带权限检查）"""
@@ -778,7 +778,7 @@ class BasePlugin(QThread):
                     self.register_service(self, protocol=MyService)
         """
         if self._event_dispatcher is None:
-            self.logger.warning("Cannot register service: no dispatcher")
+            self.logger.debug("Cannot register service: no dispatcher")
             return
 
         # 自动推断 protocol
@@ -794,7 +794,7 @@ class BasePlugin(QThread):
                     break
 
         if protocol is None:
-            self.logger.warning(
+            self.logger.debug(
                 "Cannot register service: no protocol found. "
                 "Specify protocol= explicitly or inherit from a Protocol."
             )
@@ -907,7 +907,7 @@ class BasePlugin(QThread):
                 # 等待 HistoryService 就绪
                 history = self.wait_for_service(HistoryService, timeout=10.0)
                 if history is None:
-                    self.logger.warning("HistoryService 未就绪")
+                    self.logger.debug("HistoryService 未就绪")
                 else:
                     records = history.query_records(100)
         """

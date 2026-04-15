@@ -8,6 +8,7 @@ from datetime import datetime
 
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex
 
+from shared_types.enums import BaseDiaPlayEnum
 from .models import HistoryData
 
 
@@ -44,7 +45,10 @@ class HistoryTableModel(QAbstractTableModel):
             value = getattr(self._data[row], field_name)
             if isinstance(value, datetime):
                 return value.strftime("%Y-%m-%d %H:%M:%S.%f")
+            elif isinstance(value, BaseDiaPlayEnum):
+                return value.display_name
             else:
+                # 对于可能是枚举但值不在定义中的情况，直接显示数值
                 return str(value)
 
         elif role == Qt.UserRole:

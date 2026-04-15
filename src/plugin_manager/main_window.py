@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QTimer, QEvent
 from PyQt5.QtGui import QColor, QMouseEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QMenu,
+    QPlainTextEdit,
     QPushButton,
     QScrollArea,
     QStatusBar,
@@ -45,6 +46,7 @@ from PyQt5.QtWidgets import (
 )
 
 from .plugin_state import PluginStateManager, PluginState
+from .settings_manager import SettingsManager
 from plugin_sdk.plugin_base import PluginLifecycle, WindowMode, LogLevel
 from plugin_sdk.control_auth import ControlAuthorizationManager
 from .app_paths import get_data_dir
@@ -498,6 +500,347 @@ class PluginSettingsDialog(QDialog):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# 基础设置对话框
+# ═══════════════════════════════════════════════════════════════════
+
+class BasicSettingsDialog(QDialog):
+    """
+    插件管理器基础设置对话框
+    
+    包含日志等级等基础配置。
+    """
+    
+    # 设置变更信号
+    settings_changed = pyqtSignal()
+    
+    def __init__(self, settings_manager: "SettingsManager", parent=None) -> None:
+        super().__init__(parent)
+        self._settings_manager = settings_manager
+        self.setWindowTitle("基础设置")
+        self.setMinimumWidth(400)
+        self._setup_ui()
+    
+    def _setup_ui(self) -> None:
+        layout = QVBoxLayout(self)
+        
+        # ── 主进程日志设置组 ──
+        main_log_group = QGroupBox("主进程文件日志")
+        main_log_layout = QFormLayout(main_log_group)
+        
+        self._file_log_level_combo = QComboBox()
+        self._file_log_level_combo.addItems(SettingsManager.LOG_LEVELS)
+        index = self._file_log_level_combo.findText(self._settings_manager.file_log_level)
+        if index >= 0:
+            self._file_log_level_combo.setCurrentIndex(index)
+        
+        file_log_label = QLabel("日志等级")
+        file_log_label.setToolTip("主进程日志文件的记录等级")
+        main_log_layout.addRow(file_log_label, self._file_log_level_combo)
+        
+        layout.addWidget(main_log_group)
+        
+        # ── 日志查看器设置组 ──
+        viewer_group = QGroupBox("日志查看器")
+        viewer_layout = QFormLayout(viewer_group)
+        
+        self._viewer_log_level_combo = QComboBox()
+        self._viewer_log_level_combo.addItems(SettingsManager.LOG_LEVELS)
+        index = self._viewer_log_level_combo.findText(self._settings_manager.viewer_log_level)
+        if index >= 0:
+            self._viewer_log_level_combo.setCurrentIndex(index)
+        
+        viewer_log_label = QLabel("日志等级")
+        viewer_log_label.setToolTip("日志查看器显示的日志等级")
+        viewer_layout.addRow(viewer_log_label, self._viewer_log_level_combo)
+        
+        self._auto_scroll_cb = QCheckBox()
+        self._auto_scroll_cb.setChecked(self._settings_manager.viewer_auto_scroll)
+        viewer_layout.addRow("自动滚动", self._auto_scroll_cb)
+        
+        self._show_source_cb = QCheckBox()
+        self._show_source_cb.setChecked(self._settings_manager.viewer_show_source)
+        viewer_layout.addRow("显示来源", self._show_source_cb)
+        
+        layout.addWidget(viewer_group)
+        
+        # 按钮盒
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        button_box.accepted.connect(self._on_accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+    
+    def _on_accept(self) -> None:
+        """保存设置"""
+        changed = False
+        
+        # 主进程文件日志等级
+        new_file_level = self._file_log_level_combo.currentText()
+        if new_file_level != self._settings_manager.file_log_level:
+            self._settings_manager.set_file_log_level(new_file_level)  # type: ignore
+            changed = True
+        
+        # 日志查看器等级
+        new_viewer_level = self._viewer_log_level_combo.currentText()
+        if new_viewer_level != self._settings_manager.viewer_log_level:
+            self._settings_manager.set_viewer_log_level(new_viewer_level)  # type: ignore
+            changed = True
+        
+        # 自动滚动
+        new_auto_scroll = self._auto_scroll_cb.isChecked()
+        if new_auto_scroll != self._settings_manager.viewer_auto_scroll:
+            self._settings_manager.set_viewer_auto_scroll(new_auto_scroll)
+            changed = True
+        
+        # 显示来源
+        new_show_source = self._show_source_cb.isChecked()
+        if new_show_source != self._settings_manager.viewer_show_source:
+            self._settings_manager.set_viewer_show_source(new_show_source)
+            changed = True
+        
+        if changed:
+            self.settings_changed.emit()
+        self.accept()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 日志查看对话框
+# ═══════════════════════════════════════════════════════════════════
+
+class LogViewerDialog(QDialog):
+    """
+    日志查看对话框（非模态）
+    
+    通过 loguru sink 实时显示日志。
+    """
+    
+    # 日志信号: time_str, level, source, message
+    _log_signal = pyqtSignal(str, str, str, str)
+    
+    # 支持的日志等级
+    LOG_LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    
+    def __init__(
+        self,
+        plugin_names: list[str],
+        initial_log: str = "main",
+        initial_level: str = "DEBUG",
+        auto_scroll: bool = True,
+        show_source: bool = False,
+        parent=None
+    ) -> None:
+        """
+        Args:
+            plugin_names: 插件名称列表
+            initial_log: 初始显示的日志（"main" 或插件名）
+            initial_level: 初始日志等级
+            auto_scroll: 自动滚动默认值
+            show_source: 显示来源信息默认值
+            parent: 父窗口
+        """
+        super().__init__(parent)
+        self.setWindowTitle("日志查看")
+        self.setMinimumSize(900, 600)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint)
+        
+        self._plugin_names = plugin_names
+        self._current_log = initial_log
+        self._current_level = initial_level
+        self._auto_scroll_default = auto_scroll
+        self._show_source_default = show_source
+        self._sink_id: int | None = None
+        
+        self._setup_ui()
+        self._log_signal.connect(self._append_log_line)
+        self._attach_sink(initial_log)
+    
+    def _setup_ui(self) -> None:
+        layout = QVBoxLayout(self)
+        
+        # 顶部：日志选择
+        top_layout = QHBoxLayout()
+        
+        top_layout.addWidget(QLabel("日志源:"))
+        
+        self._log_combo = QComboBox()
+        self._log_combo.addItem("主进程", "main")
+        for name in self._plugin_names:
+            self._log_combo.addItem(f"插件: {name}", name)
+        self._log_combo.currentIndexChanged.connect(self._on_log_changed)
+        top_layout.addWidget(self._log_combo)
+        
+        top_layout.addSpacing(20)
+        
+        # 日志等级
+        top_layout.addWidget(QLabel("等级:"))
+        
+        self._level_combo = QComboBox()
+        self._level_combo.addItems(self.LOG_LEVELS)
+        self._level_combo.setCurrentText(self._current_level)
+        self._level_combo.currentIndexChanged.connect(self._on_level_changed)
+        top_layout.addWidget(self._level_combo)
+        
+        top_layout.addSpacing(20)
+        
+        # 自动滚动
+        self._auto_scroll_cb = QCheckBox("自动滚动")
+        self._auto_scroll_cb.setChecked(self._auto_scroll_default)
+        top_layout.addWidget(self._auto_scroll_cb)
+        
+        # 显示来源
+        self._show_source_cb = QCheckBox("显示来源")
+        self._show_source_cb.setChecked(self._show_source_default)
+        top_layout.addWidget(self._show_source_cb)
+        
+        # 清空按钮
+        clear_btn = QPushButton("清空")
+        clear_btn.clicked.connect(self._clear_log)
+        top_layout.addWidget(clear_btn)
+        
+        top_layout.addStretch()
+        layout.addLayout(top_layout)
+        
+        # 中部：日志内容
+        self._log_view = QPlainTextEdit()
+        self._log_view.setReadOnly(True)
+        self._log_view.setMaximumBlockCount(5000)  # 限制行数
+        self._log_view.setStyleSheet("""
+            QPlainTextEdit {
+                font-family: 'Consolas', 'Courier New', monospace;
+                font-size: 12px;
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+            }
+        """)
+        layout.addWidget(self._log_view)
+        
+        # 底部：按钮
+        button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        button_box.rejected.connect(self.close)
+        layout.addWidget(button_box)
+    
+    def _attach_sink(self, log_name: str) -> None:
+        """添加 loguru sink"""
+        # 移除旧 sink
+        if self._sink_id is not None:
+            try:
+                loguru.logger.remove(self._sink_id)
+            except ValueError:
+                pass
+            self._sink_id = None
+        
+        self._current_log = log_name
+        
+        # 清空显示
+        self._log_view.clear()
+        
+        # 保存信号引用（闭包需要）
+        log_signal = self._log_signal
+        
+        # 根据日志源设置过滤器
+        if log_name == "main":
+            # 主进程日志：排除插件日志
+            def filter_func(record):
+                return "plugin" not in record["extra"]
+        else:
+            # 插件日志：只显示该插件
+            def filter_func(record, pn=log_name):
+                return record["extra"].get("plugin") == pn
+        
+        # sink 函数
+        def sink_write(message):
+            record = message.record
+            time_obj = record["time"]
+            time_str = time_obj.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]  # 去掉最后3位微秒
+            level = record["level"].name
+            # 来源信息: name:function:line
+            source = f"{record['name']}:{record['function']}:{record['line']}"
+            text = str(message)
+            log_signal.emit(time_str, level, source, text)
+        
+        # 添加 sink
+        self._sink_id = loguru.logger.add(
+            sink_write,
+            level=self._current_level,
+            filter=filter_func,
+            format="{message}",
+        )
+        logger.debug(f"Log viewer sink attached: {log_name}, level={self._current_level}, sink_id={self._sink_id}")
+    
+    def _append_log_line(self, time_str: str, level: str, source: str, message: str) -> None:
+        """追加一行日志"""
+        if self._show_source_cb.isChecked():
+            line = f"{time_str} | {level:<7} | {source} | {message}"
+        else:
+            line = f"{time_str} | {level:<7} | {message}"
+        
+        # 简单的颜色标记
+        if "ERROR" in level or "CRITICAL" in level:
+            self._log_view.appendHtml(f'<span style="color:#f44747">{line}</span>')
+        elif "WARNING" in level:
+            self._log_view.appendHtml(f'<span style="color:#dcdcaa">{line}</span>')
+        elif "DEBUG" in level or "TRACE" in level:
+            self._log_view.appendHtml(f'<span style="color:#808080">{line}</span>')
+        elif "INFO" in level:
+            self._log_view.appendHtml(f'<span style="color:#4ec9b0">{line}</span>')
+        else:
+            self._log_view.appendPlainText(line)
+        
+        if self._auto_scroll_cb.isChecked():
+            self._log_view.ensureCursorVisible()
+    
+    def _on_log_changed(self, index: int) -> None:
+        """日志源切换"""
+        log_name = self._log_combo.itemData(index)
+        self._attach_sink(log_name)
+    
+    def _on_level_changed(self, index: int) -> None:
+        """日志等级切换"""
+        self._current_level = self._level_combo.currentText()
+        self._attach_sink(self._current_log)
+    
+    def _clear_log(self) -> None:
+        """清空日志显示"""
+        self._log_view.clear()
+    
+    def closeEvent(self, event) -> None:
+        """关闭时移除 sink"""
+        if self._sink_id is not None:
+            try:
+                loguru.logger.remove(self._sink_id)
+            except ValueError:
+                pass
+            self._sink_id = None
+        super().closeEvent(event)
+    
+    def show_log(self, log_name: str) -> None:
+        """切换到指定日志"""
+        # 如果日志源不在列表中，添加它
+        index = self._log_combo.findData(log_name)
+        if index < 0 and log_name != "main":
+            self._log_combo.addItem(f"插件: {log_name}", log_name)
+            index = self._log_combo.count() - 1
+        
+        if index >= 0:
+            self._log_combo.setCurrentIndex(index)
+    
+    def update_settings(self, level: str, auto_scroll: bool, show_source: bool) -> None:
+        """更新设置"""
+        # 更新日志等级
+        if level != self._current_level:
+            self._current_level = level
+            self._level_combo.setCurrentText(level)
+            self._attach_sink(self._current_log)
+        
+        # 更新自动滚动
+        self._auto_scroll_cb.setChecked(auto_scroll)
+        
+        # 更新显示来源
+        self._show_source_cb.setChecked(show_source)
+
+
+# ═══════════════════════════════════════════════════════════════════
 # 控制授权配置对话框
 # ═══════════════════════════════════════════════════════════════════
 
@@ -690,6 +1033,9 @@ class PluginManagerWindow(QMainWindow):
         # 状态持久化
         self._state_mgr = PluginStateManager(get_data_dir() / "plugin_states.json")
         self._state_mgr.load()
+        
+        # 设置管理
+        self._settings_mgr = SettingsManager(get_data_dir())
 
         self.setWindowTitle(self.tr("插件管理器"))
         self.setMinimumSize(800, 600)
@@ -716,32 +1062,51 @@ class PluginManagerWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """构建界面"""
+        # ── 菜单栏 ──
+        menubar = self.menuBar()
+        
+        # 选项菜单
+        options_menu = menubar.addMenu(self.tr("选项"))
+        
+        # 设置子菜单
+        settings_menu = options_menu.addMenu(self.tr("设置"))
+        
+        # 基础设置动作
+        act_basic_settings = settings_menu.addAction(self.tr("基础设置..."))
+        act_basic_settings.triggered.connect(self._open_basic_settings_dialog)
+        
+        # 控制授权动作
+        act_control_auth = settings_menu.addAction(self.tr("控制授权..."))
+        act_control_auth.triggered.connect(self._open_control_auth_dialog)
+        
+        settings_menu.addSeparator()
+        
+        # 调试动作
+        self._debug_act = settings_menu.addAction(self.tr("启动调试"))
+        self._debug_act.triggered.connect(self._start_debug)
+        
+        options_menu.addSeparator()
+        
+        # 插件开发指南动作
+        act_dev_guide = options_menu.addAction(self.tr("插件开发指南"))
+        act_dev_guide.triggered.connect(self._open_dev_guide)
+        
+        # ── 查看菜单 ──
+        view_menu = menubar.addMenu(self.tr("查看"))
+        
+        # 日志查看动作
+        act_log_viewer = view_menu.addAction(self.tr("日志查看"))
+        act_log_viewer.triggered.connect(lambda: self._open_log_viewer())
+
         # ── 工具栏 ──
         toolbar = QToolBar(self.tr("工具栏"))
         toolbar.setMovable(False)
         self.addToolBar(toolbar)
 
-        # 连接按钮
-        btn = QPushButton(self.tr("连接"))
-        btn.setCheckable(True)
-        btn.setToolTip(self.tr("连接/断开主进程"))
-        self._conn_btn = btn
-        toolbar.addWidget(btn)
-
-        toolbar.addSeparator()
-
         # 刷新按钮
         self._refresh_btn = QPushButton(self.tr("刷新"))
         self._refresh_btn.setToolTip(self.tr("刷新插件列表"))
         toolbar.addWidget(self._refresh_btn)
-
-        toolbar.addSeparator()
-
-        # 调试按钮
-        self._debug_btn = QPushButton("🐛 Debug")
-        self._debug_btn.setCheckable(True)
-        self._debug_btn.setToolTip(self.tr("开启/关闭远程调试 (debugpy)"))
-        toolbar.addWidget(self._debug_btn)
 
         toolbar.addSeparator()
 
@@ -862,17 +1227,126 @@ class PluginManagerWindow(QMainWindow):
         self._manager.stop()
         QApplication.instance().quit()
 
+    def _open_global_settings(self) -> None:
+        """打开全局设置（目前显示控制授权对话框）"""
+        self._open_control_auth_dialog()
+
+    def _open_dev_guide(self) -> None:
+        """用 Qt 控件打开插件开发指南文档"""
+        from PyQt5.QtWidgets import QTextBrowser
+        from PyQt5.QtGui import QFont, QPalette, QColor
+        from .app_paths import get_executable_dir
+
+        # 获取 plugin-dev-tutorial.md 的路径
+        guide_path = get_executable_dir() / "plugin-dev-tutorial.md"
+
+        if not guide_path.exists():
+            QMessageBox.warning(
+                self,
+                self.tr("插件开发指南"),
+                self.tr("未找到插件开发指南文档：\n{path}").format(path=str(guide_path)),
+            )
+            return
+
+        # 读取文档内容
+        try:
+            content = guide_path.read_text(encoding="utf-8")
+        except Exception as e:
+            QMessageBox.warning(
+                self,
+                self.tr("插件开发指南"),
+                self.tr("无法读取文档：\n{error}").format(error=str(e)),
+            )
+            return
+
+        # 创建显示对话框
+        dlg = QDialog(self)
+        dlg.setWindowTitle(self.tr("插件开发指南"))
+        dlg.setMinimumSize(900, 700)
+
+        layout = QVBoxLayout(dlg)
+
+        # 使用 QTextBrowser 显示 Markdown 内容
+        text_browser = QTextBrowser()
+        text_browser.setOpenExternalLinks(True)
+        text_browser.setMarkdown(content)
+
+        # 设置字体
+        font = QFont("Microsoft YaHei", 11)
+        font.setStyleHint(QFont.SansSerif)
+        text_browser.setFont(font)
+
+        # 设置调色板（颜色主题）
+        palette = text_browser.palette()
+        palette.setColor(QPalette.Text, QColor("#24292f"))  # 文字颜色
+        palette.setColor(QPalette.Link, QColor("#0969da"))  # 链接颜色
+        palette.setColor(QPalette.LinkVisited, QColor("#8250df"))  # 已访问链接
+        text_browser.setPalette(palette)
+
+        # 设置文档边距
+        doc = text_browser.document()
+        doc.setDocumentMargin(16)
+
+        layout.addWidget(text_browser)
+
+        # 关闭按钮
+        btn_box = QDialogButtonBox(QDialogButtonBox.Close)
+        btn_box.rejected.connect(dlg.close)
+        layout.addWidget(btn_box)
+
+        dlg.exec_()
+
     def _connect_signals(self) -> None:
         self._refresh_btn.clicked.connect(self._refresh_plugin_list)
         self._list.itemDoubleClicked.connect(self._on_list_double_clicked)
         self._list.customContextMenuRequested.connect(self._on_list_context_menu)
         self.connection_changed.connect(self._on_conn_changed)
 
-        # 调试开关
-        self._debug_btn.toggled.connect(self._toggle_debug)
-
         # 控制授权按钮
         self._control_auth_btn.clicked.connect(self._open_control_auth_dialog)
+
+    def _open_basic_settings_dialog(self) -> None:
+        """打开基础设置对话框"""
+        dialog = BasicSettingsDialog(self._settings_mgr, self)
+        dialog.settings_changed.connect(self._on_settings_changed)
+        dialog.exec_()
+
+    def _on_settings_changed(self) -> None:
+        """设置变更后的回调"""
+        # 应用日志等级
+        self._apply_log_level()
+        self.statusBar().showMessage(self.tr("设置已保存"), 2000)
+
+    def _apply_log_level(self) -> None:
+        """应用日志等级到日志系统"""
+        from .logging_setup import set_console_log_level
+        level = self._settings_mgr.file_log_level
+        set_console_log_level(level)
+        logger.info(f"控制台日志等级已设置为: {level}")
+
+    def _open_log_viewer(self, initial_log: str = "main") -> None:
+        """打开日志查看对话框（非模态）"""
+        # 获取所有插件名称
+        plugin_names = list(self._manager.plugins.keys())
+        
+        # 获取日志查看器设置
+        viewer_level = self._settings_mgr.viewer_log_level
+        auto_scroll = self._settings_mgr.viewer_auto_scroll
+        show_source = self._settings_mgr.viewer_show_source
+        
+        # 创建或复用对话框
+        if not hasattr(self, "_log_viewer_dlg") or self._log_viewer_dlg is None:
+            self._log_viewer_dlg = LogViewerDialog(
+                plugin_names, initial_log, viewer_level, auto_scroll, show_source, self
+            )
+        else:
+            # 更新设置并切换到指定日志
+            self._log_viewer_dlg.update_settings(viewer_level, auto_scroll, show_source)
+            self._log_viewer_dlg.show_log(initial_log)
+        
+        self._log_viewer_dlg.show()
+        self._log_viewer_dlg.raise_()
+        self._log_viewer_dlg.activateWindow()
 
     def _open_control_auth_dialog(self) -> None:
         """打开控制授权配置对话框"""
@@ -896,10 +1370,6 @@ class PluginManagerWindow(QMainWindow):
     def _on_conn_changed(self, ok: bool) -> None:
         rc = self._manager.reconnect_count
         self._conn_status.set_status(ok, rc)
-        self._conn_btn.setChecked(ok)
-        self._conn_btn.setText(
-            self.tr("已连接") if ok else self.tr("连接")
-        )
         msg = (
             self.tr("已连接到主进程")
             if ok
@@ -920,13 +1390,6 @@ class PluginManagerWindow(QMainWindow):
 
     _debug_active: bool = False
 
-    def _toggle_debug(self, enabled: bool) -> None:
-        """开启/关闭 debugpy 远程调试"""
-        if enabled:
-            self._start_debug()
-        else:
-            self._stop_debug()
-
     def _start_debug(self) -> None:
         """启动 debugpy 监听"""
         try:
@@ -935,32 +1398,20 @@ class PluginManagerWindow(QMainWindow):
             # 解决 PyInstaller 打包后子进程找不到 Python/debugpy 的问题
             debugpy.listen(("0.0.0.0", 5678), in_process_debug_adapter=True)
             PluginManagerWindow._debug_active = True
-            self._debug_btn.setText("🐛 Listening...")
-            self._debug_btn.setStyleSheet("background: #4caf50; color: white; font-weight: bold;")
-            self.statusBar().showMessage(self.tr("Debug server listening on port 5678, waiting for VS Code attach..."))
+            
+            # 启动后禁用菜单项，不可重复启动
+            self._debug_act.setText(self.tr("调试已启动"))
+            self._debug_act.setEnabled(False)
+            
+            self.statusBar().showMessage(self.tr("调试服务已在端口 5678 启动，等待 VS Code 连接。重启插件管理器可关闭调试。"))
             logger.info("Debug server started on port 5678")
         except ImportError as e:
-            self._debug_btn.setChecked(False)
             QMessageBox.warning(
                 self, "Debug",
                 f"debugpy import failed:\n{e}",
             )
         except Exception as e:
-            self._debug_btn.setChecked(False)
             QMessageBox.warning(self, "Debug", f"Failed to start debugger:\n{e}")
-
-    def _stop_debug(self) -> None:
-        """停止 debugpy"""
-        try:
-            import debugpy
-            debugpy.stop_listen()
-        except Exception:
-            pass
-        PluginManagerWindow._debug_active = False
-        self._debug_btn.setText("🐛 Debug")
-        self._debug_btn.setStyleSheet("")
-        self.statusBar().showMessage(self.tr("Debug stopped"))
-        logger.info("Debug server stopped")
 
     # ── 插件列表 ────────────────────────────────────────
 
@@ -1182,22 +1633,8 @@ class PluginManagerWindow(QMainWindow):
         self._sync_state(name, window_mode=WindowMode.CLOSED)
 
     def _open_plugin_log(self, name: str) -> None:
-        """用系统默认程序打开插件日志文件"""
-        from .app_paths import get_log_dir
-        log_file = get_log_dir() / "plugins" / f"{name}.log"
-        if not log_file.exists():
-            # 文件不存在时创建一个空文件，避免打开报错
-            log_file.parent.mkdir(parents=True, exist_ok=True)
-            log_file.touch()
-        import subprocess
-        import os
-        try:
-            if os.name == "nt":
-                os.startfile(str(log_file))  # type: ignore[attr-defined]
-            else:
-                subprocess.Popen(["xdg-open", str(log_file)])
-        except Exception as e:
-            logger.warning(f"Failed to open log file {log_file}: {e}")
+        """打开插件日志查看对话框"""
+        self._open_log_viewer(initial_log=name)
 
     def _open_plugin_settings(self, name: str) -> None:
         """打开插件设置对话框"""

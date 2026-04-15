@@ -13,11 +13,26 @@ import msgspec
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 
-from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import (
+    BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
+    OtherInfoBase, IntConfig,
+)
 from shared_types.events import VideoSaveEvent
 from plugins.services.history import HistoryService, GameRecord
 
 from .widgets import HistoryMainWidget
+
+
+class HistoryConfig(OtherInfoBase):
+    """历史记录插件配置"""
+    
+    float_decimals = IntConfig(
+        default=2,
+        label="小数位数",
+        description="查询窗口中浮点数显示的小数位数",
+        min_value=0,
+        max_value=10,
+    )
 
 
 class HistoryPlugin(BasePlugin):
@@ -39,6 +54,7 @@ class HistoryPlugin(BasePlugin):
             version="1.0.0",
             icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),
             window_mode=WindowMode.TAB,
+            other_info=HistoryConfig,
         )
 
     def __init__(self, info):
@@ -50,7 +66,13 @@ class HistoryPlugin(BasePlugin):
     def _create_widget(self) -> QWidget:
         db_path = self.data_dir / "history.db"
         config_path = self.data_dir / "history_show_fields.json"
-        self._widget = HistoryMainWidget(db_path, config_path)
+        
+        # 获取配置中的小数位数
+        float_decimals = 2
+        if self.other_info:
+            float_decimals = self.other_info.float_decimals
+        
+        self._widget = HistoryMainWidget(db_path, config_path, float_decimals)
         self.video_save_over.connect(self._widget.query_button.click)
         return self._widget
 
@@ -246,4 +268,5 @@ class HistoryPlugin(BasePlugin):
             conn.close()
 
     def _on_config_changed(self, name: str, value: Any) -> None:
-        return super()._on_config_changed(name, value)
+        if name == "float_decimals" and hasattr(self, '_widget'):
+            self._widget.set_float_decimals(value)

@@ -10,6 +10,8 @@ from typing import Any
 
 from PyQt5.QtCore import QCoreApplication
 
+from shared_types.enums import GameBoardState, GameMode, GameLevel, BaseDiaPlayEnum
+
 _translate = QCoreApplication.translate
 
 
@@ -101,11 +103,13 @@ class CompareSymbol:
         return self._SQL[self.value]
 
 
+# ── 历史记录数据 ──────────────────────────────────────────
+
 class HistoryData:
     """历史记录数据行（纯数据类，用类属性定义字段）"""
 
     replay_id: int = 0
-    game_board_state: int = 0
+    game_board_state: GameBoardState = GameBoardState.Win
     rtime: float = 0
     left: int = 0
     right: int = 0
@@ -113,7 +117,7 @@ class HistoryData:
     left_s: float = 0.0
     right_s: float = 0.0
     double_s: float = 0.0
-    level: int = 0
+    level: GameLevel = GameLevel.BEGINNER
     cl: int = 0
     cl_s: float = 0.0
     ce: int = 0
@@ -127,9 +131,9 @@ class HistoryData:
     flag: int = 0
     path: float = 0.0
     etime: float = 0
-    start_time: int = 0
-    end_time: int = 0
-    mode: int = 0
+    start_time: datetime = datetime.now()
+    end_time: datetime = datetime.now()
+    mode: GameMode = GameMode.Standard
     software: str = ""
     player_identifier: str = ""
     race_identifier: str = ""
@@ -179,19 +183,15 @@ class HistoryData:
                 and not name.startswith("_")
             ):
                 new_value = data.get(name)
+                if new_value is None:
+                    continue
+                # Enum 类型 - 使用 try_create 处理值不在枚举中的情况
+                if isinstance(value, BaseDiaPlayEnum):
+                    value = value.__class__.try_create(new_value)
                 # 时间戳字段转换
-                if (
-                    name in ("etime",)
-                    and isinstance(new_value, (int, float))
-                    and new_value
-                ):
-                    value = new_value
-                elif (
-                    name in ("start_time", "end_time")
-                    and isinstance(new_value, (int, float))
-                    and new_value
-                ):
-                    value = datetime.fromtimestamp(new_value / 1_000_000)
+                elif isinstance(value, datetime):
+                    if new_value:
+                        value = datetime.fromtimestamp(new_value / 1_000_000)
                 elif isinstance(value, float):
                     value = round(new_value, 4)
                 else:

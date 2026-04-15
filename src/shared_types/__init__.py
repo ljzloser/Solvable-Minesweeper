@@ -13,6 +13,14 @@ from .commands import (
     COMMAND_TYPES,
 )
 
+from .enums import (
+    BaseDiaPlayEnum,
+    GameBoardState,
+    MouseState,
+    GameMode,
+    GameLevel,
+)
+
 __all__ = [
     # 事件
     "BoardUpdateEvent",
@@ -20,4 +28,10 @@ __all__ = [
     # 指令
     "NewGameCommand",
     "COMMAND_TYPES",
+    # 枚举
+    "BaseDiaPlayEnum",
+    "GameBoardState",
+    "MouseState",
+    "GameMode",
+    "GameLevel",
 ]
