@@ -37,6 +37,7 @@ from mineSweeperVideoPlayer import MineSweeperVideoPlayer
 
 
 class MineSweeperGUI(MineSweeperVideoPlayer):
+
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
         self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
@@ -220,7 +221,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
         last_state = self._game_state
-        
+
         match self._game_state:
             case "playing":
                 self.try_append_evfs(game_state)
@@ -254,9 +255,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 self.label.paint_cursor = False
                 self.label.paintProbability = False
                 self.num_bar_ui.QWidget.close()
-        
+
         self._game_state = game_state
-        
+
         # 发送游戏状态变化事件
         state_map = {
             "ready": 1,
@@ -277,6 +278,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 current_status=state_map.get(game_state, 0),
             )
             GameServerBridge.instance().send_event(event)
+            self._send_board_update_event()
 
     @property
     def row(self):
@@ -509,7 +511,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             game_board_list = []
             for row in ms_board.game_board:
                 game_board_list.append(list(row))
-            
+
             event = BoardUpdateEvent(
                 rows=self.row,
                 cols=self.column,
@@ -521,79 +523,33 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         except Exception:
             pass  # 忽略发送失败
 
-    def execute_cell_click(self, row: int, col: int, button: int) -> bool:
+    def execute_cell_click(self, row: int, col: int, button: int):
         """
         执行格子点击（供外部命令调用）
-        
+
         Args:
             row: 行索引（从 0 开始）
             col: 列索引（从 0 开始）
-            button: 鼠标按钮（0=左键, 2=右键）
-        
-        Returns:
-            True 表示成功执行
+            button: 鼠标按钮（0=左键, 1=中键, 2=右键）
         """
-        # 检查游戏状态
-        if self.game_state not in ('ready', 'playing', 'joking'):
-            return False
-        
-        # 检查坐标有效性
         if row < 0 or row >= self.row or col < 0 or col >= self.column:
             return False
-        
-        # 转换为像素坐标（中心点）
-        i = row * self.pixSize + self.pixSize // 2
-        j = col * self.pixSize + self.pixSize // 2
-        
-        try:
-            if button == 0:  # 左键
-                # 模拟点击流程：按下 -> 抬起
-                self.label.ms_board.step('lc', (i, j))
-                
-                # 处理第一次点击埋雷
-                if self.game_state == 'ready':
-                    if self.label.ms_board.mouse_state == 4:
-                        if self.board_constraint:
-                            self.game_state = 'joking'
-                        else:
-                            self.game_state = 'playing'
-                        if self.player_identifier[:6] != "[live]":
-                            self.disable_screenshot()
-                        if self.cursor_limit:
-                            self.limit_cursor()
-                        self.start_time_unix_2 = QtCore.QDateTime.currentDateTime().toMSecsSinceEpoch()
-                        self.timer_10ms.start()
-                        self.score_board_manager.editing_row = -2
-                        # 埋雷
-                        self.layMine(row, col)
-                
-                self.label.ms_board.step('lr', (i, j))
-                
-                # 检查游戏结束
-                if self.label.ms_board.game_board_state == 3:
-                    self.gameWin()
-                elif self.label.ms_board.game_board_state == 4:
-                    self.gameFailed()
-                    
-            elif button == 2:  # 右键
-                # 更新剩余雷数
-                cell_state = self.label.ms_board.game_board[row][col]
-                if cell_state == 11:  # 已标旗，取消标旗
-                    self.mineUnFlagedNum += 1
-                    self.showMineNum(self.mineUnFlagedNum)
-                elif cell_state == 10:  # 未揭开，标旗
-                    self.mineUnFlagedNum -= 1
-                    self.showMineNum(self.mineUnFlagedNum)
-                
-                self.label.ms_board.step('rc', (i, j))
-                self.label.ms_board.step('rr', (i, j))
-            
-            self.label.update()
-            self._send_board_update_event()
-            return True
-            
-        except Exception:
-            return False
+        x = row * self.pixSize
+        y = col * self.pixSize
+        if button == 0:
+            self.mineAreaLeftPressed(x, y)
+            self.mineAreaLeftRelease(x, y)
+        elif button == 1:
+            self.mineAreaLeftPressed(x, y)
+            self.mineAreaLeftAndRightPressed(x, y)
+            self.mineAreaRightRelease(x, y)
+            self.mineAreaLeftRelease(x, y)
+        else:
+            self.mineAreaRightPressed(x, y)
+            self.mineAreaRightRelease(x, y)
+
+        self._send_board_update_event()
+        return True
 
     def gameStart(self):
         # 画界面，但是不埋雷。等价于点脸、f2、设置确定后的效果
@@ -688,7 +644,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     data[key] = getattr(ms_board, key)
             event = VideoSaveEvent(**data)
             GameServerBridge.instance().send_event(event)
-        
+
         # 发送棋盘更新事件，让插件知道最终状态
         self._send_board_update_event()
 

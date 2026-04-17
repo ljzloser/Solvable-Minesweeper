@@ -3,6 +3,7 @@ llm_minesweeper_controller - 插件主类
 """
 from __future__ import annotations
 
+from ctypes import cast
 import json
 from typing import Dict, Any, Optional, List
 
@@ -10,6 +11,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk.config_types import OtherInfoBase
 from shared_types.events import BoardUpdateEvent, GameStatusChangeEvent
 from shared_types.commands import NewGameCommand, MouseClickCommand
 
@@ -32,6 +34,12 @@ class LLMWorker(QThread):
         self.client = client
         self.registry = registry
         self.messages = messages
+        self._stop_flag = False
+
+    def stop(self) -> None:
+        """请求停止工作线程"""
+        self._stop_flag = True
+        self.requestInterruption()
 
     def run(self):
         """执行多轮对话循环（无上限）"""
@@ -40,6 +48,11 @@ class LLMWorker(QThread):
             round_num = 0
 
             while True:
+                # 检查停止标志
+                if self._stop_flag or self.isInterruptionRequested():
+                    self.finished_signal.emit(False, "用户请求停止")
+                    return
+
                 round_num += 1
                 self.log_signal.emit(f"=== 第 {round_num} 轮对话 ===")
 
@@ -111,6 +124,8 @@ class LLMWorker(QThread):
 class LlmMinesweeperControllerPlugin(BasePlugin):
     """使用 LLM 控制扫雷的插件"""
 
+    _widget: LlmMinesweeperControllerWidget
+
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
@@ -122,6 +137,10 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
             other_info=LlmMinesweeperControllerConfig,
             required_controls=[NewGameCommand, MouseClickCommand],
         )
+
+    @property
+    def other_info(self) -> LlmMinesweeperControllerConfig:
+        return super().other_info  # type: ignore
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(BoardUpdateEvent, self._on_board_update)
@@ -201,7 +220,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
             param_descriptions={
                 "col": "列索引 (从 0 开始，即 X 坐标)",
                 "row": "行索引 (从 0 开始，即 Y 坐标)",
-                "button": "鼠标按钮: 'left' 左键揭开, 'right' 右键标旗",
+                "button": "鼠标按钮: 'left' 左键揭开, 'right' 右键标旗, 'middle' 中键快速揭开周围格子",
             }
         )
         def click_cell(col: int, row: int, button: str = "left") -> Dict[str, Any]:
@@ -296,6 +315,8 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
             self._widget.update_status("游戏胜利!")
         elif event.current_status == 4:
             self._widget.update_status("游戏失败!")
+        elif event.current_status == 1:
+            self._widget.update_status("游戏准备中...")
 
     # ═══════════════════════════════════════════════════════════════
     # LLM 对话流程
@@ -363,6 +384,8 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
 
     def _on_analysis_finished(self, success: bool, message: str) -> None:
         """分析完成回调"""
+        if self._widget is None:
+            return
         self._widget.set_buttons_enabled(True)
 
         if success:
@@ -634,3 +657,11 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
             "mines_remaining": event.mines_remaining,
             "game_time": event.game_time,
         }
+
+    def on_shutdown(self) -> None:
+        """插件关闭时停止 Worker"""
+        if self._worker and self._worker.isRunning():
+            self.logger.info("正在停止 LLM Worker...")
+            self._worker.stop()
+            self._worker.wait(1)  # 等待最多3秒
+        self._worker = None
