@@ -5,6 +5,7 @@
 """
 from .events import (
     BoardUpdateEvent,
+    GameStatusChangeEvent,
     EVENT_TYPES,
 )
 
@@ -24,6 +25,7 @@ from .enums import (
 __all__ = [
     # 事件
     "BoardUpdateEvent",
+    "GameStatusChangeEvent",
     "EVENT_TYPES",
     # 指令
     "NewGameCommand",

@@ -3,19 +3,51 @@
 """
 from __future__ import annotations
 
+from typing import List, Optional
+
 from lib_zmq_plugins.shared.base import BaseEvent
 
-
-class GameStatusChange(BaseEvent, tag="game_status"):
-    last_status: int = 0
-    cuurent_status: int = 0
+from .enums import GameBoardState
 
 
 class BoardUpdateEvent(BaseEvent, tag="board_update"):
-    pass
+    """
+    棋盘更新事件 - 每次棋盘状态变化时发送
+    
+    Attributes:
+        rows: 行数
+        cols: 列数
+        game_board: 游戏局面二维数组
+            - 0-8: 已揭开的数字格子
+            - 10: 未揭开的格子
+            - 11: 标旗的格子
+            - 14: 错误标旗（游戏结束时显示）
+            - 15: 爆炸的地雷
+            - 16: 未爆炸的地雷（游戏结束时显示）
+        mines_remaining: 剩余未标出的地雷数（总地雷数 - 已标旗数）
+        game_time: 游戏时间（秒）
+    """
+    rows: int = 0
+    cols: int = 0
+    game_board: List[List[int]] = []
+    mines_remaining: int = 0
+    game_time: float = 0.0
 
 
-class ConetxtChangeEvent(BaseEvent, tag="context_change"):
+class GameStatusChangeEvent(BaseEvent, tag="game_status_change"):
+    """
+    游戏状态变化事件
+    
+    Attributes:
+        last_status: 上一个游戏状态
+        current_status: 当前游戏状态
+    """
+    last_status: int = 0
+    current_status: int = 0
+
+
+class ContextChangeEvent(BaseEvent, tag="context_change"):
+    """上下文变化事件"""
     pass
 
 
@@ -65,5 +97,6 @@ class VideoSaveEvent(BaseEvent, tag="video_save"):
 
 EVENT_TYPES = [
     BoardUpdateEvent,
+    GameStatusChangeEvent,
     VideoSaveEvent,
 ]
