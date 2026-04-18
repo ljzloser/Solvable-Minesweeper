@@ -77,6 +77,7 @@ class HistoryPlugin(BasePlugin):
     - 服务：提供 HistoryService 接口供其他插件查询历史记录
     """
     video_save_over = pyqtSignal()
+    _widget: HistoryMainWidget
 
     @classmethod
     def plugin_info(cls) -> PluginInfo:
@@ -86,7 +87,7 @@ class HistoryPlugin(BasePlugin):
             author="ljzloser",
             version="1.0.0",
             icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),
-            window_mode=WindowMode.TAB,
+            window_mode=WindowMode.TAB,  # type: ignore
             other_info=HistoryConfig,
         )
 
@@ -107,7 +108,8 @@ class HistoryPlugin(BasePlugin):
             float_decimals = self.other_info.float_decimals
             page_size = self.other_info.page_size
 
-        self._widget = HistoryMainWidget(db_path, config_path, float_decimals, page_size)
+        self._widget = HistoryMainWidget(
+            db_path, config_path, float_decimals, page_size)
 
         # 连接排序和过滤状态变化信号
         self._widget.filter_sort_state_changed.connect(
@@ -334,5 +336,5 @@ class HistoryPlugin(BasePlugin):
             conn.close()
 
     def _on_config_changed(self, name: str, value: Any) -> None:
-        if name == "float_decimals" and hasattr(self, '_widget'):
+        if name == "float_decimals":
             self._widget.set_float_decimals(value)

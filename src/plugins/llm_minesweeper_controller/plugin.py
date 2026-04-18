@@ -164,7 +164,8 @@ class ExecutionSummary:
             lines.append(f"执行统计: {', '.join(stats)}")
 
         # 最近的操作记录（简化为统计格式）
-        click_actions = [a for a in self.actions if a.get("func") == "click_cell"]
+        click_actions = [a for a in self.actions if a.get(
+            "func") == "click_cell"]
         if click_actions:
             recent = click_actions[-5:]  # 只保留最近5个
             lines.append(f"最近操作({len(click_actions)}个点击):")
@@ -172,7 +173,8 @@ class ExecutionSummary:
                 args = a["args"]
                 button = args.get("button", "")
                 col, row = args.get("col"), args.get("row")
-                btn_name = {"left": "左", "right": "右", "middle": "中"}.get(button, button)
+                btn_name = {"left": "左", "right": "右",
+                            "middle": "中"}.get(button, button)
                 lines.append(f"  - {btn_name}键({col},{row})")
 
         if self.last_game_status:
@@ -467,7 +469,7 @@ class LLMWorker(QThread):
                         content = response.content or ""
                         self.chat_signal.emit("assistant", content)
                         assistant_msg["content"] = content
-                    
+
                     self.messages.append(assistant_msg)
 
                     # 处理每个 tool_call
@@ -567,10 +569,6 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
             required_controls=[NewGameCommand, MouseClickCommand],
         )
 
-    @property
-    def other_info(self) -> LlmMinesweeperControllerConfig:
-        return super().other_info  # type: ignore
-
     def _setup_subscriptions(self) -> None:
         self.subscribe(BoardUpdateEvent, self._on_board_update)
         self.subscribe(GameStatusChangeEvent, self._on_game_status_change)
@@ -620,6 +618,8 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
 
     def _init_llm_client(self) -> None:
         """初始化 LLM 客户端"""
+        if self.other_info is None:
+            return
         api_key = self.other_info.api_key
         base_url = self.other_info.api_base_url
         model = self.other_info.model_name
@@ -747,7 +747,8 @@ class LlmMinesweeperControllerPlugin(BasePlugin):
         if event.last_status in (3, 4) and event.current_status in (1, 2):
             if self._worker:
                 # 保留系统消息，只清空其他消息
-                self._worker.messages[:] = [m for m in self._worker.messages if m.get("role") == "system"]
+                self._worker.messages[:] = [
+                    m for m in self._worker.messages if m.get("role") == "system"]
                 # 重置执行摘要
                 self._worker._execution_summary = None
                 # 通知 UI 摘要已清空

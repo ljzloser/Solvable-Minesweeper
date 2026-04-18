@@ -11,7 +11,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from PyQt5.QtCore import QEvent, Qt, QCoreApplication, QModelIndex, QTimer, pyqtSignal
 from PyQt5.QtGui import QCloseEvent as _QCloseEvent, QStandardItemModel, QStandardItem, QPalette
@@ -63,14 +63,14 @@ class ComboBoxDelegate(QStyledItemDelegate):
         editor.addItems(self._items)
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QComboBox, index):
         value = index.model().data(index, Qt.EditRole)
         if value:
             idx = editor.findText(value)
             if idx >= 0:
                 editor.setCurrentIndex(idx)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QComboBox, model, index):
         model.setData(index, editor.currentText(), Qt.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
@@ -88,12 +88,12 @@ class EditableComboBoxDelegate(QStyledItemDelegate):
         editor = EditableComboBox(self._items, parent)
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: EditableComboBox, index):
         value = index.model().data(index, Qt.EditRole)
         if value:
             editor.setCurrentText(value)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: EditableComboBox, model, index):
         model.setData(index, editor.currentText(), Qt.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
@@ -116,7 +116,7 @@ class FilterValueDelegate(QStyledItemDelegate):
         # 检查选中状态
         is_selected = option.state & QStyle.State_Selected
 
-        if is_selected:
+        if is_selected:  # type: ignore
             # 选中时绘制背景
             painter.fillRect(option.rect, option.palette.highlight())
             # 使用高亮文本颜色
@@ -157,7 +157,7 @@ class FilterValueDelegate(QStyledItemDelegate):
         style.drawItemText(
             painter,
             option.rect,
-            Qt.AlignCenter | Qt.AlignVCenter,
+            Qt.AlignCenter | Qt.AlignVCenter,  # type: ignore
             option.palette,
             True,
             display_text,
@@ -215,6 +215,7 @@ class FilterValueDelegate(QStyledItemDelegate):
             return editor
         elif isinstance(field_value, datetime):
             editor = QDateTimeEdit(parent)
+            editor.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
             editor.setCalendarPopup(True)
             return editor
         else:
@@ -234,22 +235,22 @@ class FilterValueDelegate(QStyledItemDelegate):
         raw_value = index.model().data(index, Qt.EditRole)
 
         from shared_types.enums import BaseDiaPlayEnum
-        if isinstance(field_value, BaseDiaPlayEnum):
+        if isinstance(field_value, BaseDiaPlayEnum) and isinstance(editor, QComboBox):
             if raw_value:
                 idx = editor.findText(raw_value)
                 if idx >= 0:
                     editor.setCurrentIndex(idx)
-        elif isinstance(field_value, int):
+        elif isinstance(field_value, int) and isinstance(editor, QSpinBox):
             try:
                 editor.setValue(int(raw_value) if raw_value else 0)
             except (ValueError, TypeError):
                 editor.setValue(0)
-        elif isinstance(field_value, float):
+        elif isinstance(field_value, float) and isinstance(editor, QDoubleSpinBox):
             try:
                 editor.setValue(float(raw_value) if raw_value else 0.0)
             except (ValueError, TypeError):
                 editor.setValue(0.0)
-        elif isinstance(field_value, datetime):
+        elif isinstance(field_value, datetime) and isinstance(editor, QDateTimeEdit):
             try:
                 if raw_value:
                     # raw_value 可能是 int/float 时间戳，或字符串形式的时间戳
@@ -280,24 +281,27 @@ class FilterValueDelegate(QStyledItemDelegate):
             except (ValueError, TypeError):
                 editor.setDateTime(datetime.now())
         else:
-            editor.setText(raw_value or "")
+            if isinstance(editor, QLineEdit):
+                editor.setText(raw_value or "")
 
     def setModelData(self, editor, model, index):
         field_value, compare, field_name = self._get_field_info(index)
         if field_value is None:
-            model.setData(index, editor.text(), Qt.EditRole)
+            if isinstance(editor, QLineEdit):
+                model.setData(index, editor.text(), Qt.EditRole)
             return
 
         from shared_types.enums import BaseDiaPlayEnum
-        if isinstance(field_value, BaseDiaPlayEnum):
+        if isinstance(field_value, BaseDiaPlayEnum) and isinstance(editor, QComboBox):
             model.setData(index, editor.currentText(), Qt.EditRole)
-        elif isinstance(field_value, (int, float)):
+        elif isinstance(field_value, (int, float)) and isinstance(editor, (QSpinBox, QDoubleSpinBox)):
             model.setData(index, str(editor.value()), Qt.EditRole)
-        elif isinstance(field_value, datetime):
+        elif isinstance(field_value, datetime) and isinstance(editor, QDateTimeEdit):
             ts = int(editor.dateTime().toPyDateTime().timestamp() * 1_000_000)
             model.setData(index, str(ts), Qt.EditRole)
         else:
-            model.setData(index, editor.text(), Qt.EditRole)
+            if isinstance(editor, QLineEdit):
+                model.setData(index, editor.text(), Qt.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
@@ -478,7 +482,7 @@ class FilterModel(QStandardItemModel):
 
     def get_field_value_type(self, row: int):
         """获取指定行字段的原始值类型"""
-        field_name = self.data(self.index(row, self.COL_FIELD))
+        field_name = str(self.data(self.index(row, self.COL_FIELD)))
         return HistoryData.get_field_value(field_name)
 
 
@@ -684,7 +688,7 @@ class FilterWidget(QWidget):
         model.setData(model.index(row, SortModel.COL_ORDER),
                       _translate("Form", "升序"))
 
-    def _add_sort_row_at(self, row: int, field: str = None, order: str = None):
+    def _add_sort_row_at(self, row: int, field: str | None = None, order: str | None = None):
         """在指定位置添加排序行"""
         model = self.sort_table.model()
         if field is None:
@@ -782,7 +786,7 @@ class FilterWidget(QWidget):
         # 不需要手动设置值，代理会根据字段类型自动处理
 
     def gen_filter_str(self):
-        model = self.table.model()
+        model = cast(FilterModel, self.table.model())
         filter_str = ""
         left_count = 0
         right_count = 0
@@ -985,7 +989,7 @@ class HistoryTable(QWidget):
     def refresh(self):
         parent_widget = self.parent()
         if hasattr(parent_widget, "load_data"):
-            parent_widget.load_data()
+            parent_widget.load_data()  # type: ignore
 
     def show_context_menu(self, pos):
         menu = QMenu(self)
@@ -1021,7 +1025,7 @@ class HistoryTable(QWidget):
         if "replay_id" in visible:
             col = visible.index("replay_id")
             rid = self.model.data(self.model.index(row_idx, col), Qt.UserRole)
-            return rid
+            return rid  # type: ignore
         return getattr(self.model._data[row_idx], "replay_id", None)
 
     def _read_raw_data(self, replay_id: int) -> bytes | None:
@@ -1239,7 +1243,7 @@ class HistoryMainWidget(QWidget):
 
     def _get_filter_rows(self) -> list[dict]:
         """获取过滤表格的所有行数据"""
-        model = self.filter_widget.table.model()
+        model = cast(FilterModel, self.filter_widget.table.model())
         rows = []
         for row in range(model.rowCount()):
             rows.append(model.get_row_data(row))
@@ -1247,7 +1251,7 @@ class HistoryMainWidget(QWidget):
 
     def _get_sort_rows(self) -> list[dict]:
         """获取排序表格的所有行数据"""
-        model = self.filter_widget.sort_table.model()
+        model = cast(SortModel, self.filter_widget.sort_table.model())
         rows = []
         for row in range(model.rowCount()):
             rows.append(model.get_row_data(row))

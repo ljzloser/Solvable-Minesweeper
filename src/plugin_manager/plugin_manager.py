@@ -64,7 +64,7 @@ class PluginManager:
     def __init__(
         self,
         endpoint: str,
-        plugin_dirs: list[str | Path] | None = None,
+        plugin_dirs: list[Path] | None = None,
         log_handler: LogHandler | None = None,
     ):
         self._endpoint = endpoint
@@ -223,7 +223,7 @@ class PluginManager:
         """停止插件管理器（调用优雅关闭）"""
         self._graceful_shutdown()
 
-    def start_with_gui(self, app: QApplication = None, *, show_main_window: bool = True) -> None:
+    def start_with_gui(self, app: QApplication = None, *, show_main_window: bool = True) -> None:  # type: ignore
         """
         启动插件管理器并显示主界面
 
@@ -267,7 +267,7 @@ class PluginManager:
         if self._app is None:
             self.start_with_gui(show_main_window=show_main_window)
 
-        result = self._app.exec_()
+        result = self._app.exec_()  # type: ignore
         self.stop()
         return result
 
@@ -390,7 +390,7 @@ def run_plugin_manager_process(
         退出代码
     """
     manager = PluginManager(
-        endpoint=endpoint, plugin_dirs=plugin_dirs, log_handler=_LogHandler()
+        endpoint=endpoint, plugin_dirs=plugin_dirs, log_handler=_LogHandler()  # type: ignore
     )
 
     try:

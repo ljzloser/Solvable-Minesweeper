@@ -104,31 +104,6 @@ class ZMQClient:
         # 启动后立即发一次心跳作为探测
         self._probe_connection()
 
-    @property
-    def is_connected(self) -> bool:
-        """当前连接状态"""
-        return self._is_connected
-
-    @property
-    def reconnect_count(self) -> int:
-        """重连次数"""
-        return self._reconnect_count
-
-    @property
-    def endpoint(self) -> str:
-        """当前端点地址"""
-        return self._endpoint
-
-    @property
-    def pub_endpoint(self) -> str:
-        """PUB 端点地址"""
-        return self._pub_endpoint
-
-    @property
-    def ctrl_endpoint(self) -> str:
-        """CTRL 端点地址"""
-        return self._ctrl_endpoint
-
     def disconnect(self) -> None:
         self._stopped.set()
         if self._thread and self._thread.is_alive():
@@ -145,6 +120,8 @@ class ZMQClient:
             return
         self._sub_socket = self._ctx.socket(zmq.SUB)
         self._dealer_socket = self._ctx.socket(zmq.DEALER)
+        if self._dealer_socket is None:
+            return
         self._dealer_socket.setsockopt_string(zmq.IDENTITY, uuid.uuid4().hex)
 
         # 启用 ZMQ 原生心跳，自动检测服务端断开
@@ -154,7 +131,8 @@ class ZMQClient:
         self._dealer_socket.setsockopt(zmq.HEARTBEAT_IVL, 5000)
         self._dealer_socket.setsockopt(zmq.HEARTBEAT_TIMEOUT, 5000)
         self._dealer_socket.setsockopt(zmq.HEARTBEAT_TTL, 10000)
-
+        if self._sub_socket is None:
+            return
         self._sub_socket.connect(self._pub_endpoint)
         self._dealer_socket.connect(self._ctrl_endpoint)
 
@@ -202,7 +180,8 @@ class ZMQClient:
         try:
             self._dealer_socket.send(payload)
         except zmq.ZMQError:
-            self._log.warning("Failed to send sync request for topic: %s", topic)
+            self._log.warning(
+                "Failed to send sync request for topic: %s", topic)
             self._sync_topics.pop(rid, None)
 
     # ── 指令发送（可在任意线程调用） ──
@@ -231,7 +210,7 @@ class ZMQClient:
     def _poll_loop(self) -> None:
         while not self._stopped.is_set():
             try:
-                events = self._poller.poll(timeout=200)
+                events = self._poller.poll(timeout=200)  # type: ignore
             except zmq.ZMQError:
                 self._handle_reconnect(0.1)
                 continue
@@ -275,7 +254,7 @@ class ZMQClient:
 
     def _handle_sub_message(self) -> None:
         try:
-            msg = self._sub_socket.recv_multipart(zmq.NOBLOCK)
+            msg = self._sub_socket.recv_multipart(zmq.NOBLOCK)  # type: ignore
         except zmq.Again:
             return
         if len(msg) < 2:
@@ -293,7 +272,8 @@ class ZMQClient:
 
     def _handle_dealer_message(self) -> None:
         try:
-            msg = self._dealer_socket.recv_multipart(zmq.NOBLOCK)
+            msg = self._dealer_socket.recv_multipart(  # type: ignore
+                zmq.NOBLOCK)
         except zmq.Again:
             return
         if len(msg) < 2:
@@ -312,7 +292,8 @@ class ZMQClient:
                     snapshot = self._serializer.decode_event(resp.data)
                     self._notify_subscribers(topic, snapshot)
                 except Exception:
-                    self._log.warning("Failed to decode snapshot", exc_info=True)
+                    self._log.warning(
+                        "Failed to decode snapshot", exc_info=True)
         else:
             self._sync_topics.pop(resp.request_id, None)
 

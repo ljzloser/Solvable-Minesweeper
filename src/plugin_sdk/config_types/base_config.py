@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, ClassVar, Generic, TypeVar
 
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtBoundSignal, pyqtSignal, QObject
 
 T = TypeVar("T")
 
@@ -49,7 +49,7 @@ class ConfigWidgetWrapper(ConfigWidgetBase):
         widget: QWidget,
         getter: Callable[[], Any],
         setter: Callable[[Any], None],
-        signal: QObject,
+        signal: pyqtBoundSignal,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
