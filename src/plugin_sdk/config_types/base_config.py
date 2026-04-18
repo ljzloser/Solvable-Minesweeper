@@ -89,6 +89,7 @@ class BaseConfig(ABC, Generic[T]):
         label: 显示标签
         description: tooltip 提示
         validator: 自定义验证函数
+        visible: 是否在 UI 中展示（默认 True，设为 False 可隐藏）
 
     类属性:
         widget_type: UI 控件类型标识，由工厂使用
@@ -98,6 +99,7 @@ class BaseConfig(ABC, Generic[T]):
     label: str = ""
     description: str = ""
     validator: Callable[[T], bool] | None = None
+    visible: bool = True  # 是否在 UI 中展示
 
     # 类变量：用于 UI 工厂识别
     widget_type: ClassVar[str] = "base"
