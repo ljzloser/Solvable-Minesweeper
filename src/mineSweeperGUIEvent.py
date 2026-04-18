@@ -69,6 +69,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                     return
                 else:
                     self.label.update()
+                    self._send_board_update_event()
             self.set_face(14)
         elif self.game_state == 'playing' or self.game_state == 'joking':
             # 如果是游戏中，且是左键抬起（不是双击），且是在10上，且在局面内，则用ai劫持、处理下
@@ -88,6 +89,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                 self.label.update()
                 return
             self.label.update()
+            self._send_board_update_event()
             self.set_face(14)
 
         elif self.game_state == 'show':
@@ -121,6 +123,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
             self.chording_ai(i // self.pixSize, j // self.pixSize)
             self.label.ms_board.step('rr', (i, j))
             self.label.update()
+            self._send_board_update_event()
             self.set_face(14)
         elif self.game_state == 'show':
             # 看概率时，所有操作都移出局面外

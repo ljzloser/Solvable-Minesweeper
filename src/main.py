@@ -18,7 +18,8 @@ from utils import get_paths, patch_env
 # 插件系统（新）
 from plugin_sdk import GameServerBridge
 from plugin_manager.app_paths import get_env_for_subprocess
-from shared_types.commands import NewGameCommand
+from shared_types.commands import NewGameCommand, MouseClickCommand
+from shared_types.enums import GameLevel
 import subprocess
 
 os.environ["QT_FONT_DPI"] = "96"
@@ -199,15 +200,40 @@ if __name__ == "__main__":
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 
         GameServerBridge.instance().start()
-        
+
         # 注册控制命令处理器（自动在主线程执行）
         def handle_new_game(cmd: NewGameCommand):
-            print(f"[NewGameCommand] rows={cmd.rows}, cols={cmd.cols}, mines={cmd.mines}")
-            ui.setBoard_and_start(cmd.rows, cmd.cols, cmd.mines)
+            """处理新游戏命令"""
             from lib_zmq_plugins.shared.base import CommandResponse
+
+            # 根据 level 确定参数
+            if cmd.level == GameLevel.BEGINNER.value:
+                rows, cols, mines = 8, 8, 10
+            elif cmd.level == GameLevel.INTERMEDIATE.value:
+                rows, cols, mines = 16, 16, 40
+            elif cmd.level == GameLevel.EXPERT.value:
+                rows, cols, mines = 16, 30, 99
+            else:
+                # 自定义模式，使用传入的参数
+                rows, cols, mines = cmd.rows, cmd.cols, cmd.mines
+
+            print(
+                f"[NewGameCommand] level={cmd.level}, rows={rows}, cols={cols}, mines={mines}")
+            ui.setBoard_and_start(rows, cols, mines)
             return CommandResponse(request_id=cmd.request_id, success=True)
-        
+
+        def handle_mouse_click(cmd: MouseClickCommand):
+            """处理鼠标点击命令"""
+            from lib_zmq_plugins.shared.base import CommandResponse
+
+            print(
+                f"[MouseClickCommand] row={cmd.row}, col={cmd.col}, button={cmd.button}")
+            success = ui.execute_cell_click(cmd.row, cmd.col, cmd.button)
+            return CommandResponse(request_id=cmd.request_id, success=success)
+
         GameServerBridge.instance().register_handler(NewGameCommand, handle_new_game)
+        GameServerBridge.instance().register_handler(
+            MouseClickCommand, handle_mouse_click)
 
         # _translate = QtCore.QCoreApplication.translate
         hwnd = int(ui.mainWindow.winId())

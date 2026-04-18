@@ -7,7 +7,7 @@ import msgspec
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
-from shared_types.events import VideoSaveEvent
+from shared_types.events import VideoSaveEvent, BoardUpdateEvent, GameStatusChangeEvent
 import superGUI
 import gameAbout
 import gameSettings
@@ -37,6 +37,7 @@ from mineSweeperVideoPlayer import MineSweeperVideoPlayer
 
 
 class MineSweeperGUI(MineSweeperVideoPlayer):
+
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
         self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
@@ -219,6 +220,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     @game_state.setter
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
+        last_state = self._game_state
+
         match self._game_state:
             case "playing":
                 self.try_append_evfs(game_state)
@@ -252,7 +255,30 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 self.label.paint_cursor = False
                 self.label.paintProbability = False
                 self.num_bar_ui.QWidget.close()
+
         self._game_state = game_state
+
+        # 发送游戏状态变化事件
+        state_map = {
+            "ready": 1,
+            "playing": 2,
+            "win": 3,
+            "fail": 4,
+            "joking": 2,  # joking 也视为游戏中
+            "jowin": 3,
+            "jofail": 4,
+            "show": 5,
+            "study": 6,
+            "display": 7,
+            "showdisplay": 8,
+        }
+        if last_state != game_state:
+            event = GameStatusChangeEvent(
+                last_status=state_map.get(last_state, 0),
+                current_status=state_map.get(game_state, 0),
+            )
+            GameServerBridge.instance().send_event(event)
+            self._send_board_update_event()
 
     @property
     def row(self):
@@ -477,6 +503,54 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             # self.timer_mine_num.setSingleShot(True)
             # self.timer_mine_num.start(3000)
 
+    def _send_board_update_event(self):
+        """发送棋盘更新事件给插件"""
+        try:
+            ms_board = self.label.ms_board
+            # 将 game_board 转换为列表格式
+            game_board_list = []
+            for row in ms_board.game_board:
+                game_board_list.append(list(row))
+
+            event = BoardUpdateEvent(
+                rows=self.row,
+                cols=self.column,
+                game_board=game_board_list,
+                mines_remaining=self.mineUnFlagedNum,
+                game_time=ms_board.time if hasattr(ms_board, 'time') else 0.0,
+            )
+            GameServerBridge.instance().send_event(event)
+        except Exception:
+            pass  # 忽略发送失败
+
+    def execute_cell_click(self, row: int, col: int, button: int):
+        """
+        执行格子点击（供外部命令调用）
+
+        Args:
+            row: 行索引（从 0 开始）
+            col: 列索引（从 0 开始）
+            button: 鼠标按钮（0=左键, 1=中键, 2=右键）
+        """
+        if row < 0 or row >= self.row or col < 0 or col >= self.column:
+            return False
+        x = row * self.pixSize
+        y = col * self.pixSize
+        if button == 0:
+            self.mineAreaLeftPressed(x, y)
+            self.mineAreaLeftRelease(x, y)
+        elif button == 1:
+            self.mineAreaLeftPressed(x, y)
+            self.mineAreaLeftAndRightPressed(x, y)
+            self.mineAreaRightRelease(x, y)
+            self.mineAreaLeftRelease(x, y)
+        else:
+            self.mineAreaRightPressed(x, y)
+            self.mineAreaRightRelease(x, y)
+
+        self._send_board_update_event()
+        return True
+
     def gameStart(self):
         # 画界面，但是不埋雷。等价于点脸、f2、设置确定后的效果
         self.mineUnFlagedNum = self.minenum  # 没有标出的雷，显示在左上角
@@ -570,6 +644,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     data[key] = getattr(ms_board, key)
             event = VideoSaveEvent(**data)
             GameServerBridge.instance().send_event(event)
+
+        # 发送棋盘更新事件，让插件知道最终状态
+        self._send_board_update_event()
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()
