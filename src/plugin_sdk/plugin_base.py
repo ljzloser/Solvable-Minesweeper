@@ -10,8 +10,11 @@
 """
 
 from __future__ import annotations
+from pathlib import Path
+
+
 from .service_registry import ServiceNotFoundError
-from lib_zmq_plugins.shared.base import BaseEvent, get_event_tag
+from lib_zmq_plugins.shared.base import BaseEvent, CommandResponse, get_event_tag
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen, QColor, QBrush, QFont
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
 
@@ -29,7 +32,7 @@ _T = TypeVar("_T")  # 用于服务获取方法的泛型
 
 if TYPE_CHECKING:
     from .config_types import OtherInfoBase
-
+    from plugin_manager.logging_setup import LogConfig
 if TYPE_CHECKING:
     from PyQt5.QtGui import QIcon
 
@@ -77,8 +80,8 @@ def make_plugin_icon(
     p.setBrush(Qt.NoBrush)  # type: ignore[attr-defined]
     font = QFont("Segoe UI Emoji", int(size * 0.44), QFont.Bold)
     p.setFont(font)
-    p.drawText(pix.rect(), Qt.AlignCenter | Qt.AlignVCenter,
-               symbol)  # type: ignore[attr-defined]
+    p.drawText(pix.rect(), Qt.AlignCenter | Qt.AlignVCenter,  # type: ignore[attr-defined]
+               symbol)
     p.end()
 
     return QIcon(pix)
@@ -249,7 +252,7 @@ class BasePlugin(QThread):
 
         # 连接 gui_call 信号到槽（QueuedConnection 跨线程安全）
         self.gui_call.connect(
-            self._on_gui_call, Qt.ConnectionType.QueuedConnection)
+            self._on_gui_call, Qt.ConnectionType.QueuedConnection)  # type: ignore
 
         # 每个插件拥有独立的 loguru logger（日志写入 plugins/<name>.log）
         from plugin_manager.logging_setup import get_plugin_logger

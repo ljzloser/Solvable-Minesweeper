@@ -13,7 +13,7 @@ from .enums import GameBoardState
 class BoardUpdateEvent(BaseEvent, tag="board_update"):
     """
     棋盘更新事件 - 每次棋盘状态变化时发送
-    
+
     Attributes:
         rows: 行数
         cols: 列数
@@ -37,7 +37,7 @@ class BoardUpdateEvent(BaseEvent, tag="board_update"):
 class GameStatusChangeEvent(BaseEvent, tag="game_status_change"):
     """
     游戏状态变化事件
-    
+
     Attributes:
         last_status: 上一个游戏状态
         current_status: 当前游戏状态
@@ -49,6 +49,13 @@ class GameStatusChangeEvent(BaseEvent, tag="game_status_change"):
 class ContextChangeEvent(BaseEvent, tag="context_change"):
     """上下文变化事件"""
     pass
+
+
+class ButtonClickEvent(BaseEvent, tag="button_click"):
+    """按钮点击事件"""
+    col = 0
+    row = 0
+    button = 0
 
 
 class VideoSaveEvent(BaseEvent, tag="video_save"):
@@ -98,5 +105,6 @@ class VideoSaveEvent(BaseEvent, tag="video_save"):
 EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
+    ButtonClickEvent,
     VideoSaveEvent,
 ]

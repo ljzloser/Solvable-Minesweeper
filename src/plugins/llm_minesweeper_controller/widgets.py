@@ -17,6 +17,8 @@ class LlmMinesweeperControllerWidget(QWidget):
     _chat_signal = pyqtSignal(str, str)  # role, text
     _status_signal = pyqtSignal(str)
     _enable_buttons_signal = pyqtSignal(bool)
+    _summary_signal = pyqtSignal(str)
+    _stop_signal = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -31,9 +33,24 @@ class LlmMinesweeperControllerWidget(QWidget):
         status_group.setLayout(status_layout)
         layout.addWidget(status_group)
 
-        # 对话显示区
-        chat_group = QGroupBox("LLM对话")
-        chat_layout = QVBoxLayout()
+        # 上下文摘要 + 对话区（水平布局）
+        main_splitter = QSplitter(Qt.Horizontal)
+
+        # 上下文摘要（左侧）
+        self._summary_text = QTextEdit()
+        self._summary_text.setReadOnly(True)
+        self._summary_text.setMaximumWidth(280)
+        self._summary_text.setMinimumWidth(200)
+        self._summary_text.setStyleSheet("""
+            QTextEdit {
+                font-family: Consolas, 'Microsoft YaHei', monospace;
+                font-size: 11px;
+                color: #0078d4;
+                background-color: #f0f6ff;
+            }
+        """)
+
+        # 对话显示区（右侧，宽）
         self._chat_text = QTextEdit()
         self._chat_text.setReadOnly(True)
         self._chat_text.setStyleSheet("""
@@ -42,16 +59,20 @@ class LlmMinesweeperControllerWidget(QWidget):
                 font-size: 13px;
             }
         """)
-        chat_layout.addWidget(self._chat_text)
-        chat_group.setLayout(chat_layout)
-        layout.addWidget(chat_group, stretch=1)
+
+        main_splitter.addWidget(self._summary_text)
+        main_splitter.addWidget(self._chat_text)
+        main_splitter.setStretchFactor(0, 0)  # 摘要不拉伸
+        main_splitter.setStretchFactor(1, 1)  # 对话拉伸
+
+        layout.addWidget(main_splitter, stretch=1)
 
         # 日志显示区
         log_group = QGroupBox("日志")
         log_layout = QVBoxLayout()
         self._log_text = QTextEdit()
         self._log_text.setReadOnly(True)
-        self._log_text.setMaximumHeight(120)
+        self._log_text.setMaximumHeight(80)
         self._log_text.setStyleSheet("font-size: 11px; color: #666;")
         log_layout.addWidget(self._log_text)
         log_group.setLayout(log_layout)
@@ -61,10 +82,14 @@ class LlmMinesweeperControllerWidget(QWidget):
         button_layout = QHBoxLayout()
         self._analyze_button = QPushButton("🤖 分析并操作")
         self._analyze_button.setStyleSheet("padding: 6px; font-size: 14px;")
+        self._stop_button = QPushButton("⏹ 停止")
+        self._stop_button.setStyleSheet("padding: 6px; font-size: 14px;")
+        self._stop_button.setEnabled(False)  # 默认禁用，有任务时才启用
         self._test_button = QPushButton("🔗 测试连接")
         self._clear_chat_button = QPushButton("🗑 清除对话")
         self._clear_log_button = QPushButton("🗑 清除日志")
         button_layout.addWidget(self._analyze_button)
+        button_layout.addWidget(self._stop_button)
         button_layout.addWidget(self._test_button)
         button_layout.addWidget(self._clear_chat_button)
         button_layout.addWidget(self._clear_log_button)
@@ -75,6 +100,8 @@ class LlmMinesweeperControllerWidget(QWidget):
         self._chat_signal.connect(self._on_chat)
         self._status_signal.connect(self._on_status)
         self._enable_buttons_signal.connect(self._on_enable_buttons)
+        self._summary_signal.connect(self._on_summary)
+        self._stop_signal.connect(self._on_stop_clicked)
 
         # 按钮事件
         self._clear_log_button.clicked.connect(self._clear_log)
@@ -100,7 +127,8 @@ class LlmMinesweeperControllerWidget(QWidget):
         )
         # 滚动到底部
         scrollbar = self._chat_text.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        if scrollbar:
+            scrollbar.setValue(scrollbar.maximum())
 
     def _on_status(self, text: str) -> None:
         self._status_label.setText(text)
@@ -108,12 +136,23 @@ class LlmMinesweeperControllerWidget(QWidget):
     def _on_enable_buttons(self, enabled: bool) -> None:
         self._analyze_button.setEnabled(enabled)
         self._test_button.setEnabled(enabled)
+        self._stop_button.setEnabled(not enabled)  # 停止按钮与主按钮相反
+
+    def _on_stop_clicked(self) -> None:
+        """停止按钮点击处理"""
+        self._stop_signal.emit()
 
     def _clear_log(self) -> None:
         self._log_text.clear()
 
     def _clear_chat(self) -> None:
         self._chat_text.clear()
+
+    def _on_summary(self, text: str) -> None:
+        """更新上下文摘要显示"""
+        self._summary_text.setPlainText(text)
+        # 滚动到顶部
+        self._summary_text.moveCursor(self._summary_text.textCursor().Start)
 
     # ── 线程安全的公开方法（由插件调用） ──
 
@@ -129,8 +168,14 @@ class LlmMinesweeperControllerWidget(QWidget):
     def set_buttons_enabled(self, enabled: bool) -> None:
         self._enable_buttons_signal.emit(enabled)
 
+    def update_summary(self, text: str) -> None:
+        self._summary_signal.emit(text)
+
     def set_analyze_callback(self, callback) -> None:
         self._analyze_button.clicked.connect(callback)
 
     def set_test_button_callback(self, callback) -> None:
         self._test_button.clicked.connect(callback)
+
+    def set_stop_button_callback(self, callback) -> None:
+        self._stop_button.clicked.connect(callback)

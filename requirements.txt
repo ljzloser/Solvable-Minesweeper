@@ -6,3 +6,4 @@ zmq>=0.0.0
 pywin32>=311
 loguru>=0.7.3
 debugpy>=1.8.20
+PyQt5-stubs>=5.15.6.0

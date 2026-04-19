@@ -16,17 +16,17 @@ class ChatResponse:
     status_code: int = 0
     raw_data: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-    
+
     # 解析后的内容
     content: Optional[str] = None  # 文本内容
     tool_calls: Optional[List[Dict[str, Any]]] = None  # tool_calls 列表
     finish_reason: Optional[str] = None
-    
+
     @property
     def has_tool_calls(self) -> bool:
         """是否有 tool_calls"""
         return bool(self.tool_calls)
-    
+
     @property
     def has_content(self) -> bool:
         """是否有文本内容"""
@@ -57,8 +57,9 @@ class LLMClient:
         self,
         messages: List[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
-        temperature: float = 0.3,
+        temperature: float = 0.2,
         max_tokens: Optional[int] = None,
+        reasoning_effort: Optional[str] = None,
     ) -> ChatResponse:
         """
         发送聊天请求 (OpenAI /v1/chat/completions)
@@ -68,6 +69,7 @@ class LLMClient:
             tools: OpenAI tools格式的函数定义列表
             temperature: 温度参数
             max_tokens: 最大token数
+            reasoning_effort: 深度思考强度 ("low"/"medium"/"high")，None表示关闭
 
         Returns:
             ChatResponse
@@ -82,6 +84,9 @@ class LLMClient:
 
         if max_tokens is not None:
             payload["max_tokens"] = max_tokens
+
+        if reasoning_effort:
+            payload["reasoning_effort"] = reasoning_effort
 
         if tools:
             payload["tools"] = tools
@@ -136,16 +141,19 @@ class LLMClient:
         try:
             choice = response_data.get("choices", [{}])[0]
             message = choice.get("message", {})
-            
+
             # 提取文本内容
             content = message.get("content")
-            
+
             # 提取 tool_calls
             tool_calls = message.get("tool_calls")
-            
+
             # 提取 finish_reason
             finish_reason = choice.get("finish_reason")
-            
+
+            # 打印思考内容（如果存在）
+            thinking = message.get("thinking") or message.get("reasoning")
+
             return ChatResponse(
                 success=True,
                 status_code=200,
@@ -166,11 +174,11 @@ class LLMClient:
     def build_tool_result_message(tool_call_id: str, result: Any) -> Dict[str, Any]:
         """
         构建 tool 结果消息
-        
+
         Args:
             tool_call_id: tool_call 的 ID
             result: 函数执行结果（会被 JSON 序列化）
-        
+
         Returns:
             可直接追加到 messages 的消息字典
         """
@@ -178,7 +186,7 @@ class LLMClient:
             content = result
         else:
             content = json.dumps(result, ensure_ascii=False)
-        
+
         return {
             "role": "tool",
             "tool_call_id": tool_call_id,
@@ -192,11 +200,11 @@ class LLMClient:
     ) -> Dict[str, Any]:
         """
         构建 assistant 的 tool_calls 消息（用于多轮对话时保存历史）
-        
+
         Args:
             content: 文本内容（可能为 None）
             tool_calls: tool_calls 列表
-        
+
         Returns:
             可追加到 messages 的消息字典
         """

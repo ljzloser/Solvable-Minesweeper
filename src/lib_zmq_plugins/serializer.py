@@ -29,7 +29,7 @@ def _make_union(types: list[type]) -> type:
     """将类型列表转为 Union 类型，供 msgspec 多态反序列化使用"""
     if len(types) == 1:
         return types[0]
-    return Union[tuple(types)]
+    return Union[tuple(types)]  # type: ignore
 
 
 class Serializer:

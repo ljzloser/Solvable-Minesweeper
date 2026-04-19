@@ -278,7 +278,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 current_status=state_map.get(game_state, 0),
             )
             GameServerBridge.instance().send_event(event)
-            self._send_board_update_event()
+        self._send_board_update_event()
 
     @property
     def row(self):

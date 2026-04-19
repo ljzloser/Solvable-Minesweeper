@@ -67,6 +67,10 @@ class OtherInfoWidget(QWidget):
             return
 
         for name, config_field in fields.items():
+            # 跳过不可见的配置项（用于插件存储私有数据）
+            if not config_field.visible:
+                continue
+
             # 使用 config_field 自己的 create_widget 方法
             widget = config_field.create_widget()
 

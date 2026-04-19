@@ -28,7 +28,7 @@ class PluginLoader:
     - 实例化插件类
     """
 
-    def __init__(self, plugin_dirs: list[str | Path] | None = None):
+    def __init__(self, plugin_dirs: list[Path] | None = None):
         self._plugin_dirs: list[Path] = []
         self._added_paths: set[Path] = set()  # 已添加到 sys.path 的目录
         if plugin_dirs:

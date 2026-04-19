@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QWidget
 
 from plugin_sdk import (
     BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
-    OtherInfoBase, IntConfig,
+    OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
 )
 from shared_types.events import VideoSaveEvent
 from plugins.services.history import HistoryService, GameRecord
@@ -25,13 +25,46 @@ from .widgets import HistoryMainWidget
 
 class HistoryConfig(OtherInfoBase):
     """历史记录插件配置"""
-    
+
     float_decimals = IntConfig(
         default=2,
         label="小数位数",
         description="查询窗口中浮点数显示的小数位数",
         min_value=0,
         max_value=10,
+    )
+
+    # 隐藏字段：保存排序和过滤状态
+    saved_filter = TextConfig(
+        default="[]",
+        label="保存的过滤条件",
+        visible=False,
+    )
+
+    saved_sort = TextConfig(
+        default="[]",
+        label="保存的排序条件",
+        visible=False,
+    )
+
+    saved_show_fields = TextConfig(
+        default="[]",
+        label="保存的列显示配置",
+        visible=False,
+    )
+
+    page_size = ChoiceConfig(
+        default="50",
+        label="每页条数",
+        choices=[
+            ("10", "10"),
+            ("20", "20"),
+            ("50", "50"),
+            ("100", "100"),
+            ("200", "200"),
+            ("500", "500"),
+            ("1000", "1000"),
+        ],
     )
 
 
@@ -44,6 +77,7 @@ class HistoryPlugin(BasePlugin):
     - 服务：提供 HistoryService 接口供其他插件查询历史记录
     """
     video_save_over = pyqtSignal()
+    _widget: HistoryMainWidget
 
     @classmethod
     def plugin_info(cls) -> PluginInfo:
@@ -53,7 +87,7 @@ class HistoryPlugin(BasePlugin):
             author="ljzloser",
             version="1.0.0",
             icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),
-            window_mode=WindowMode.TAB,
+            window_mode=WindowMode.TAB,  # type: ignore
             other_info=HistoryConfig,
         )
 
@@ -66,15 +100,49 @@ class HistoryPlugin(BasePlugin):
     def _create_widget(self) -> QWidget:
         db_path = self.data_dir / "history.db"
         config_path = self.data_dir / "history_show_fields.json"
-        
-        # 获取配置中的小数位数
+
+        # 获取配置中的小数位数和每页条数
         float_decimals = 2
+        page_size = "50"
         if self.other_info:
             float_decimals = self.other_info.float_decimals
-        
-        self._widget = HistoryMainWidget(db_path, config_path, float_decimals)
+            page_size = self.other_info.page_size
+
+        self._widget = HistoryMainWidget(
+            db_path, config_path, float_decimals, page_size)
+
+        # 连接排序和过滤状态变化信号
+        self._widget.filter_sort_state_changed.connect(
+            self._on_filter_sort_state_changed)
+
+        # 连接列显示配置变化信号
+        self._widget.show_fields_changed.connect(
+            self._on_show_fields_changed)
+
+        # 恢复保存的排序和过滤状态
+        if self.other_info:
+            self._widget.set_filter_sort_state(
+                self.other_info.saved_filter,
+                self.other_info.saved_sort
+            )
+            # 恢复保存的列显示配置
+            self._widget.restore_show_fields(self.other_info.saved_show_fields)
+
         self.video_save_over.connect(self._widget.query_button.click)
         return self._widget
+
+    def _on_filter_sort_state_changed(self, filter_json: str, sort_json: str) -> None:
+        """保存排序和过滤状态"""
+        if self.other_info:
+            self.other_info.saved_filter = filter_json
+            self.other_info.saved_sort = sort_json
+            self.save_config()
+
+    def _on_show_fields_changed(self, show_fields_json: str) -> None:
+        """保存列显示配置"""
+        if self.other_info:
+            self.other_info.saved_show_fields = show_fields_json
+            self.save_config()
 
     def on_initialized(self) -> None:
         self._init_db()
@@ -268,5 +336,5 @@ class HistoryPlugin(BasePlugin):
             conn.close()
 
     def _on_config_changed(self, name: str, value: Any) -> None:
-        if name == "float_decimals" and hasattr(self, '_widget'):
+        if name == "float_decimals":
             self._widget.set_float_decimals(value)

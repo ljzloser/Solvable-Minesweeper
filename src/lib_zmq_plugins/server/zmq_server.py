@@ -46,7 +46,8 @@ class ZMQServer:
         self._pub_endpoint, self._ctrl_endpoint = _derive_endpoints(endpoint)
         self._serializer = Serializer()
         self._serializer.register_command_types(SyncCommand)
-        self._handlers: dict[str, Callable[[BaseCommand], CommandResponse | None]] = {}
+        self._handlers: dict[str, Callable[[
+            BaseCommand], CommandResponse | None]] = {}
         self._snapshot_providers: dict[str, Callable[[], BaseEvent]] = {}
         self._log: LogHandler = log_handler or NullHandler()
 
@@ -89,7 +90,8 @@ class ZMQServer:
         self._ctx = zmq.Context()
         self._pub_socket = self._ctx.socket(zmq.PUB)
         self._router_socket = self._ctx.socket(zmq.ROUTER)
-
+        if self._pub_socket is None or self._router_socket is None:
+            raise RuntimeError("Failed to create socket")
         # 启用 ZMQ 原生心跳，与客户端匹配
         # HEARTBEAT_IVL: 每 5 秒发送心跳
         # HEARTBEAT_TIMEOUT: 5 秒内没收到回复视为断连
@@ -108,7 +110,8 @@ class ZMQServer:
         self._thread = threading.Thread(target=self._poll_loop, daemon=True)
         self._thread.start()
 
-        self._log.info("Server started: pub=%s, ctrl=%s", self._pub_endpoint, self._ctrl_endpoint)
+        self._log.info("Server started: pub=%s, ctrl=%s",
+                       self._pub_endpoint, self._ctrl_endpoint)
 
     def stop(self) -> None:
         self._stopped.set()
@@ -141,14 +144,15 @@ class ZMQServer:
     def _poll_loop(self) -> None:
         while not self._stopped.is_set():
             try:
-                events = self._poller.poll(timeout=100)
+                events = self._poller.poll(timeout=100)  # type: ignore
             except zmq.ZMQError:
                 break
 
             for socket, _ in events:
                 if socket is self._router_socket:
                     try:
-                        msg = self._router_socket.recv_multipart(zmq.NOBLOCK)
+                        msg = self._router_socket.recv_multipart(  # type: ignore
+                            zmq.NOBLOCK)
                     except zmq.Again:
                         continue
                     if len(msg) < 2:
@@ -158,7 +162,8 @@ class ZMQServer:
                     try:
                         cmd = self._serializer.decode_command(payload)
                     except Exception:
-                        self._log.warning("Failed to decode command", exc_info=True)
+                        self._log.warning(
+                            "Failed to decode command", exc_info=True)
                         continue
                     self._dispatch(client_id, cmd)
 
@@ -167,11 +172,12 @@ class ZMQServer:
         if isinstance(tag, type):
             tag = tag.__name__
         tag = str(tag)
-        
-        self._log.info("[Server] 收到命令: tag=%s, request_id=%s", tag, cmd.request_id)
+
+        self._log.info("[Server] 收到命令: tag=%s, request_id=%s",
+                       tag, cmd.request_id)
 
         if tag == "__sync__":
-            self._handle_sync(client_id, cmd)
+            self._handle_sync(client_id, cmd)  # type: ignore
             return
 
         handler = self._handlers.get(tag)
@@ -181,7 +187,8 @@ class ZMQServer:
 
         try:
             result = handler(cmd)
-            self._log.info("[Server] handler 执行完成: tag=%s, result=%s", tag, result)
+            self._log.info(
+                "[Server] handler 执行完成: tag=%s, result=%s", tag, result)
         except Exception as e:
             self._log.error("Handler error for %s: %s", tag, e, exc_info=True)
             if cmd.request_id:
@@ -211,7 +218,8 @@ class ZMQServer:
                     request_id=cmd.request_id, success=True, data=payload
                 )
             except Exception as e:
-                self._log.error("Snapshot provider error for %s: %s", topic, e, exc_info=True)
+                self._log.error(
+                    "Snapshot provider error for %s: %s", topic, e, exc_info=True)
                 resp = CommandResponse(
                     request_id=cmd.request_id, success=False, error=str(e)
                 )
@@ -225,4 +233,5 @@ class ZMQServer:
                 [client_id, b"", self._serializer.encode_response(resp)]
             )
         except zmq.ZMQError:
-            self._log.warning("Failed to send response to client", exc_info=True)
+            self._log.warning(
+                "Failed to send response to client", exc_info=True)

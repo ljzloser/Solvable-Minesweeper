@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, ClassVar, Generic, TypeVar
 
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtBoundSignal, pyqtSignal, QObject
 
 T = TypeVar("T")
 
@@ -49,7 +49,7 @@ class ConfigWidgetWrapper(ConfigWidgetBase):
         widget: QWidget,
         getter: Callable[[], Any],
         setter: Callable[[Any], None],
-        signal: QObject,
+        signal: pyqtBoundSignal,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
@@ -89,6 +89,7 @@ class BaseConfig(ABC, Generic[T]):
         label: 显示标签
         description: tooltip 提示
         validator: 自定义验证函数
+        visible: 是否在 UI 中展示（默认 True，设为 False 可隐藏）
 
     类属性:
         widget_type: UI 控件类型标识，由工厂使用
@@ -98,6 +99,7 @@ class BaseConfig(ABC, Generic[T]):
     label: str = ""
     description: str = ""
     validator: Callable[[T], bool] | None = None
+    visible: bool = True  # 是否在 UI 中展示
 
     # 类变量：用于 UI 工厂识别
     widget_type: ClassVar[str] = "base"
