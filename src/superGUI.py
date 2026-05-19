@@ -12,7 +12,7 @@ from country_name import country_name
 import os, sys
 from typing import List, Tuple
 
-version = "元3.2.2"
+version = "元3.3.0"
 
 def resource_path(relative_path: str) -> Path:
     """获取资源文件路径（开发环境 + PyInstaller）

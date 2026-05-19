@@ -45,6 +45,26 @@ class myGameSettingShortcuts(Ui_Form):
         self.spinBox_minenum6.setProperty("value", self.game_setting.value("CUSTOM_PRESET_6/mine_num", None, int))
         self.lineEdit_constraint6.setProperty("value", self.game_setting.value("CUSTOM_PRESET_6/board_constraint", None, str))
 
+        self.change_minenum_limit()
+        self.spinBox_height4.valueChanged.connect(self.change_minenum_limit)
+        self.spinBox_width4.valueChanged.connect(self.change_minenum_limit)
+        self.spinBox_height5.valueChanged.connect(self.change_minenum_limit)
+        self.spinBox_width5.valueChanged.connect(self.change_minenum_limit)
+        self.spinBox_height6.valueChanged.connect(self.change_minenum_limit)
+        self.spinBox_width6.valueChanged.connect(self.change_minenum_limit)
+
+    def change_minenum_limit(self):
+        minenum_limit = self.spinBox_height4.value () * self.spinBox_width4.value () - 1
+        self.spinBox_minenum4.setValue (min(self.spinBox_minenum4.value (), minenum_limit))
+        self.spinBox_minenum4.setMaximum(minenum_limit)
+        minenum_limit = self.spinBox_height5.value () * self.spinBox_width5.value () - 1
+        self.spinBox_minenum5.setValue (min(self.spinBox_minenum5.value (), minenum_limit))
+        self.spinBox_minenum5.setMaximum(minenum_limit)
+        minenum_limit = self.spinBox_height6.value () * self.spinBox_width6.value () - 1
+        self.spinBox_minenum6.setValue (min(self.spinBox_minenum6.value (), minenum_limit))
+        self.spinBox_minenum6.setMaximum(minenum_limit)
+
+
         
     def processParameter(self):
         #只有点确定才能进来

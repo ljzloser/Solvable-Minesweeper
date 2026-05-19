@@ -708,7 +708,7 @@
       </font>
      </property>
      <property name="title">
-      <string>语言设置</string>
+      <string>语言</string>
      </property>
      <addaction name="chinese_action"/>
      <addaction name="english_action"/>
@@ -718,6 +718,7 @@
     <addaction name="actionyouxi_she_zhi"/>
     <addaction name="action_kuaijiejian"/>
     <addaction name="action_mouse"/>
+    <addaction name="action_advance"/>
     <addaction name="language_menu"/>
    </widget>
    <widget class="QMenu" name="menu_3">
@@ -1111,6 +1112,17 @@
   <action name="actionchajian">
    <property name="text">
     <string>插件</string>
+   </property>
+  </action>
+  <action name="action_advance">
+   <property name="text">
+    <string>高级设置</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
    </property>
   </action>
  </widget>
