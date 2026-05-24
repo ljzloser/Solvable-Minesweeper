@@ -3,9 +3,8 @@ import utils
 from ui.ui_score_board import Ui_Form
 from ui.uiComponents import RoundQWidget
 from safe_eval import safe_eval
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QHeaderView, QAbstractItemDelegate
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import QShortcut, QHeaderView
 
 class ui_Form(Ui_Form):
     # barSetMineNum = QtCore.pyqtSignal(int)
@@ -305,13 +304,18 @@ class gameScoreBoardManager():
             self.ui.tableWidget.editItem(self.ui.tableWidget.item(r, 0))
             
     def __table_ok(self, e = None):
-        # 编辑完成后的回调，e == None表示是回车键结束的
-        if e == None or (self.editing_row >= 0 and self.editing_column >= 0 and (self.editing_row != e.row() or\
+        # 编辑完成后的回调，e is None表示是回车键结束的
+        if e is None or (self.editing_row >= 0 and self.editing_column >= 0 and (self.editing_row != e.row() or\
                                                     self.editing_column != e.column())):
             # 编辑完成后修改指标值
-            # self.ui.tableWidget.setDisabled(True)
-            # self.ui.tableWidget.setDisabled(False)
-            new_formula = self.ui.tableWidget.item(self.editing_row, self.editing_column).text()
+            editor = self.ui.tableWidget.focusWidget()
+            if editor is not None and hasattr(editor, 'text'):
+                new_formula = editor.text()
+                self.ui.tableWidget.closeEditor(editor, QAbstractItemDelegate.SubmitModelCache)
+            else:
+                item = self.ui.tableWidget.item(self.editing_row, self.editing_column)
+                new_formula = item.text() if item is not None else ''
+
             if self.editing_column == 0:
                 if not new_formula:
                     # 删除键名后并完成编辑后，删除此指标
