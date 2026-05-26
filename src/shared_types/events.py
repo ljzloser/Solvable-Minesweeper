@@ -58,7 +58,7 @@ class ButtonClickEvent(BaseEvent, tag="button_click"):
     button = 0
 
 
-class GameEndEvent(BaseEvent, tag="game_end"):
+class GameFinishedEvent(BaseEvent, tag="game_end"):
     """
     游戏结束事件。发生在游戏胜利、失败、重开、游戏关闭、游戏设置关闭、切换游戏状态关闭、
     游戏状态变为非正式等情况。
@@ -112,5 +112,5 @@ EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
     ButtonClickEvent,
-    GameEndEvent,
+    GameFinishedEvent,
 ]

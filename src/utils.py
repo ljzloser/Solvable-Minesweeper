@@ -1,20 +1,20 @@
 # author : Wang Jianing(18201)
 import os
-import os
 from random import shuffle, choice
 # from random import randint, seed, sample
 import sys
-import sys
+import struct
 from typing import List, Tuple, Union
 
-import msgspec
+# import msgspec
+from dataclasses import dataclass
 # import time
 from safe_eval import safe_eval
-import configparser
+# import configparser
 from PyQt5 import QtCore
 
 import ms_toollib as ms
-import math
+# import math
 from PyQt5.QtCore import QCoreApplication
 
 # 从 shared_types 导入共享枚举
@@ -466,19 +466,17 @@ class CoreBaseVideo(ms.BaseVideo):
 
 
 # stats.dat文件的记录结构
-class StatsRecord(msgspec.Struct, tag=False):
+# stats.dat用于较高信任度的场景下，快速统计全部成绩，注重体现成绩
+@dataclass
+class StatsRecord:
     game_state: int
-    nf: bool
     row: int
     column: int
     mine_num: int
-    rtime: float
+    rtime_ms: int
     left: int
     right: int
     double: int
-    level: int
-    cl: int
-    ce: int
     rce: int
     lce: int
     dce: int
@@ -488,18 +486,183 @@ class StatsRecord(msgspec.Struct, tag=False):
     flag: int
     path: float
     start_time: int
-    end_time: int
     mode: int
-    software: str
-    player_identifier: str
-    race_identifier: str
-    uniqueness_identifier: str
     is_official: bool
     is_fair: bool
     op: int
     isl: int
     pluck: float
-    board: list
+    # md5前8位，长度必定为8
+    short_md5: bytes = b""
+    board_bytes: bytes = b""
+
+    def encode(self) -> bytes:
+        """
+        超紧凑编码：
+        1. 固定部分：所有字段严格按顺序打包
+        2. 可变部分：short_md5 + board_bytes 带 uint16 长度头
+        """
+        buf = bytearray()
+
+        # ---------------------- 固定字段 ----------------------
+        # int 类全部用 uint16（2字节）
+        buf.extend(self.game_state.to_bytes(1, 'big'))
+        buf.extend(self.row.to_bytes(1, 'big'))
+        buf.extend(self.column.to_bytes(1, 'big'))
+        buf.extend(self.mine_num.to_bytes(2, 'big'))
+        buf.extend(self.rtime_ms.to_bytes(4, 'big'))  # 时间用4字节
+        buf.extend(self.left.to_bytes(4, 'big'))
+        buf.extend(self.right.to_bytes(4, 'big'))
+        buf.extend(self.double.to_bytes(4, 'big'))
+        buf.extend(self.rce.to_bytes(4, 'big'))
+        buf.extend(self.lce.to_bytes(4, 'big'))
+        buf.extend(self.dce.to_bytes(4, 'big'))
+        buf.extend(self.bbbv.to_bytes(2, 'big'))
+        buf.extend(self.bbbv_solved.to_bytes(2, 'big'))
+        buf.extend(self.zini.to_bytes(2, 'big'))
+        buf.extend(self.flag.to_bytes(4, 'big'))
+        
+        buf.extend(struct.pack('!d', self.path))
+        buf.extend(struct.pack('!d', self.pluck))
+
+        # 时间/模式
+        buf.extend(self.start_time.to_bytes(8, 'big'))
+        buf.extend(self.mode.to_bytes(1, 'big'))
+
+        # bool（各1字节）
+        buf.append(1 if self.is_official else 0)
+        buf.append(1 if self.is_fair else 0)
+
+        buf.extend(self.op.to_bytes(2, 'big'))
+        buf.extend(self.isl.to_bytes(2, 'big'))
+
+        buf.extend(self.short_md5)
+
+
+        # ---------------------- 可变字段 ----------------------
+
+        # board_bytes：uint16长度 + 数据
+        buf.extend(len(self.board_bytes).to_bytes(2, 'big'))
+        buf.extend(self.board_bytes)
+
+        return bytes(buf)
+
+    @classmethod
+    def decode(cls, data: bytes) -> 'StatsRecord':
+        ptr = 0
+
+        # ---------------------- 固定字段 ----------------------
+        game_state = int.from_bytes(data[ptr:ptr+1], 'big'); ptr +=1
+        row = int.from_bytes(data[ptr:ptr+1], 'big'); ptr +=1
+        column = int.from_bytes(data[ptr:ptr+1], 'big'); ptr +=1
+        mine_num = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        rtime_ms = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        left = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        right = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        double = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        rce = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        lce = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        dce = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+        bbbv = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        bbbv_solved = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        zini = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        flag = int.from_bytes(data[ptr:ptr+4], 'big'); ptr +=4
+
+        path = struct.unpack('!d', data[ptr:ptr+8])[0]; ptr +=8
+        pluck = struct.unpack('!d', data[ptr:ptr+8])[0]; ptr +=8
+
+        start_time = int.from_bytes(data[ptr:ptr+8], 'big'); ptr +=8
+        mode = int.from_bytes(data[ptr:ptr+1], 'big'); ptr +=1
+
+        is_official = data[ptr] == 1; ptr +=1
+        is_fair = data[ptr] == 1; ptr +=1
+
+        op = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        isl = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+
+        short_md5 = data[ptr:ptr+8]; ptr += 8
+
+        # ---------------------- 可变字段 ----------------------
+        # board_bytes
+        board_len = int.from_bytes(data[ptr:ptr+2], 'big'); ptr +=2
+        board_bytes = data[ptr:ptr+board_len]; ptr += board_len
+
+        return cls(
+            game_state=game_state,
+            row=row,
+            column=column,
+            mine_num=mine_num,
+            rtime_ms=rtime_ms,
+            left=left,
+            right=right,
+            double=double,
+            rce=rce,
+            lce=lce,
+            dce=dce,
+            bbbv=bbbv,
+            bbbv_solved=bbbv_solved,
+            zini=zini,
+            flag=flag,
+            path=path,
+            start_time=start_time,
+            mode=mode,
+            is_official=is_official,
+            is_fair=is_fair,
+            op=op,
+            isl=isl,
+            pluck=pluck,
+            short_md5=short_md5,
+            board_bytes=board_bytes
+        )
+
+
+
+
+def board_list_to_bytes(board: List[List[int]]) -> bytes:
+    '''
+    将列表局面压缩为二进制局面。
+        1 代表是雷，0 代表不是雷。第**_i × 列数 + j_**个比特，代表局面第*i*(从 0 开始)行、_j_(从 0 开始)列是否为雷。例如：下述 3 行、4 列的局面（用\*代表雷）：  
+        [[1, 3, &ast;, &ast;],  
+        [3, &ast;, &ast;, &ast;],  
+        [&ast;, &ast;, &ast;, &ast;]]就记录为`00110111 11110000`。
+    '''
+    if not board:
+        return b''
+    
+    rows = len(board)
+    cols = len(board[0])
+    raw_data = bytearray()
+    
+    current_byte = 0
+    bit_ptr = 0
+    
+    for i in range(rows):
+        row = board[i]
+        for j in range(cols):
+            # 左移 1 位，腾出最低位
+            current_byte <<= 1
+            
+            # 是雷（-1）则置 1，否则 0
+            val = row[j]
+            if val == -1:
+                current_byte |= 1
+            
+            bit_ptr += 1
+            
+            # 满 8 位，写入字节
+            if bit_ptr == 8:
+                raw_data.append(current_byte)
+                current_byte = 0
+                bit_ptr = 0
+    
+    # 剩余不足 8 位，左移补 0 后写入
+    if bit_ptr > 0:
+        current_byte <<= (8 - bit_ptr)
+        raw_data.append(current_byte)
+    
+    return bytes(raw_data)
+
+
 
 
 
@@ -642,20 +805,31 @@ def main():
 
     # print2(enumerateChangeBoard2(board, game_board, [(2, 3), (3, 2), (2, 2)])[0])
 
-    constraints = {}
-    board_constraint = "all([1,2,3])"
-    board_constraint = "all([1,2,3])"
-    if "bbbv" in board_constraint:
-        constraints.update({"bbbv": 120})
-    try:
-        expression_flag = safe_eval(board_constraint, globals=constraints)
-        print(expression_flag)
-    except:
-        print("wrong")
+    # constraints = {}
+    # board_constraint = "all([1,2,3])"
+    # board_constraint = "all([1,2,3])"
+    # if "bbbv" in board_constraint:
+    #     constraints.update({"bbbv": 120})
+    # try:
+    #     expression_flag = safe_eval(board_constraint, globals=constraints)
+    #     print(expression_flag)
+    # except:
+    #     print("wrong")
 
+
+
+    test_board = [
+        [1, 3, -1, -1],
+        [3, -1, -1, -1],
+        [-1, -1, -1, -1]
+    ]
+
+    result = board_list_to_bytes(test_board)
+    print(''.join(f'{byte:08b}' for byte in result))  # 输出二进制十六进制，可验证
     ...
 
 
 if __name__ == '__main__':
 
     main()
+    

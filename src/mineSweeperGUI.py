@@ -3,11 +3,12 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect, QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 import msgspec
+from textdistance import length
 # from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
-from shared_types.events import GameEndEvent, BoardUpdateEvent, GameStatusChangeEvent
+from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent
 import superGUI
 import gameAbout
 import gameSettings
@@ -29,7 +30,7 @@ import ctypes
 import hashlib
 import uuid
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Random import get_random_bytes
 # from PyQt5.QtWidgets import QApplication
 from country_name import country_name
 import metaminesweeper_checksum
@@ -222,11 +223,13 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     @game_state.setter
     def game_state(self, game_state: str):
         # print(self._game_state, " -> " ,game_state)
+        if game_state == self._game_state:
+            return
         last_state = self._game_state
 
-        match self._game_state:
+        match last_state:
             case "playing":
-                self.onGameEnd(game_state)
+                self.onGameFinished(game_state)
                 if game_state not in ("playing", "show", "joking"):
                     self.timer_10ms.stop()
                     self.unlimit_cursor()
@@ -274,12 +277,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             "display": 7,
             "showdisplay": 8,
         }
-        if last_state != game_state:
-            event = GameStatusChangeEvent(
-                last_status=state_map.get(last_state, 0),
-                current_status=state_map.get(game_state, 0),
-            )
-            GameServerBridge.instance().send_event(event)
+        event = GameStatusChangeEvent(
+            last_status=state_map.get(last_state, 0),
+            current_status=state_map.get(game_state, 0),
+        )
+        GameServerBridge.instance().send_event(event)
         self._send_board_update_event()
 
 
@@ -319,12 +321,14 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     # 生命周期函数，正式的游戏结束时调用。由游戏状态的变更触发，当且仅当由playing变为其他状态
     # 处理数据相关。不处理前端显示
-    def onGameEnd(self, new_game_state):
+    def onGameFinished(self, new_game_state):
         # 不论如何都必然生成数据
+        if self.label.ms_board.game_board_state == utils.GameBoardState.Playing.value:
+            self.label.ms_board.step_game_state("replay")
         self.dump_evf_file_data()
         # 发信号给插件，游戏结束了
         board = self.label.ms_board.board
-        event = GameEndEvent(
+        event = GameFinishedEvent(
             game_state = ['ready', 'study', 'show', 'playing', 'joking', 'fail', 
                           'win', 'jofail', 'jowin', 'display', 'showdisplay'].index(new_game_state),
             nf = self.label.ms_board.rce == 0,
@@ -362,22 +366,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             board = board if isinstance(board, list) else board.into_vec_vec(),
             raw_data = self.label.ms_board.raw_data
         )
-        GameServerBridge.instance().send_event(event)
 
         # 强制保存stats.dat文件
         record = utils.StatsRecord(
             game_state=event.game_state,
-            nf=event.nf,
             row=event.row,
             column=event.column,
             mine_num=event.mine_num,
-            rtime=event.rtime,
+            rtime_ms=self.label.ms_board.rtime_ms,
             left=event.left,
             right=event.right,
             double=event.double,
-            level=event.level,
-            cl=event.cl,
-            ce=event.ce,
             rce=event.rce,
             lce=event.lce,
             dce=event.dce,
@@ -387,33 +386,30 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             flag=event.flag,
             path=event.path,
             start_time=event.start_time,
-            end_time=event.end_time,
             mode=event.mode,
-            software=event.software,
-            player_identifier=event.player_identifier,
-            race_identifier=event.race_identifier,
-            uniqueness_identifier=event.uniqueness_identifier,
             is_official=event.is_official,
             is_fair=event.is_fair,
             op=event.op,
             isl=event.isl,
             pluck=event.pluck,
-            board=event.board
+            board_bytes=utils.board_list_to_bytes(event.board),
+            short_md5 = hashlib.md5(self.label.ms_board.raw_data).digest()[:8]
         )
-        binary_data = msgspec.msgpack.encode(record)
-        # 简单的AES加密
+        GameServerBridge.instance().send_event(event)
+        binary_data = record.encode()
+        # 简单的AES-CTR加密（将nonce与密文一起写入以便解密）
         key = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节的密钥
-        cipher = AES.new(key, AES.MODE_ECB)
-        padded_data = pad(binary_data, AES.block_size)
-        encrypted_data = cipher.encrypt(padded_data)
+        nonce = get_random_bytes(8)
+        cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
+        encrypted_data = cipher.encrypt(binary_data)
         dat_file_path = self.setting_path / 'stats.dat'
-        # 把二进制加密数据 编码成 base64 字符串(bytes)
-        b64_data = base64.b64encode(encrypted_data)
-        is_empty = not os.path.exists(dat_file_path) or os.path.getsize(dat_file_path) == 0
+        # 将 nonce(8字节) + ciphertext 一并写入文件，前两字节为总长度
         with open(dat_file_path, 'ab') as f:
-            if not is_empty:
-                f.write(b"\n")
-            f.write(b64_data)
+            blob = nonce + encrypted_data
+            encrypted_data_length = len(blob)
+            len_bytes = encrypted_data_length.to_bytes(2, byteorder="big", signed=False)
+            f.write(len_bytes)
+            f.write(blob)
 
 
         # 根据策略保存录像文件到磁盘
@@ -718,7 +714,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # self.label.paint_cursor = False
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
 
-    # 游戏结束画残局，改状态
+    # 游戏结束画残局，改状态。前端的游戏结束逻辑
     def gameFinished(self):
         if self.label.ms_board.game_board_state == 3 and self.end_then_flag:
             self.label.ms_board.win_then_flag_all_mine()
