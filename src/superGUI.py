@@ -509,6 +509,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self.race_identifier = self.game_setting.get_or_set_value("DEFAULT/race_identifier", "", str)
         self.unique_identifier = self.game_setting.get_or_set_value("DEFAULT/unique_identifier", "", str)
         self.country = self.game_setting.get_or_set_value("DEFAULT/country", "", str)
+        # 是否自动保存录像。开启时，自动保存所有扫完的、正式的录像。假如要其他保存策略，应使用插件来完成。
         self.autosave_video = self.game_setting.get_or_set_value("DEFAULT/autosave_video", True, bool)
         self.autosave_video_set = self.game_setting.get_or_set_value("DEFAULT/autosave_video_set", False, bool)
         self.filter_forever = self.game_setting.get_or_set_value("DEFAULT/filter_forever", False, bool)

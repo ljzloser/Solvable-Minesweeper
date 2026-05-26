@@ -7,7 +7,7 @@ import msgspec
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
-from shared_types.events import VideoSaveEvent, BoardUpdateEvent, GameStatusChangeEvent
+from shared_types.events import GameEndEvent, BoardUpdateEvent, GameStatusChangeEvent
 import superGUI
 import gameAbout
 import gameSettings
@@ -224,7 +224,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         match self._game_state:
             case "playing":
-                self.try_append_evfs(game_state)
+                self.onGameEnd(game_state)
                 if game_state not in ("playing", "show", "joking"):
                     self.timer_10ms.stop()
                     self.unlimit_cursor()
@@ -280,6 +280,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             GameServerBridge.instance().send_event(event)
         self._send_board_update_event()
 
+
     @property
     def row(self):
         return self._row
@@ -312,6 +313,65 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             "minenum": minenum,
         })
         self._minenum = minenum
+
+
+    # 生命周期函数，正式的游戏结束时调用。由游戏状态的变更触发，当且仅当由playing变为其他状态
+    # 处理数据相关。不处理前端显示
+    def onGameEnd(self, new_game_state):
+        # 不论如何都必然生成数据
+        self.dump_evf_file_data()
+        # 发信号给插件，游戏结束了
+        event = GameEndEvent(
+            game_state = ['ready', 'study', 'show', 'playing', 'joking', 'fail', 
+                          'win', 'jofail', 'jowin', 'display', 'showdisplay'].index(new_game_state),
+            nf = self.label.ms_board.rce == 0,
+            row = self.label.ms_board.row,
+            column = self.label.ms_board.column,
+            mine_num = self.label.ms_board.mine_num,
+            rtime = self.label.ms_board.rtime,
+            left = self.label.ms_board.left,
+            right = self.label.ms_board.right,
+            double = self.label.ms_board.double,
+            # 游戏难度（级别）。3是初级；4是中级；5是高级；6是自定义。
+            level = self.label.ms_board.level,
+            cl = self.label.ms_board.cl,
+            ce = self.label.ms_board.ce,
+            rce = self.label.ms_board.rce,
+            lce = self.label.ms_board.lce,
+            dce = self.label.ms_board.dce,
+            bbbv = self.label.ms_board.bbbv,
+            bbbv_solved = self.label.ms_board.bbbv_solved,
+            zini = self.label.ms_board.zini,
+            flag = self.label.ms_board.flag,
+            path = self.label.ms_board.path,
+            start_time = self.label.ms_board.start_time,
+            end_time = self.label.ms_board.end_time,
+            mode = self.label.ms_board.mode,
+            software = self.label.ms_board.software,
+            player_identifier = self.label.ms_board.player_identifier,
+            race_identifier = self.label.ms_board.race_identifier,
+            uniqueness_identifier = self.label.ms_board.uniqueness_identifier,
+            is_official = self.label.ms_board.is_official,
+            is_fair = self.label.ms_board.is_fair,
+            op = self.label.ms_board.op,
+            isl = self.label.ms_board.isl,
+            pluck = self.label.ms_board.pluck,
+            board = self.label.ms_board.board,
+            raw_data = self.label.ms_board.raw_data
+        )
+        GameServerBridge.instance().send_event(event)
+
+        # 强制保存Metasweeper.dat文件
+        ...
+
+
+
+        # 根据策略保存录像文件到磁盘
+        if self.autosave_video and self.checksum_module_ok() and\
+              new_game_state in "win":
+            self.save_evf_file()
+        self.try_append_evfs(new_game_state)
+
 
     def layMine(self, i, j):
 
@@ -629,24 +689,24 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.score_board_manager.show(self.label.ms_board, index_type=2)
         self.enable_screenshot()
         self.unlimit_cursor()
-        ms_board = self.label.ms_board
-        status = utils.GameBoardState(ms_board.game_board_state)
-        if status == utils.GameBoardState.Win:
-            self.dump_evf_file_data()
-            event = VideoSaveEvent()
-            data = msgspec.structs.asdict(event)
-            for key in data:
-                if hasattr(ms_board, key):
-                    if key == "raw_data":
-                        data[key] = base64.b64encode(
-                            ms_board.raw_data).decode("utf-8")
-                        continue
-                    data[key] = getattr(ms_board, key)
-            event = VideoSaveEvent(**data)
-            GameServerBridge.instance().send_event(event)
+        # ms_board = self.label.ms_board
+        # status = utils.GameBoardState(ms_board.game_board_state)
+        # if status == utils.GameBoardState.Win:
+        #     self.dump_evf_file_data()
+            # event = VideoSaveEvent()
+            # data = msgspec.structs.asdict(event)
+            # for key in data:
+            #     if hasattr(ms_board, key):
+            #         if key == "raw_data":
+            #             data[key] = base64.b64encode(
+            #                 ms_board.raw_data).decode("utf-8")
+            #             continue
+            #         data[key] = getattr(ms_board, key)
+            # event = VideoSaveEvent(**data)
+            # GameServerBridge.instance().send_event(event)
 
         # 发送棋盘更新事件，让插件知道最终状态
-        self._send_board_update_event()
+        # self._send_board_update_event()
 
     def gameWin(self):  # 成功后改脸和状态变量，停时间
         self.timer_10ms.stop()
@@ -660,9 +720,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             raise RuntimeError
         self.set_face(17)
 
-        if self.autosave_video and self.checksum_module_ok():
-            self.dump_evf_file_data()
-            self.save_evf_file()
+        # if self.autosave_video and self.checksum_module_ok():
+        #     self.dump_evf_file_data()
+        #     self.save_evf_file()
 
         self.gameFinished()
 
@@ -736,11 +796,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     # 将evf数据存成evf文件
     # 调试的时候不会自动存录像，见checksum_module_ok
     # 菜单保存的回调。以及游戏结束自动保存。
-    def save_evf_file(self):
+    # 返回保存的文件绝对路径
+    def save_evf_file(self) -> str:
         if not os.path.exists(self.replay_path):
             os.mkdir(self.replay_path)
 
-        self.label.ms_board.save_to_evf_file(self.cal_evf_filename())
+        file_name = self.cal_evf_filename()
+        # 加上后缀和重复标识数字
+        real_file_name = self.label.ms_board.save_to_evf_file(file_name)
+        absolute_path = os.path.abspath(os.path.join(self.replay_path, real_file_name))
+        return absolute_path
+
 
     # 拼接evf录像的文件名，无后缀
     def cal_evf_filename(self, absolute=True) -> str:

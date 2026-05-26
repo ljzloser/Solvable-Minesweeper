@@ -58,53 +58,59 @@ class ButtonClickEvent(BaseEvent, tag="button_click"):
     button = 0
 
 
-class VideoSaveEvent(BaseEvent, tag="video_save"):
-    """录像保存事件"""
+class GameEndEvent(BaseEvent, tag="game_end"):
+    """
+    游戏结束事件。发生在游戏胜利、失败、重开、游戏关闭、游戏设置关闭、切换游戏状态关闭、
+    游戏状态变为非正式等情况。
+    playing状态切换为其他状态时触发此消息。自定义难度、各种模式均会触发。
+    """
 
-    game_board_state: int = 0
-    rtime: float = 0
+    # 游戏的新状态（旧状态必为playing），'ready'、'study'、'show'、'playing'、'joking'、
+    # 'fail'、'win'、'jofail'、'jowin'、'display'、'showdisplay'分别记作0-10
+    game_state: int = 0
+    # False-flag, True-nf
+    nf: bool = False
+    row: int = 16
+    column: int = 30
+    mine_num: int = 99
+    rtime: float = 0.0
     left: int = 126
     right: int = 11
     double: int = 14
-    left_s: float = 2.5583756345177666
-    right_s: float = 0.2233502538071066
-    double_s: float = 0.28426395939086296
+    # 游戏难度（级别）。3是初级；4是中级；5是高级；6是自定义。
     level: int = 5
     cl: int = 151
-    cl_s: float = 3.065989847715736
     ce: int = 144
-    ce_s: float = 2.9238578680203045
     rce: int = 11
     lce: int = 119
     dce: int = 14
     bbbv: int = 127
     bbbv_solved: int = 127
-    bbbv_s: float = 2.5786802030456855
+    zini: int = 105
     flag: int = 11
     path: float = 6082.352554578606
-    etime: float = 1666124184868000
+    # 时间戳，微秒
     start_time: int = 1666124135606000
     end_time: int = 1666124184868000
+    # 标准0、win74、经典无猜5、强无猜6、弱无猜7、准无猜8、强可猜9、弱可猜10
     mode: int = 0
-    software: str = "Arbiter"
-    player_identifier: str = "Wang Jianing G01825"
-    race_identifier: str = ""
+    software: str = "元 3.2.2"
+    player_identifier: str = "Wang Jianing"
+    race_identifier: str = "G1234"
     uniqueness_identifier: str = ""
-    stnb: float = 0
-    corr: float = 0
-    thrp: float = 0
-    ioe: float = 0
     is_official: bool = False
     is_fair: bool = False
     op: int = 0
     isl: int = 0
     pluck: float = 0
-    raw_data: str = ""
+    board: List[List[int]] = []
+    # evf4版本的二进制数据
+    raw_data: bytes = b""
 
 
 EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
     ButtonClickEvent,
-    VideoSaveEvent,
+    GameEndEvent,
 ]
