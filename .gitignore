@@ -172,3 +172,4 @@ src/plugins/*/*.db
 data/*
 .iflow/
 .claude/settings.local.json
+src/stats.dat

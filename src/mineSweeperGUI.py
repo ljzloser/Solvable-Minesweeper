@@ -28,6 +28,8 @@ import os
 import ctypes
 import hashlib
 import uuid
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 # from PyQt5.QtWidgets import QApplication
 from country_name import country_name
 import metaminesweeper_checksum
@@ -321,6 +323,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 不论如何都必然生成数据
         self.dump_evf_file_data()
         # 发信号给插件，游戏结束了
+        board = self.label.ms_board.board
         event = GameEndEvent(
             game_state = ['ready', 'study', 'show', 'playing', 'joking', 'fail', 
                           'win', 'jofail', 'jowin', 'display', 'showdisplay'].index(new_game_state),
@@ -356,14 +359,61 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             op = self.label.ms_board.op,
             isl = self.label.ms_board.isl,
             pluck = self.label.ms_board.pluck,
-            board = self.label.ms_board.board,
+            board = board if isinstance(board, list) else board.into_vec_vec(),
             raw_data = self.label.ms_board.raw_data
         )
         GameServerBridge.instance().send_event(event)
 
-        # 强制保存Metasweeper.dat文件
-        ...
-
+        # 强制保存stats.dat文件
+        record = utils.StatsRecord(
+            game_state=event.game_state,
+            nf=event.nf,
+            row=event.row,
+            column=event.column,
+            mine_num=event.mine_num,
+            rtime=event.rtime,
+            left=event.left,
+            right=event.right,
+            double=event.double,
+            level=event.level,
+            cl=event.cl,
+            ce=event.ce,
+            rce=event.rce,
+            lce=event.lce,
+            dce=event.dce,
+            bbbv=event.bbbv,
+            bbbv_solved=event.bbbv_solved,
+            zini=event.zini,
+            flag=event.flag,
+            path=event.path,
+            start_time=event.start_time,
+            end_time=event.end_time,
+            mode=event.mode,
+            software=event.software,
+            player_identifier=event.player_identifier,
+            race_identifier=event.race_identifier,
+            uniqueness_identifier=event.uniqueness_identifier,
+            is_official=event.is_official,
+            is_fair=event.is_fair,
+            op=event.op,
+            isl=event.isl,
+            pluck=event.pluck,
+            board=event.board
+        )
+        binary_data = msgspec.msgpack.encode(record)
+        # 简单的AES加密
+        key = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节的密钥
+        cipher = AES.new(key, AES.MODE_ECB)
+        padded_data = pad(binary_data, AES.block_size)
+        encrypted_data = cipher.encrypt(padded_data)
+        dat_file_path = self.setting_path / 'stats.dat'
+        # 把二进制加密数据 编码成 base64 字符串(bytes)
+        b64_data = base64.b64encode(encrypted_data)
+        is_empty = not os.path.exists(dat_file_path) or os.path.getsize(dat_file_path) == 0
+        with open(dat_file_path, 'ab') as f:
+            if not is_empty:
+                f.write(b"\n")
+            f.write(b64_data)
 
 
         # 根据策略保存录像文件到磁盘

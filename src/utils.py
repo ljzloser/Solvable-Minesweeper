@@ -6,6 +6,8 @@ from random import shuffle, choice
 import sys
 import sys
 from typing import List, Tuple, Union
+
+import msgspec
 # import time
 from safe_eval import safe_eval
 import configparser
@@ -460,6 +462,45 @@ class CoreBaseVideo(ms.BaseVideo):
     # self.label.ms_board就会变成abstract_game_board
     # 使game_board_poss[x][y]永远返回0。否则此处就会报错
     game_board_poss = AlwaysZero()
+
+
+
+# stats.dat文件的记录结构
+class StatsRecord(msgspec.Struct, tag=False):
+    game_state: int
+    nf: bool
+    row: int
+    column: int
+    mine_num: int
+    rtime: float
+    left: int
+    right: int
+    double: int
+    level: int
+    cl: int
+    ce: int
+    rce: int
+    lce: int
+    dce: int
+    bbbv: int
+    bbbv_solved: int
+    zini: int
+    flag: int
+    path: float
+    start_time: int
+    end_time: int
+    mode: int
+    software: str
+    player_identifier: str
+    race_identifier: str
+    uniqueness_identifier: str
+    is_official: bool
+    is_fair: bool
+    op: int
+    isl: int
+    pluck: float
+    board: list
+
 
 
 # unsolvableStructure = ms_toollib.py_unsolvableStructure
