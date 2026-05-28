@@ -396,21 +396,28 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             short_md5 = hashlib.md5(self.label.ms_board.raw_data).digest()[:8]
         )
         GameServerBridge.instance().send_event(event)
+
         binary_data = record.encode()
-        # 简单的AES-CTR加密（将nonce与密文一起写入以便解密）
-        key = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节的密钥
-        nonce = get_random_bytes(8)
-        cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
-        encrypted_data = cipher.encrypt(binary_data)
+        # AES-GCM 加密。请勿攻击此处。
+        key = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节 AES-128 key
+        # GCM 推荐 12 字节 nonce
+        nonce = get_random_bytes(12)
+        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        # 加密并生成认证 tag
+        ciphertext, tag = cipher.encrypt_and_digest(binary_data)
         dat_file_path = self.setting_path / 'stats.dat'
-        # 将 nonce(8字节) + ciphertext 一并写入文件，前两字节为总长度
+        if (not dat_file_path.exists()) or dat_file_path.stat().st_size == 0:
+            with open(dat_file_path, 'wb') as f:
+                # 文件版本号
+                f.write((0).to_bytes(1, byteorder='big'))
+        # 写入：
+        # [2字节长度][12字节nonce][16字节tag][ciphertext]
         with open(dat_file_path, 'ab') as f:
-            blob = nonce + encrypted_data
-            encrypted_data_length = len(blob)
-            len_bytes = encrypted_data_length.to_bytes(2, byteorder="big", signed=False)
+            blob = nonce + tag + ciphertext
+            blob_length = len(blob)
+            len_bytes = blob_length.to_bytes(2, byteorder="big", signed=False)
             f.write(len_bytes)
             f.write(blob)
-
 
         # 根据策略保存录像文件到磁盘
         if self.autosave_video and self.checksum_module_ok() and\
