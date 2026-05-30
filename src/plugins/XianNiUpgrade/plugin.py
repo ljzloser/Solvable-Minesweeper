@@ -71,7 +71,7 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _create_widget(self) -> QWidget:
         self._ui = XianNiUpgradeUI()
-        self._ui.set_image_dir(self.data_dir / "images")
+        self._ui.set_image_dir(self.data_dir / "asserts")
         return self._ui
 
     def on_initialized(self) -> None:
