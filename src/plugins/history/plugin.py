@@ -189,7 +189,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 software         TEXT,
                 player_identifier   TEXT,
                 race_identifier     TEXT,
-                uniqueness_identifier TEXT,
+                unique_identifier TEXT,
                 stnb             REAL,
                 corr             REAL,
                 thrp             REAL,

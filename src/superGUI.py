@@ -497,13 +497,14 @@ class Ui_MainWindow(Ui_MainWindow):
         # 画局面，因此尺寸较完全初始化后偏小，仍有可能有半个窗口在屏幕外，当然这不影响使用。
         self.mainWindow.move(mainWinLeft, mainWinTop)
         
-        self._row = self.game_setting.get_or_set_value("DEFAULT/row", 16, int)
-        self._column = self.game_setting.get_or_set_value("DEFAULT/column", 30, int)
-        self._minenum = self.game_setting.get_or_set_value("DEFAULT/minenum", 99, int)
+        self._row: int = self.game_setting.get_or_set_value("DEFAULT/row", 16, int)
+        self._column: int = self.game_setting.get_or_set_value("DEFAULT/column", 30, int)
+        self._minenum: int = self.game_setting.get_or_set_value("DEFAULT/minenum", 99, int)
         self.mineUnFlagedNum = self.minenum
-        # “自动重开比例”，大于等于该比例时，不自动重开。负数表示禁用。0相当于禁用，但可以编辑。
+        # “自动重开比例”，大于等于该比例时，不自动重开。负号表示禁用，负数表示禁用的值。0相当于禁用，但可以编辑。
         self.auto_replay = self.game_setting.get_or_set_value("DEFAULT/auto_replay", -30, int)
         # self.allow_auto_replay = self.game_setting.get_or_set_value("DEFAULT/allow_auto_replay", True, bool)
+        # 是否自动弹窗
         self.auto_notification = self.game_setting.get_or_set_value("DEFAULT/auto_notification", True, bool)
         self.player_identifier = self.game_setting.get_or_set_value("DEFAULT/player_identifier", "匿名玩家(anonymous player)", str)
         self.race_identifier = self.game_setting.get_or_set_value("DEFAULT/race_identifier", "", str)
@@ -512,6 +513,7 @@ class Ui_MainWindow(Ui_MainWindow):
         # 是否自动保存录像。开启时，自动保存所有扫完的、正式的录像。假如要其他保存策略，应使用插件来完成。
         self.autosave_video = self.game_setting.get_or_set_value("DEFAULT/autosave_video", True, bool)
         self.autosave_video_set = self.game_setting.get_or_set_value("DEFAULT/autosave_video_set", False, bool)
+        # 是否永远使用筛选法取得无猜局面
         self.filter_forever = self.game_setting.get_or_set_value("DEFAULT/filter_forever", False, bool)
         self.language = self.game_setting.get_or_set_value("DEFAULT/language", "en_US", str)
         self.end_then_flag = self.game_setting.get_or_set_value("DEFAULT/end_then_flag", True, bool)

@@ -66,7 +66,7 @@ class HistoryTable(QWidget):
         "software",
         "player_identifier",
         "race_identifier",
-        "uniqueness_identifier",
+        "unique_identifier",
         "stnb",
         "corr",
         "thrp",

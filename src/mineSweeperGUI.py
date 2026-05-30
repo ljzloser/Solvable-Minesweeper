@@ -357,7 +357,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             software = self.label.ms_board.software,
             player_identifier = self.label.ms_board.player_identifier,
             race_identifier = self.label.ms_board.race_identifier,
-            uniqueness_identifier = self.label.ms_board.uniqueness_identifier,
+            unique_identifier = self.label.ms_board.unique_identifier,
             is_official = self.label.ms_board.is_official,
             is_fair = self.label.ms_board.is_fair,
             op = self.label.ms_board.op,
@@ -805,7 +805,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 self.label.ms_board.mode = self.gameMode
                 self.label.ms_board.player_identifier = self.player_identifier
                 self.label.ms_board.race_identifier = self.race_identifier
-                self.label.ms_board.uniqueness_identifier = self.unique_identifier
+                self.label.ms_board.unique_identifier = self.unique_identifier
                 self.label.ms_board.country = "XX" if not self.country else\
                     country_name[self.country].upper()
                 self.label.ms_board.device_uuid = hashlib.md5(
@@ -1124,7 +1124,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.label.ms_board.mode = self.gameMode
             self.label.ms_board.player_identifier = self.player_identifier
             self.label.ms_board.race_identifier = self.race_identifier
-            self.label.ms_board.uniqueness_identifier = self.unique_identifier
+            self.label.ms_board.unique_identifier = self.unique_identifier
             self.label.ms_board.country = "XX" if not self.country else\
                 country_name[self.country].upper()
             self.label.ms_board.device_uuid = hashlib.md5(
@@ -1284,6 +1284,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.player_identifier = ui.player_identifier
             self.label_info.setText(self.player_identifier)
             self.race_identifier = ui.race_identifier
+            self.unique_identifier = ui.unique_identifier
             # 用户的国家或地区名的全称，例如”中国“。必须是country_name中有的或None
             # 播放录像时，self.country不会遭到修改
             self.country = ui.country

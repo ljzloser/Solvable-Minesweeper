@@ -117,9 +117,9 @@ class ui_Form(Ui_Form):
         v = self.spinBox_auto_replay.value()
         self.auto_replay = v if self.checkBox_auto_replay.isChecked() else -v
         self.auto_notification = self.checkBox_auto_notification.isChecked()
-        self.player_identifier = self.lineEdit_label.text()
-        self.race_identifier = self.lineEdit_race_label.text()
-        self.unique_identifier = self.lineEdit_unique_label.text()
+        self.player_identifier = self.lineEdit_label.text().strip()
+        self.race_identifier = self.lineEdit_race_label.text().strip()
+        self.unique_identifier = self.lineEdit_unique_label.text().strip()
         self.country = self.comboBox_country.currentText()
         self.autosave_video = self.checkBox_autosave_video.isChecked()
         self.autosave_video_set = self.checkBox_autosave_video_set.isChecked()

@@ -47,8 +47,31 @@ class GameStatusChangeEvent(BaseEvent, tag="game_status_change"):
 
 
 class ContextChangeEvent(BaseEvent, tag="context_change"):
-    """上下文变化事件"""
-    pass
+    """上下文变化事件。"""
+    pix_size: int = 20
+    rows: int = 16
+    cols: int = 30
+    mine_num: int = 99
+    game_mode: int = 0
+    # “自动重开比例”，大于等于该比例时，不自动重开。负号表示禁用，负数表示禁用的值。0相当于禁用，但可以编辑。
+    auto_replay: int = 30
+    end_then_flag: bool = False
+    cursor_limit: bool = False
+    # 是否自动弹窗
+    auto_notification: bool = True
+    player_identifier:str = ""
+    race_identifier: str = ""
+    unique_identifier: str = ""
+    # 用户的国家或地区名的全称，例如”中国“。必须是country_name中有的或None
+    # 播放录像时，self.country不会遭到修改
+    country: str = ""
+    autosave_video: bool = True
+    autosave_video_set: bool = True
+    # 是否永远使用筛选法取得无猜局面
+    filter_forever: bool = False
+    board_constraint: str = ""
+    attempt_times_limit: int = 100000
+    language: str = "en_US"
 
 
 class ButtonClickEvent(BaseEvent, tag="button_click"):
@@ -98,7 +121,7 @@ class GameFinishedEvent(BaseEvent, tag="game_end"):
     software: str = "元 3.2.2"
     player_identifier: str = "Wang Jianing"
     race_identifier: str = "G1234"
-    uniqueness_identifier: str = ""
+    unique_identifier: str = ""
     is_official: bool = False
     is_fair: bool = False
     op: int = 0

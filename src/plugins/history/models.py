@@ -137,7 +137,7 @@ class HistoryData:
     software: str = ""
     player_identifier: str = ""
     race_identifier: str = ""
-    uniqueness_identifier: str = ""
+    unique_identifier: str = ""
     stnb: float = 0.0
     corr: float = 0.0
     thrp: float = 0.0
