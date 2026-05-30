@@ -8,7 +8,7 @@ from textdistance import length
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
-from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent
+from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent, CloseEvent
 import superGUI
 import gameAbout
 import gameSettings
@@ -1623,6 +1623,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         self.game_setting.sync()
         self.record_setting.sync()
+        event = CloseEvent()
+        GameServerBridge.instance().send_event(event)
 
     def action_OpenPluginDialog(self):
         pass

@@ -1,5 +1,5 @@
 """
-扫雷游戏事件类型定义
+所有插件可能获得的事件类型定义。
 """
 from __future__ import annotations
 
@@ -109,9 +109,16 @@ class GameFinishedEvent(BaseEvent, tag="game_end"):
     raw_data: bytes = b""
 
 
+
+class CloseEvent(BaseEvent, tag="close"):
+    """游戏即将关闭事件"""
+    pass
+
+
 EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
     ButtonClickEvent,
     GameFinishedEvent,
+    CloseEvent
 ]

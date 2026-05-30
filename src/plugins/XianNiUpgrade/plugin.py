@@ -13,22 +13,24 @@ from datetime import datetime
 from PyQt5.QtWidgets import QWidget
 
 from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
-from shared_types.events import GameFinishedEvent
+from shared_types.events import CloseEvent, GameFinishedEvent
 
 from .widgets import XianNiUpgradeUI
 from .models import LEVEL_NAMES, LEVEL_LABELS, MODE_LABELS, get_image_index
 
 
 # AES-GCM 加密密钥（明文写死，只防无编程知识的人）
-_ENCRYPT_KEY = b"f[{gr!%$%^65sr6"
+_ENCRYPT_KEY = b"f[{gr!%$%^65sr60"
 
 
 def _encrypt(data: bytes) -> bytes:
-    cipher = AES.new(_ENCRYPT_KEY, AES.MODE_GCM)
+    nonce = get_random_bytes(12)
+    cipher = AES.new(_ENCRYPT_KEY, AES.MODE_GCM, nonce=nonce)
     ciphertext, tag = cipher.encrypt_and_digest(data)
-    return base64.b64encode(cipher.nonce + tag + ciphertext)
+    return base64.b64encode(nonce + tag + ciphertext)
 
 
 def _decrypt(data: bytes) -> bytes:
@@ -65,6 +67,7 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(GameFinishedEvent, self._on_game_finished)
+        self.subscribe(CloseEvent, self._on_close)
 
     def _create_widget(self) -> QWidget:
         self._ui = XianNiUpgradeUI()
@@ -116,7 +119,7 @@ class XianNiUpgradePlugin(BasePlugin):
             self.logger.error(f"保存存档失败: {e}")
 
     def _on_game_finished(self, event: GameFinishedEvent):
-        if event.game_state != 7:
+        if event.game_state != 6:
             return
 
         xp_gained = self._calc_xp(event)
@@ -147,6 +150,9 @@ class XianNiUpgradePlugin(BasePlugin):
 
         self._save_data()
         self._push_ui_update()
+
+    def _on_close(self, event: CloseEvent):
+        self._save_data()
 
     def _push_ui_update(self):
         level = self._player_data["level"]
