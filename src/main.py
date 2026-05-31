@@ -300,9 +300,9 @@ if __name__ == "__main__":
 # 游戏动态类：rtime, left, right, double，cl，left_s，right_s, double_s, cl_s, path,
 #           flag, flag_s
 # 录像动态类：etime, stnb, rqp, qg, ioe, thrp, corr, ce, ce_s, bbbv_solved,
-#           bbbv_s, (op_solved), (isl_solved)
+#           bbbv_s, (op_solved), (isl_solved), (fps)
 # 录像静态类：bbbv，op, isl, cell0, cell1, cell2, cell3, cell4, cell5, cell6,
-#           cell7, cell8, fps, (hizi)
+#           cell7, cell8, zini, hzini
 # 录像动态类（依赖分析）：pluck
 # 其他类：checksum_ok, race_identifier, mode, is_offical, is_fair
 

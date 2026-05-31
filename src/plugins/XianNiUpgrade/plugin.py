@@ -87,7 +87,7 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _calc_xp(self, event: GameFinishedEvent) -> int:
         """每局获得的经验值"""
-        return 80
+        return 8000
 
     # ═══════════════════════════════════════════════════════════
     # 数据管理
@@ -157,12 +157,14 @@ class XianNiUpgradePlugin(BasePlugin):
     def _push_ui_update(self):
         level = self._player_data["level"]
         xp = self._player_data["xp"]
+        xp_base = _total_xp(level)
         xp_next = _total_xp(level + 1) if level < 100 else _total_xp(100)
 
         data = {
             "level": level,
-            "xp": xp,
-            "xp_next": xp_next,
+            "total_xp": xp,
+            "xp_curr": xp - xp_base,
+            "xp_need": xp_next - xp_base,
             "rank": LEVEL_NAMES.get(level, ""),
             "image_index": get_image_index(level),
             "history": self._player_data["history"][::-1][:100],

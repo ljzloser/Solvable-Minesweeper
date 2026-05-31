@@ -135,7 +135,7 @@ MODE_LABELS: dict[int, str] = {
 }
 
 
-# 仙躯形象：仅大境界突破换图，量变不换（共18张：01.png~18.png）
+# 仙躯形象：仅大境界突破换图，量变不换（共18张：1.png~18.png）
 # 每个 tuple 为 (该大境界起始等级, 图片索引)
 REALM_IMAGE: list[tuple[int, int]] = [
     (0,  1),   # 凡人

@@ -127,6 +127,7 @@ class GameFinishedEvent(BaseEvent, tag="game_end"):
     op: int = 0
     isl: int = 0
     pluck: float = 0
+    # 带有计算好的数字
     board: List[List[int]] = []
     # evf4版本的二进制数据
     raw_data: bytes = b""
