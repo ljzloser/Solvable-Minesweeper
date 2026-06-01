@@ -193,10 +193,8 @@ class XianNiUpgradePlugin(BasePlugin):
                 ('cell6', cell6), ('cell7', cell7), ('cell8', cell8),
             ):
                 p = _cum_prob(prefix, field, val)
-                self.logger.info(p)
                 if 0 <= p <= 1.0:
-                    p = max(p, 0.00000001)  # 防止极端值导致过高经验
-                    self.logger.info(p)
+                    p = max(p, 0.00000001)
                     rare_sum += (0.5 / p) ** 1.2
             exp_r = (cells / 100.0) * rare_sum
             if level == 3:

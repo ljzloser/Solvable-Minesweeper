@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget,
     QTableWidgetItem, QGroupBox, QHeaderView, QProgressBar,
     QFrame, QAbstractItemView, QPushButton, QFileDialog,
-    QMessageBox, QDialog, QLineEdit
+    QMessageBox, QDialog, QLineEdit, QTextBrowser, QDialogButtonBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QResizeEvent, QImage
@@ -131,10 +131,144 @@ class AbsorbDialog(QDialog):
         return self._exe_edit.text().strip(), self._replay_edit.text().strip()
 
 
+class RulesDialog(QDialog):
+    """天地法则——用法与规则说明"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("天地法则")
+        self.resize(660, 520)
+        layout = QVBoxLayout(self)
+
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)
+        browser.setStyleSheet(
+            "QTextBrowser { font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; "
+            "font-size: 13px; background: #FEFEFE; padding: 12px; }"
+        )
+        browser.setHtml(self._build_content())
+        layout.addWidget(browser)
+
+        btn_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        btn_box.accepted.connect(self.accept)
+        layout.addWidget(btn_box)
+
+    @staticmethod
+    def _build_content() -> str:
+        return """\
+<style>
+h2 { color: #6A1B9A; border-bottom: 2px solid #CE93D8; padding-bottom: 4px; }
+h3 { color: #8E24AA; margin-top: 16px; }
+b { color: #4A148C; }
+code { background: #F3E5F5; padding: 1px 4px; border-radius: 2px; }
+ul { margin: 4px 0; }
+li { margin: 2px 0; }
+table { border-collapse: collapse; margin: 8px 0; }
+td, th { border: 1px solid #E1BEE7; padding: 4px 10px; text-align: center; }
+th { background: #F3E5F5; color: #6A1B9A; }
+</style>
+
+<div style="color:#4A148C; font-style:italic; font-size:14px; line-height:1.8; padding:12px 16px; border-radius:6px; margin-bottom:16px;">
+<p style="margin:8px 0;">顺则凡，逆则仙，只在心中一念间。<br>
+吾辈修士，逆天而行，与天争命。</p>
+<p style="margin:8px 0;">扫雷一途，亦如修道——<br>
+步步惊心，一念生，一念死；<br>
+勘破迷障，洞悉本源，方得超脱。</p>
+<p style="margin:8px 0;">今有《仙逆》之法则，立此天地道统：<br>
+胜则增道行，积修为，破境界，证长生；<br>
+败则归凡尘，从头越，砺道心。</p>
+<p style="margin:8px 0; text-align:right;">—— 道不可须臾离也</p>
+</div>
+
+<h2>📜 天地法则 · 修仙要义</h2>
+
+<h3>一、道行修为</h3>
+<p>每局<b>扫雷胜利</b>（游戏状态转为胜利）后获得道行经验。经验累计提升境界等级，共<b>100级</b>：</p>
+<table>
+<tr><th>等级</th><th>境界名称</th></tr>
+<tr><td>Lv.0</td><td>凡人</td></tr>
+<tr><td>Lv.1-15</td><td>凝气一层 ~ 凝气十五层</td></tr>
+<tr><td>Lv.16-19</td><td>筑基初期 ~ 筑基大圆满</td></tr>
+<tr><td>Lv.20-23</td><td>结丹初期 ~ 结丹大圆满</td></tr>
+<tr><td>Lv.24-27</td><td>元婴初期 ~ 元婴大圆满</td></tr>
+<tr><td>Lv.28-31</td><td>化神初期 ~ 化神大圆满</td></tr>
+<tr><td>Lv.32-35</td><td>婴变初期 ~ 婴变大圆满</td></tr>
+<tr><td>Lv.36-39</td><td>问鼎初期 ~ 问鼎大圆满</td></tr>
+<tr><td>Lv.40-41</td><td>阴虚 ~ 阳实</td></tr>
+<tr><td>Lv.42-45</td><td>窥涅初期 ~ 窥涅大圆满</td></tr>
+<tr><td>Lv.46-49</td><td>净涅初期 ~ 净涅大圆满</td></tr>
+<tr><td>Lv.50-53</td><td>碎涅初期 ~ 碎涅大圆满</td></tr>
+<tr><td>Lv.54-58</td><td>天人一衰 ~ 天人五衰</td></tr>
+<tr><td>Lv.59-62</td><td>空涅初期 ~ 空涅大圆满</td></tr>
+<tr><td>Lv.63-66</td><td>空灵初期 ~ 空灵大圆满</td></tr>
+<tr><td>Lv.67-79</td><td>空玄初期 ~ 空玄九劫</td></tr>
+<tr><td>Lv.80-83</td><td>空劫初期 ~ 空劫大圆满</td></tr>
+<tr><td>Lv.84-88</td><td>大尊 ~ 大天尊</td></tr>
+<tr><td>Lv.89-100</td><td>踏天一桥 ~ 煌天境</td></tr>
+</table>
+
+<h3>二、经验计算公式</h3>
+
+<p><b>基础经验</b>（所有模式/难度均有效）：</p>
+<ul>
+<li>若雷密度 ≤ 80％：<br>
+  <code>基础 = (k / 5000) × 1.3^(雷数/格数 × 100) × min(行,列) × max(行,列)^1.2</code></li>
+<li>若雷密度 &gt; 80％：基础 = 0</li>
+<li>k 为模式系数：标准=1、Win7=0.8、经典无猜=0.2、强无猜=0.25、弱无猜=2，其他=0（无经验）</li>
+</ul>
+
+<p><b>稀有局面经验</b>（仅标准模式·标准难度）：</p>
+<ul>
+<li>统计 3BV、Op、Isl、Cell6、Cell7、Cell8 六个指标在分布中的罕见程度</li>
+<li>对每个指标，取 <code>p = min(P(X≤v), P(X≥v))</code>（双向累积概率），<br>
+  累加 <code>(0.5 / p)^1.2</code></li>
+<li>高级：<code>稀有经验 = 累加值</code>；中级：<code>累加值 / 8</code>；初级：<code>累加值 / 100</code></li>
+</ul>
+
+<p><b>竞速经验</b>（仅标准模式·标准难度）：</p>
+<ul>
+<li>初级：<code>(1/100) × (10/用时)^3.5</code></li>
+<li>中级：<code>(1/8) × (60/用时)^3.5</code></li>
+<li>高级：<code>(240/用时)^3.5</code></li>
+</ul>
+
+<p><b>效率经验</b>（仅标准模式·标准难度）：</p>
+<ul>
+<li>效率指标 <code>IOE = 3BV / (左键 + 右键 + 双击)</code></li>
+<li>初级：IOE ≥ 0.95 时 <code>IOE^3.5</code></li>
+<li>中级：IOE ≥ 0.9 时 <code>10 × IOE^4</code>（有标）/ <code>20 × IOE^5</code>（盲扫）</li>
+<li>高级：IOE ≥ 0.8 时 <code>100 × IOE^10</code>（有标）/ <code>10000 × IOE^50</code>（盲扫）</li>
+</ul>
+
+<p><b>总经验</b> = 基础 + 稀有 + 竞速 + 效率，上限 99999/局。</p>
+
+<h3>三、多修分身</h3>
+<p>插件支持<b>多玩家标识</b>。每局游戏会根据主标识独立计算等级和道行。修改标识将自动切换对应玩家各自的修行数据。</p>
+
+<h3>四、吸收灵气</h3>
+<p>可通过导入其他扫雷版本的录像获得经验：</p>
+<ol>
+<li>点击「吸收灵气」按钮</li>
+<li>选择对应版本的 <b>exe 校验程序</b>（如 metasweeper.exe）</li>
+<li>选择 <b>录像目录</b>（replay 文件夹）</li>
+<li>插件自动校验 exe MD5 → 运行 exe 生成报告 → 解析有效录像 → 去重后加经验</li>
+</ol>
+<p>目前支持的版本：</p>
+<table>
+<tr><th>版本</th><th>MD5</th></tr>
+<tr><td>Metasweeper 3.2.2</td><td><code>d5fd61ae1372297aa7008d7b7cd8a13b</code></td></tr>
+</table>
+
+<h3>五、存档说明</h3>
+<p>存档文件 <code>player_data.dat</code> 保存在插件数据目录，包含多玩家信息、修行日志和已导入录像记录（最多保存 1000 条）。不可轻易删除，否则只能在下个版本中用“吸收灵气”重新导入录像。</p>
+"""
+
+
 class LevelDisplay(QWidget):
     """等级和仙躯形象展示区"""
 
     absorb_clicked = pyqtSignal()
+    law_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -182,6 +316,18 @@ class LevelDisplay(QWidget):
         )
         info_layout.addWidget(self._progress)
 
+        btn_row = QHBoxLayout()
+        law_btn = QPushButton("天地法则")
+        law_btn.setFixedHeight(22)
+        law_btn.setCursor(Qt.PointingHandCursor)
+        law_btn.setStyleSheet(
+            "QPushButton { background: transparent; color: #AB47BC; border: none; "
+            "font-size: 12px; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }"
+            "QPushButton:hover { color: #8E24AA; }"
+        )
+        law_btn.clicked.connect(self.law_clicked.emit)
+        btn_row.addWidget(law_btn)
+
         absorb_btn = QPushButton("吸收灵气")
         absorb_btn.setFixedHeight(22)
         absorb_btn.setCursor(Qt.PointingHandCursor)
@@ -191,7 +337,8 @@ class LevelDisplay(QWidget):
             "QPushButton:hover { color: #42A5F5; }"
         )
         absorb_btn.clicked.connect(self.absorb_clicked.emit)
-        info_layout.addWidget(absorb_btn, alignment=Qt.AlignRight)
+        btn_row.addWidget(absorb_btn)
+        info_layout.addLayout(btn_row)
 
         layout.addWidget(info_frame, stretch=1)
 
@@ -250,6 +397,7 @@ class XianNiUpgradeUI(QWidget):
         self._level_display = LevelDisplay()
         self._level_display.setStyleSheet("margin-bottom: 4px;")
         self._level_display.absorb_clicked.connect(self._on_absorb_clicked)
+        self._level_display.law_clicked.connect(self._on_law_clicked)
         layout.addWidget(self._level_display, 3)
 
         group = QGroupBox("修行日志")
@@ -293,6 +441,10 @@ class XianNiUpgradeUI(QWidget):
                     off += length
             except Exception:
                 self._assets.clear()
+
+    def _on_law_clicked(self):
+        dialog = RulesDialog(self)
+        dialog.exec_()
 
     def _on_absorb_clicked(self):
         if not self._validate_cb or not self._absorb_cb:
