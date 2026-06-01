@@ -25,6 +25,55 @@ from shared_types.events import CloseEvent, GameFinishedEvent
 
 from .widgets import XianNiUpgradeUI
 from .models import LEVEL_NAMES, LEVEL_LABELS, MODE_LABELS, get_image_index
+from . import distribution as _dist
+
+
+# 预计算累积分布表（稀有局面用）
+_DIST_CUM: dict[str, list[int]] = {}
+for _prefix in ('beg', 'int', 'exp'):
+    for _field in ('cell6', 'cell7', 'cell8', 'bbbv', 'op', 'isl'):
+        _key = f'{_prefix}_{_field}'
+        _table = getattr(_dist, _key)
+        _cum = 0
+        _arr: list[int] = []
+        for _v in _table:
+            _cum += _v
+            _arr.append(_cum)
+        _DIST_CUM[_key] = _arr
+_DIST_TOTAL = 100_000_000
+_DIST_PREFIX = {3: 'beg', 4: 'int', 5: 'exp'}
+
+# 模式难度系数
+_MODE_K: dict[int, float] = {
+    0: 1.0,    # 标准
+    4: 0.8,    # Win7
+    5: 0.2,    # 经典无猜
+    6: 0.25,   # 强无猜
+    7: 2.0,    # 弱无猜
+}
+
+
+def _cum_prob(prefix: str, field: str, value: int) -> float:
+    """
+    双向累积概率 —— 取 P(X<=v) 与 P(X>=v) 中较小者，
+    衡量该数值在分布中的罕见程度。
+    """
+    key = f'{prefix}_{field}'
+    arr = _DIST_CUM.get(key)
+    if not arr:
+        return 1.0
+    total = arr[-1]
+
+    if value >= len(arr):
+        cum_le = total
+        cum_ge = 0
+    else:
+        cum_le = arr[value]
+        cum_ge = total - (arr[value - 1] if value > 0 else 0)
+
+    p_le = max(cum_le, 0.5) / total
+    p_ge = max(cum_ge, 0.5) / total
+    return min(p_le, p_ge)
 
 
 # AES-GCM 加密密钥（明文写死，只防无编程知识的人）
@@ -78,7 +127,8 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _create_widget(self) -> QWidget:
         self._ui = XianNiUpgradeUI()
-        self._ui.set_image_dir(self.data_dir / "asserts")
+        assets_path = Path(__file__).parent
+        self._ui.set_image_dir(assets_path)
         self._ui.set_absorb_callbacks(self.validate_replays, self.absorb_replays)
         return self._ui
 
@@ -95,11 +145,98 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _calc_xp(self, event: GameFinishedEvent) -> int:
         """每局获得的经验值"""
-        return 8000
+        board = ms.Board(event.board)
+        ioe = event.bbbv / (event.left + event.right + event.double)
+        return self._calc_xp_base(
+            event.mode, event.level, event.row, event.column, event.mine_num,
+            event.rtime, event.bbbv,
+            board.cell6, board.cell7, board.cell8, board.op, board.isl, ioe, event.rce == 0
+        )
 
     def _calc_xp2(self, video: ms.EvfVideo) -> int:
         """通过录像计算经验值"""
-        return 1
+        board = ms.Board(video.board)
+        return self._calc_xp_base(
+            video.mode, video.level, video.row, video.column, video.mine_num,
+            video.rtime, video.bbbv,
+            board.cell6, board.cell7, board.cell8, board.op, board.isl, video.ioe, video.rce == 0
+        )
+
+    def _calc_xp_base(
+        self,
+        mode: int, level: int, row: int, column: int, mine_num: int,
+        rtime: float, bbbv: int,
+        cell6: int, cell7: int, cell8: int, op: int, isl: int, ioe: float, nf: bool
+    ) -> int:
+        # ---- 基本经验 ----
+        k = _MODE_K.get(mode, 0.0)
+        cells = row * column
+        long_side = max(row, column)
+        short_side = min(row, column)
+        if mine_num / cells <= 0.8:
+            exp_b = (k / 5000.0) * (1.3 ** (mine_num / cells * 100.0)) * short_side * long_side ** 1.2
+        else:
+            exp_b = 0
+
+        exp_r = 0.0
+        exp_t = 0.0
+        exp_e = 0.0
+
+        # ---- 稀有局面 & 竞速（仅标准模式·标准难度） ----
+        if mode == 0 and level in (3, 4, 5):
+            prefix = _DIST_PREFIX[level]
+
+            # 稀有局面
+            rare_sum = 0.0
+            for field, val in (
+                ('bbbv', bbbv), ('op', op), ('isl', isl),
+                ('cell6', cell6), ('cell7', cell7), ('cell8', cell8),
+            ):
+                p = _cum_prob(prefix, field, val)
+                self.logger.info(p)
+                if 0 <= p <= 1.0:
+                    p = max(p, 0.00000001)  # 防止极端值导致过高经验
+                    self.logger.info(p)
+                    rare_sum += (0.5 / p) ** 1.2
+            exp_r = (cells / 100.0) * rare_sum
+            if level == 3:
+                exp_r = rare_sum / 100.0
+            elif level == 4:
+                exp_r = rare_sum / 8.0
+            elif level == 5:
+                exp_r = rare_sum
+
+            # 竞速
+            if level == 3:
+                exp_t = (1.0 / 100.0) * ((10.0 / rtime) ** 3.5)
+            elif level == 4:
+                exp_t = (1.0 / 8.0) * ((60.0 / rtime) ** 3.5)
+            elif level == 5:
+                exp_t = (240.0 / rtime) ** 3.5
+
+            # 效率经验
+            if level == 3:
+                if ioe >= 0.95:
+                    exp_e = ioe ** 3.5
+            elif level == 4:
+                if ioe >= 0.9:
+                    if nf:
+                        exp_e = 20 * ioe ** 5
+                    else:
+                        exp_e = 10 * ioe ** 4
+            elif level == 5:
+                if ioe >= 0.8:
+                    if nf:
+                        exp_e = 10000 * ioe ** 50
+                    else:
+                        exp_e = 100 * ioe ** 10
+
+
+        total = int(exp_b + exp_r + exp_t + exp_e)
+        total = min(total, 99999)  # 上限经验值，防止极端局面
+        # self.logger.info(f"经验计算: 基础 {exp_b:.2f} + 稀有 {exp_r:.2f} + 竞速 {exp_t:.2f} = {total}")
+        
+        return total
 
     # ═══════════════════════════════════════════════════════════
     # 数据管理
@@ -206,6 +343,7 @@ class XianNiUpgradePlugin(BasePlugin):
                 try:
                     v = ms.EvfVideo(fp)
                     v.parse()
+                    v.analyse()
                     key = (str(v.start_time), v.player_identifier)
                     entry = {
                         "file": fp,
@@ -317,36 +455,42 @@ class XianNiUpgradePlugin(BasePlugin):
         player = self._players[pid]
 
         xp_gained = self._calc_xp(event)
-        player["xp"] += xp_gained
 
-        while player["level"] < 100:
-            need = _total_xp(player["level"] + 1)
-            if player["xp"] < need:
-                break
-            player["level"] += 1
+        if xp_gained > 0:
+            player["xp"] += xp_gained
 
-        top = _total_xp(100)
-        if player["xp"] > top:
-            player["xp"] = top
+            while player["level"] < 100:
+                need = _total_xp(player["level"] + 1)
+                if player["xp"] < need:
+                    break
+                player["level"] += 1
 
-        self._history.append({
-            "pid": pid,
-            "time": int(datetime.now().timestamp()),
-            "level": event.level,
-            "mode": event.mode,
-            "rtime": round(event.rtime, 2),
-            "bbbv": event.bbbv,
-            "xp": xp_gained,
-        })
+            top = _total_xp(100)
+            if player["xp"] > top:
+                player["xp"] = top
 
-        if len(self._history) > 1000:
-            self._history = self._history[-1000:]
+            self._history.append({
+                "pid": pid,
+                "time": int(datetime.now().timestamp()),
+                "level": event.level,
+                "mode": event.mode,
+                "rtime": round(event.rtime, 2),
+                "bbbv": event.bbbv,
+                "xp": xp_gained,
+            })
 
-        self._save_data()
-        self._push_ui_update()
+            if len(self._history) > 1000:
+                self._history = self._history[-1000:]
+
+            self._save_data()
+            self._push_ui_update()
 
     def _on_close(self, event: CloseEvent):
         self._save_data()
 
     def _push_ui_update(self):
         self._ui._signal_update.emit(self._build_update_data())
+
+
+
+
