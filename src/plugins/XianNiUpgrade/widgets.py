@@ -17,33 +17,59 @@ from PyQt5.QtWidgets import (
     QMessageBox, QDialog, QLineEdit
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QResizeEvent
+from PyQt5.QtGui import QPixmap, QResizeEvent, QImage
+
+from PIL import Image as PILImage
+import io
 
 from .models import LEVEL_LABELS, MODE_LABELS
 
 
 class AspectLabel(QLabel):
-    """自动保持宽高比缩放图片的 QLabel"""
+    """按物理像素缩放仙躯图，保证清晰"""
+
+    ASPECT = 688 / 1024
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._raw: QPixmap | None = None
+        self._raw: bytes | None = None
 
-    def set_raw(self, pm: QPixmap | None):
-        self._raw = pm
+    def set_raw(self, data: bytes | None):
+        self._raw = data
         self._update_pixmap()
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
+        h = self.height()
+        if h > 0:
+            self.setFixedWidth(int(h * self.ASPECT))
         self._update_pixmap()
 
     def _update_pixmap(self):
-        if self._raw and not self._raw.isNull():
-            scaled = self._raw.scaled(
-                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-            )
-            super().setPixmap(scaled)
-        else:
+        if not self._raw:
+            super().setPixmap(QPixmap())
+            return
+        try:
+            pil = PILImage.open(io.BytesIO(self._raw)).convert('RGBA')
+            dpr = self.devicePixelRatioF()
+            pw = int(self.width() * dpr)
+            ph = int(self.height() * dpr)
+            if pw <= 0 or ph <= 0:
+                return
+            iw, ih = pil.size
+            scale = min(pw / iw, ph / ih)
+            tw = max(1, int(iw * scale))
+            th = max(1, int(ih * scale))
+            resized = pil.resize((tw, th), PILImage.LANCZOS)
+            canvas = PILImage.new('RGBA', (pw, ph), (0, 0, 0, 0))
+            x = (pw - tw) // 2
+            y = (ph - th) // 2
+            canvas.paste(resized, (x, y))
+            qimg = QImage(canvas.tobytes('raw', 'BGRA'), pw, ph, QImage.Format_ARGB32)
+            pm = QPixmap.fromImage(qimg)
+            pm.setDevicePixelRatio(dpr)
+            super().setPixmap(pm)
+        except Exception:
             super().setPixmap(QPixmap())
 
 
@@ -179,16 +205,10 @@ class LevelDisplay(QWidget):
         self._image_label.setText("等待仙躯\n形象加载...")
         layout.addWidget(self._image_label)
 
-    def set_image(self, png_bytes: bytes | None):
-        if png_bytes:
-            try:
-                pixmap = QPixmap()
-                pixmap.loadFromData(png_bytes, "PNG")
-                if not pixmap.isNull():
-                    self._image_label.set_raw(pixmap)
-                    return
-            except Exception:
-                pass
+    def set_image(self, raw_bytes: bytes | None):
+        if raw_bytes:
+            self._image_label.set_raw(raw_bytes)
+            return
         self._image_label.set_raw(None)
         self._image_label.setText("暂无仙躯\n形象")
 
