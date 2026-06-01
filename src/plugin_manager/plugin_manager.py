@@ -277,13 +277,20 @@ class PluginManager:
 
     def _setup_zmq_subscriptions(self) -> None:
         """设置 ZMQ 事件订阅"""
+        from shared_types.events import ShowPluginManagerEvent
         for event_type in EVENT_TYPES:
+            if event_type is ShowPluginManagerEvent:
+                continue
             tag = get_event_tag(event_type)
             # 订阅 ZMQ 事件，收到后分发给内部插件
             self._client.subscribe(
                 event_type,
                 lambda event, t=tag: self._dispatcher.dispatch(t, event),
             )
+        self._client.subscribe(
+            ShowPluginManagerEvent,
+            lambda _: self._main_window._show_requested.emit() if self._main_window else None,
+        )
 
     # ═══════════════════════════════════════════════════════════════════
     # 插件管理

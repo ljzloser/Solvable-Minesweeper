@@ -139,10 +139,16 @@ class CloseEvent(BaseEvent, tag="close"):
     pass
 
 
+class ShowPluginManagerEvent(BaseEvent, tag="show_plugin_manager"):
+    """请求显示插件管理器窗口事件"""
+    pass
+
+
 EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
     ButtonClickEvent,
     GameFinishedEvent,
-    CloseEvent
+    CloseEvent,
+    ShowPluginManagerEvent,
 ]

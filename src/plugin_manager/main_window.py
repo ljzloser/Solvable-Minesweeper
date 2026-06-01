@@ -1040,11 +1040,13 @@ class PluginManagerWindow(QMainWindow):
     """插件管理器主窗口"""
 
     connection_changed = pyqtSignal(bool)
+    _show_requested = pyqtSignal()
 
     def __init__(self, plugin_manager: PluginManager, parent=None):
         super().__init__(parent)
 
         self._manager = plugin_manager
+        self._show_requested.connect(self.show_and_raise)
 
         # 状态持久化
         self._state_mgr = PluginStateManager(
@@ -1157,7 +1159,8 @@ class PluginManagerWindow(QMainWindow):
         self._list = lst
         left_layout.addWidget(lst)
 
-        left_panel.setMaximumWidth(200)
+        left_panel.setMinimumWidth(220)
+        left_panel.setMaximumWidth(350)
         main_layout.addWidget(left_panel)
 
         # 记录被关闭（但未销毁）的插件名称

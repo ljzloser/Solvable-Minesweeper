@@ -455,6 +455,12 @@ class Ui_MainWindow(object):
         self.action_best.setObjectName("action_best")
         self.actionchajian = QtWidgets.QAction(MainWindow)
         self.actionchajian.setObjectName("actionchajian")
+        self.action_advance = QtWidgets.QAction(MainWindow)
+        font = QtGui.QFont()
+        font.setFamily("微软雅黑")
+        font.setPointSize(12)
+        self.action_advance.setFont(font)
+        self.action_advance.setObjectName("action_advance")
         self.menu.addAction(self.actionopen)
         self.menu.addSeparator()
         self.menu.addAction(self.actionnew_game)
@@ -475,6 +481,7 @@ class Ui_MainWindow(object):
         self.menu_2.addAction(self.actionyouxi_she_zhi)
         self.menu_2.addAction(self.action_kuaijiejian)
         self.menu_2.addAction(self.action_mouse)
+        self.menu_2.addAction(self.action_advance)
         self.menu_2.addAction(self.language_menu.menuAction())
         self.menu_3.addAction(self.actiongaun_yv)
         self.menu_3.addAction(self.actionauto_update)
@@ -494,7 +501,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "元扫雷"))
         self.menu.setTitle(_translate("MainWindow", "游戏"))
         self.menu_2.setTitle(_translate("MainWindow", "设置"))
-        self.language_menu.setTitle(_translate("MainWindow", "语言设置"))
+        self.language_menu.setTitle(_translate("MainWindow", "语言"))
         self.menu_3.setTitle(_translate("MainWindow", "帮助"))
         self.menu_4.setTitle(_translate("MainWindow", "查看"))
         self.actionnew_game.setText(_translate("MainWindow", "新游戏"))
@@ -516,6 +523,8 @@ class Ui_MainWindow(object):
         self.action_level.setText(_translate("MainWindow", "成就"))
         self.action_best.setText(_translate("MainWindow", "个人纪录"))
         self.actionchajian.setText(_translate("MainWindow", "插件"))
+        self.actionchajian.setShortcut(_translate("MainWindow", "F1"))
+        self.action_advance.setText(_translate("MainWindow", "高级设置"))
 from ui.mineLabel import mineLabel
 from ui.mineNumLabel import mineNumLabel
 from ui.uiComponents import StatusLabel

@@ -1113,6 +1113,9 @@
    <property name="text">
     <string>插件</string>
    </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
   </action>
   <action name="action_advance">
    <property name="text">
