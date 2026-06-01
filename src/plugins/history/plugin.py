@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import base64
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -17,7 +16,7 @@ from plugin_sdk import (
     BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
     OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
 )
-from shared_types.events import VideoSaveEvent
+from shared_types.events import GameFinishedEvent
 from plugins.services.history import HistoryService, GameRecord
 
 from .widgets import HistoryMainWidget
@@ -72,7 +71,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     """
     历史记录插件
 
-    - 后台：监听 VideoSaveEvent，写入 SQLite
+    - 后台：监听 GameFinishedEvent，写入 SQLite
     - 界面：提供筛选、分页、播放/导出功能
     - 服务：提供 HistoryService 接口供其他插件查询历史记录
     """
@@ -95,7 +94,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         super().__init__(info)
 
     def _setup_subscriptions(self) -> None:
-        self.subscribe(VideoSaveEvent, self._on_video_save)
+        self.subscribe(GameFinishedEvent, self._on_video_save)
 
     def _create_widget(self) -> QWidget:
         db_path = self.data_dir / "history.db"
@@ -154,52 +153,57 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     def _init_db(self) -> None:
         db_path = self.data_dir / "history.db"
         if db_path.exists():
-            return
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(history)")
+            cols = {row[1] for row in cursor.fetchall()}
+            if "game_state" in cols:
+                conn.close()
+                return
+            self.logger.info("旧 schema，迁移中…")
+            cursor.executescript("DROP TABLE IF EXISTS history;")
+            conn.commit()
+            conn.close()
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             """
             CREATE TABLE history (
-                replay_id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                game_board_state  INTEGER,
-                rtime            REAL,
-                left             INTEGER,
-                right            INTEGER,
-                double           INTEGER,
-                left_s           REAL,
-                right_s          REAL,
-                double_s         REAL,
-                level            INTEGER,
-                cl               INTEGER,
-                cl_s             REAL,
-                ce               REAL,
-                ce_s             REAL,
-                rce              INTEGER,
-                lce              INTEGER,
-                dce              INTEGER,
-                bbbv             INTEGER,
-                bbbv_solved      INTEGER,
-                bbbv_s           REAL,
-                flag             INTEGER,
-                path             REAL,
-                etime            INTEGER,
-                start_time       INTEGER,
-                end_time         INTEGER,
-                mode             INTEGER,
-                software         TEXT,
+                replay_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_state          INTEGER,
+                nf                  INTEGER,
+                row                 INTEGER,
+                column              INTEGER,
+                mine_num            INTEGER,
+                rtime               REAL,
+                left                INTEGER,
+                right               INTEGER,
+                double              INTEGER,
+                level               INTEGER,
+                cl                  INTEGER,
+                ce                  INTEGER,
+                rce                 INTEGER,
+                lce                 INTEGER,
+                dce                 INTEGER,
+                bbbv                INTEGER,
+                bbbv_solved         INTEGER,
+                zini                INTEGER,
+                flag                INTEGER,
+                path                REAL,
+                start_time          INTEGER,
+                end_time            INTEGER,
+                mode                INTEGER,
+                software            TEXT,
                 player_identifier   TEXT,
                 race_identifier     TEXT,
-                unique_identifier TEXT,
-                stnb             REAL,
-                corr             REAL,
-                thrp             REAL,
-                ioe              REAL,
-                is_official      INTEGER,
-                is_fair          INTEGER,
-                op               INTEGER,
-                isl              INTEGER,
-                pluck            REAL,
-                raw_data         BLOB
+                unique_identifier   TEXT,
+                is_official         INTEGER,
+                is_fair             INTEGER,
+                op                  INTEGER,
+                isl                 INTEGER,
+                pluck               REAL,
+                board               TEXT,
+                raw_data            BLOB
             )
         """
         )
@@ -209,15 +213,12 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
     # ── 事件处理 ──────────────────────────────────────────
 
-    def _on_video_save(self, event: VideoSaveEvent) -> None:
+    def _on_video_save(self, event: GameFinishedEvent) -> None:
         data: dict[str, Any] = msgspec.structs.asdict(event)
-        raw_b64 = data.get("raw_data", "")
-        try:
-            data["raw_data"] = base64.b64decode(raw_b64) if raw_b64 else None
-        except Exception as e:
-            self.logger.warning(f"base64 decode failed: {e}")
-            data["raw_data"] = None
-        del data["timestamp"]
+        if isinstance(data.get("board"), list):
+            import json
+            data["board"] = json.dumps(data["board"], separators=(",", ":"))
+        data.pop("timestamp", None)
         columns = ", ".join(data.keys())
         placeholders = ", ".join(f":{k}" for k in data.keys())
 
@@ -231,7 +232,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             )
             conn.commit()
             self.logger.info(
-                f"Saved: board_state={event.game_board_state} time={event.rtime:.1f}s"
+                f"Saved: game_state={event.game_state} time={event.rtime:.1f}s"
             )
         finally:
             conn.close()
@@ -286,11 +287,16 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 cl=row["cl"],
                 ce=row["ce"],
                 flag=row["flag"],
-                game_board_state=row["game_board_state"],
+                game_state=row["game_state"],
                 mode=row["mode"],
                 software=row["software"] or "",
                 start_time=row["start_time"],
                 end_time=row["end_time"],
+                nf=bool(row["nf"]),
+                row=row["row"],
+                column=row["column"],
+                mine_num=row["mine_num"],
+                zini=row["zini"],
             ) for row in rows]
         finally:
             conn.close()

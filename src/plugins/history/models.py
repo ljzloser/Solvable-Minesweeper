@@ -10,7 +10,7 @@ from typing import Any
 
 from PyQt5.QtCore import QCoreApplication
 
-from shared_types.enums import GameBoardState, GameMode, GameLevel, BaseDiaPlayEnum
+from shared_types.enums import BaseDiaPlayEnum
 
 _translate = QCoreApplication.translate
 
@@ -109,44 +109,39 @@ class HistoryData:
     """历史记录数据行（纯数据类，用类属性定义字段）"""
 
     replay_id: int = 0
-    game_board_state: GameBoardState = GameBoardState.Win
+    game_state: int = 6
+    nf: int = 0
+    row: int = 0
+    column: int = 0
+    mine_num: int = 0
     rtime: float = 0
     left: int = 0
     right: int = 0
     double: int = 0
-    left_s: float = 0.0
-    right_s: float = 0.0
-    double_s: float = 0.0
-    level: GameLevel = GameLevel.BEGINNER
+    level: int = 3
     cl: int = 0
-    cl_s: float = 0.0
     ce: int = 0
-    ce_s: float = 0.0
     rce: int = 0
     lce: int = 0
     dce: int = 0
     bbbv: int = 0
     bbbv_solved: int = 0
-    bbbv_s: float = 0.0
+    zini: int = 0
     flag: int = 0
     path: float = 0.0
-    etime: float = 0
     start_time: datetime = datetime.now()
     end_time: datetime = datetime.now()
-    mode: GameMode = GameMode.Standard
+    mode: int = 0
     software: str = ""
     player_identifier: str = ""
     race_identifier: str = ""
     unique_identifier: str = ""
-    stnb: float = 0.0
-    corr: float = 0.0
-    thrp: float = 0.0
-    ioe: float = 0.0
     is_official: int = 0
     is_fair: int = 0
     op: int = 0
     isl: int = 0
     pluck: float = 0.0
+    board: str = ""
 
     @classmethod
     def get_field_value(cls, field_name: str):

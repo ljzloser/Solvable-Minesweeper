@@ -54,11 +54,16 @@ class GameRecord:
     cl: int = 0
     ce: int = 0
     flag: int = 0
-    game_board_state: int = 0
+    game_state: int = 0
     mode: int = 0
     software: str = ""
     start_time: int = 0
     end_time: int = 0
+    nf: bool = False
+    row: int = 0
+    column: int = 0
+    mine_num: int = 0
+    zini: int = 0
 
 
 @runtime_checkable

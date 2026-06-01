@@ -38,28 +38,26 @@ class HistoryTable(QWidget):
 
     HEADERS = [
         "replay_id",
-        "game_board_state",
+        "game_state",
+        "nf",
+        "row",
+        "column",
+        "mine_num",
         "rtime",
         "left",
         "right",
         "double",
-        "left_s",
-        "right_s",
-        "double_s",
         "level",
         "cl",
-        "cl_s",
         "ce",
-        "ce_s",
         "rce",
         "lce",
         "dce",
         "bbbv",
         "bbbv_solved",
-        "bbbv_s",
+        "zini",
         "flag",
         "path",
-        "etime",
         "start_time",
         "end_time",
         "mode",
@@ -67,15 +65,12 @@ class HistoryTable(QWidget):
         "player_identifier",
         "race_identifier",
         "unique_identifier",
-        "stnb",
-        "corr",
-        "thrp",
-        "ioe",
         "is_official",
         "is_fair",
         "op",
         "isl",
         "pluck",
+        "board",
     ]
 
     def __init__(self, show_fields: list[str], db_path: Path, parent=None):
@@ -96,6 +91,7 @@ class HistoryTable(QWidget):
         self.table.setModel(self.model)
         self.table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table.setSelectionBehavior(QTableView.SelectRows)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
     def load(self, data: list[HistoryData]):
