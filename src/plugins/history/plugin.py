@@ -81,7 +81,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
-            name="history",
+            name="历史记录",
             description="游戏历史记录（SQLite 持久化）",
             author="ljzloser",
             version="1.0.0",
@@ -344,11 +344,11 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     def raw_query(self, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
         """
         直接执行 SQL 查询
-        
+
         Args:
             sql: SQL 查询语句（使用 ? 作为参数占位符）
             params: 参数元组
-            
+
         Returns:
             字典列表
         """

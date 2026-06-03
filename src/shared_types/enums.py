@@ -47,29 +47,54 @@ class GameBoardState(BaseDiaPlayEnum):
     游戏板状态枚举
 
     这些魔数遵循 ms_toollib 标准。
+    'ready'、'study'、'show'、'playing'、'joking'、
+    # 'fail'、'win'、'jofail'、'jowin'、'display'、'showdisplay'
+    jofail：作弊过且失败
+    jowin：作弊过且成功
+    display：播放录像中
+    showdisplay：播放录像的同时显示是雷的概率
+    study：研究模式（摆雷模式）
+    show：游戏过程中正在按下空格显示是雷的概率
+    joking：作弊后游戏中
+    playing：游戏中
     """
-    Ready = 1
-    Playing = 2
-    Win = 3
-    Loss = 4
-    PreFlaging = 5
-    Display = 6
+    Ready = 0
+    Study = 1
+    Show = 2
+    Playing = 3
+    Joking = 4
+    Fail = 5
+    Win = 6
+    Jofail = 7
+    Jowin = 8
+    Display = 9
+    ShowDisplay = 10
 
     @property
     def display_name(self) -> str:
         match self:
-            case GameBoardState.Win:
-                return _translate("Form", "胜利")
-            case GameBoardState.Loss:
-                return _translate("Form", "失败")
             case GameBoardState.Ready:
                 return _translate("Form", "准备")
+            case GameBoardState.Study:
+                return _translate("Form", "研究模式")
+            case GameBoardState.Show:
+                return _translate("Form", "显示概率")
             case GameBoardState.Playing:
-                return _translate("Form", "进行中")
-            case GameBoardState.PreFlaging:
-                return _translate("Form", "预标记")
+                return _translate("Form", "游戏中")
+            case GameBoardState.Joking:
+                return _translate("Form", "作弊中")
+            case GameBoardState.Fail:
+                return _translate("Form", "失败")
+            case GameBoardState.Win:
+                return _translate("Form", "胜利")
+            case GameBoardState.Jofail:
+                return _translate("Form", "作弊且失败")
+            case GameBoardState.Jowin:
+                return _translate("Form", "作弊且成功")
             case GameBoardState.Display:
-                return _translate("Form", "回放")
+                return _translate("Form", "播放录像中")
+            case GameBoardState.ShowDisplay:
+                return _translate("Form", "播放录像时显示概率")
             case _:
                 return str(self.value)
 
