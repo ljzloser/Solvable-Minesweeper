@@ -31,7 +31,8 @@ from . import distribution as _dist
 # 预计算累积分布表（稀有局面用）
 _DIST_CUM: dict[str, list[int]] = {}
 for _prefix in ('beg', 'int', 'exp'):
-    for _field in ('cell6', 'cell7', 'cell8', 'bbbv', 'op', 'isl'):
+    for _field in ('cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6',
+                    'cell7', 'cell8', 'bbbv', 'op', 'isl'):
         _key = f'{_prefix}_{_field}'
         _table = getattr(_dist, _key)
         _cum = 0
@@ -149,7 +150,7 @@ class XianNiUpgradePlugin(BasePlugin):
         ioe = event.bbbv / (event.left + event.right + event.double)
         return self._calc_xp_base(
             event.mode, event.level, event.row, event.column, event.mine_num,
-            event.rtime, event.bbbv,
+            event.rtime, event.bbbv, board.cell1, board.cell2, board.cell3, board.cell4, board.cell5,
             board.cell6, board.cell7, board.cell8, board.op, board.isl, ioe, event.rce == 0
         )
 
@@ -158,14 +159,14 @@ class XianNiUpgradePlugin(BasePlugin):
         board = ms.Board(video.board)
         return self._calc_xp_base(
             video.mode, video.level, video.row, video.column, video.mine_num,
-            video.rtime, video.bbbv,
+            video.rtime, video.bbbv, board.cell1, board.cell2, board.cell3, board.cell4, board.cell5,
             board.cell6, board.cell7, board.cell8, board.op, board.isl, video.ioe, video.rce == 0
         )
 
     def _calc_xp_base(
         self,
         mode: int, level: int, row: int, column: int, mine_num: int,
-        rtime: float, bbbv: int,
+        rtime: float, bbbv: int, cell1, cell2, cell3, cell4, cell5,
         cell6: int, cell7: int, cell8: int, op: int, isl: int, ioe: float, nf: bool
     ) -> int:
         # ---- 基本经验 ----
@@ -173,7 +174,7 @@ class XianNiUpgradePlugin(BasePlugin):
         cells = row * column
         long_side = max(row, column)
         short_side = min(row, column)
-        if mine_num / cells <= 0.8:
+        if mine_num / cells <= 0.8 and mode in (0, 4, 7) or mine_num / cells <= 0.3 and mode in (5, 6):
             exp_b = (k / 5000.0) * (1.3 ** (mine_num / cells * 100.0)) * short_side * long_side ** 1.2
         else:
             exp_b = 0
@@ -189,7 +190,7 @@ class XianNiUpgradePlugin(BasePlugin):
             # 稀有局面
             rare_sum = 0.0
             for field, val in (
-                ('bbbv', bbbv), ('op', op), ('isl', isl),
+                ('bbbv', bbbv), ('op', op), ('isl', isl), ('cell1', cell1), ('cell2', cell2), ('cell3', cell3), ('cell4', cell4), ('cell5', cell5),
                 ('cell6', cell6), ('cell7', cell7), ('cell8', cell8),
             ):
                 p = _cum_prob(prefix, field, val)

@@ -17,10 +17,7 @@ from PyQt5.QtWidgets import (
     QMessageBox, QDialog, QLineEdit, QTextBrowser, QDialogButtonBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QResizeEvent, QImage
-
-from PIL import Image as PILImage
-import io
+from PyQt5.QtGui import QPixmap, QResizeEvent, QPainter
 
 from .models import LEVEL_LABELS, MODE_LABELS
 
@@ -50,25 +47,25 @@ class AspectLabel(QLabel):
             super().setPixmap(QPixmap())
             return
         try:
-            pil = PILImage.open(io.BytesIO(self._raw)).convert('RGBA')
+            src = QPixmap()
+            if not src.loadFromData(self._raw):
+                super().setPixmap(QPixmap())
+                return
             dpr = self.devicePixelRatioF()
             pw = int(self.width() * dpr)
             ph = int(self.height() * dpr)
             if pw <= 0 or ph <= 0:
                 return
-            iw, ih = pil.size
-            scale = min(pw / iw, ph / ih)
-            tw = max(1, int(iw * scale))
-            th = max(1, int(ih * scale))
-            resized = pil.resize((tw, th), PILImage.LANCZOS)
-            canvas = PILImage.new('RGBA', (pw, ph), (0, 0, 0, 0))
-            x = (pw - tw) // 2
-            y = (ph - th) // 2
-            canvas.paste(resized, (x, y))
-            qimg = QImage(canvas.tobytes('raw', 'BGRA'), pw, ph, QImage.Format_ARGB32)
-            pm = QPixmap.fromImage(qimg)
-            pm.setDevicePixelRatio(dpr)
-            super().setPixmap(pm)
+            scaled = src.scaled(pw, ph, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            canvas = QPixmap(pw, ph)
+            canvas.fill(Qt.transparent)
+            p = QPainter(canvas)
+            x = (pw - scaled.width()) // 2
+            y = (ph - scaled.height()) // 2
+            p.drawPixmap(x, y, scaled)
+            p.end()
+            canvas.setDevicePixelRatio(dpr)
+            super().setPixmap(canvas)
         except Exception:
             super().setPixmap(QPixmap())
 
