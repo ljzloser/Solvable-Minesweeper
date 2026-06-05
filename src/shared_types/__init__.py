@@ -20,6 +20,7 @@ from .enums import (
     MouseState,
     GameMode,
     GameLevel,
+    ButtonEventType,
 )
 
 __all__ = [
@@ -36,4 +37,5 @@ __all__ = [
     "MouseState",
     "GameMode",
     "GameLevel",
+    "ButtonEventType",
 ]

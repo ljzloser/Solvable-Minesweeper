@@ -3,11 +3,11 @@
 """
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 from lib_zmq_plugins.shared.base import BaseEvent
 
-from .enums import GameBoardState
+from .enums import GameBoardState, ButtonEventType, MouseState
 
 
 class BoardUpdateEvent(BaseEvent, tag="board_update"):
@@ -75,10 +75,12 @@ class ContextChangeEvent(BaseEvent, tag="context_change"):
 
 
 class ButtonClickEvent(BaseEvent, tag="button_click"):
-    """按钮点击事件"""
-    col = 0
-    row = 0
-    button = 0
+    """鼠标按键事件"""
+    col: int = 0
+    row: int = 0
+    button: ButtonEventType = ButtonEventType.MV
+    old_state: MouseState = MouseState.UpUp
+    new_state: MouseState = MouseState.UpUp
 
 
 class GameFinishedEvent(BaseEvent, tag="game_end"):
