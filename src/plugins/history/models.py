@@ -10,7 +10,7 @@ from typing import Any
 
 from PyQt5.QtCore import QCoreApplication
 
-from shared_types.enums import BaseDiaPlayEnum
+from shared_types.enums import GameBoardState, GameMode, GameLevel, BaseDiaPlayEnum
 
 _translate = QCoreApplication.translate
 
@@ -109,7 +109,7 @@ class HistoryData:
     """历史记录数据行（纯数据类，用类属性定义字段）"""
 
     replay_id: int = 0
-    game_state: int = 6
+    game_state: GameBoardState = GameBoardState.Display
     nf: int = 0
     row: int = 0
     column: int = 0
@@ -118,7 +118,7 @@ class HistoryData:
     left: int = 0
     right: int = 0
     double: int = 0
-    level: int = 3
+    level: GameLevel = GameLevel.BEGINNER
     cl: int = 0
     ce: int = 0
     rce: int = 0
@@ -131,7 +131,7 @@ class HistoryData:
     path: float = 0.0
     start_time: datetime = datetime.now()
     end_time: datetime = datetime.now()
-    mode: int = 0
+    mode: GameMode = GameMode.Standard
     software: str = ""
     player_identifier: str = ""
     race_identifier: str = ""
