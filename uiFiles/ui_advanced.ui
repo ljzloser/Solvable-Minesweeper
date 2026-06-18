@@ -33,83 +33,36 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_plugin">
       <item>
-       <widget class="QLabel" name="label_info_text">
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>允许插件的控制类命令后（如点击格子、重开新局等），当前局面的录像将自动标记为"非正式"，不计入任何排名与统计数据。各命令需要在插件管理器中完成授权后才生效。</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget_auth_container" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_auth_items">
-         <property name="leftMargin">
-          <number>0</number>
+        <widget class="QLabel" name="label_info_text">
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
-         <property name="topMargin">
-          <number>0</number>
+         <property name="textFormat">
+          <enum>Qt::RichText</enum>
          </property>
-         <property name="rightMargin">
-          <number>0</number>
+         <property name="text">
+          <string>允许插件的控制类命令后（如点击格子、重开新局等），当前局面的录像将自动标记为"非正式"，不计入任何排名与统计数据。各命令需要在&lt;a href=&quot;plugin:manager&quot; style=&quot;color:#00A2E8; text-decoration:underline;&quot;&gt;插件管理器&lt;/a&gt;中完成授权后才生效。</string>
          </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget_btn_auth" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_btn_auth">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <spacer name="horizontalSpacer_btn_auth">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>0</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btn_open_auth_dialog">
-           <property name="minimumSize">
-            <size>
-             <width>220</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>280</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>打开插件管理器 → 控制授权</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_auth_container" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_auth_items">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
      </layout>
     </widget>
    </item>

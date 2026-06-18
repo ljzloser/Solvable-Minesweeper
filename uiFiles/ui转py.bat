@@ -6,8 +6,10 @@ pyuic5 -o ui_main_board.py main_board.ui
 pyuic5 -o ui_mine_num_bar.py ui_mine_num_bar.ui
 pyuic5 -o ui_video_control.py ui_video_control.ui
 pyuic5 -o ui_score_board.py ui_score_board.ui
+pyuic5 -o ui_advanced.py ui_advanced.ui
 pyuic5 -o ui_about.py ui_about.ui
 pyuic5 -o ui_record_pop.py ui_record_pop.ui
+copy /y ui_advanced.py ..\src\ui\ui_advanced.py
 copy /y ui_score_board.py ..\src\ui\ui_score_board.py
 copy /y ui_gameSettings.py ..\src\ui\ui_gameSettings.py
 copy /y ui_main_board.py ..\src\ui\ui_main_board.py

@@ -31,7 +31,7 @@ class ui_Form(Ui_Form):
 
         self.pushButton_yes.clicked.connect(self._on_accept)
         self.pushButton_no.clicked.connect(self.Dialog.close)
-        self.btn_open_auth_dialog.clicked.connect(self._open_plugin_auth)
+        self.label_info_text.linkActivated.connect(self._open_plugin_auth)
 
         self._build_allow_ui()
         self.setParameter()

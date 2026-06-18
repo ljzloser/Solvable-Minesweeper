@@ -59,6 +59,17 @@ QComboBox::drop-down {
     width: 26px;
 }
 
+QGroupBox {
+    font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
+    font-size: 16pt;
+    font-weight: bold;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px 0 5px;
+}
+
 QLabel, QCheckBox {
     font-family: "Microsoft YaHei", "微软雅黑", "Segoe UI", Arial, sans-serif;
     font-size: 14pt;
