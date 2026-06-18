@@ -171,7 +171,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <p style="margin:8px 0;">扫雷一途，亦如修道——<br>
 步步惊心，一念生，一念死；<br>
 勘破迷障，洞悉本源，方得超脱。</p>
-<p style="margin:8px 0;">今有仙界之法则，立此天地道统：<br>
+<p style="margin:8px 0;">今有《仙逆》之法则，立此天地道统：<br>
 胜则增道行，积修为，破境界，证长生；<br>
 败则归凡尘，从头越，砺道心。</p>
 <p style="margin:8px 0; text-align:right;">—— 道不可须臾离也</p>
