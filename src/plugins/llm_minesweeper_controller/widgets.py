@@ -1,13 +1,80 @@
 """
 llm_minesweeper_controller - UI 组件
 """
+
 from __future__ import annotations
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton,
-    QHBoxLayout, QGroupBox, QSplitter,
+    QHBoxLayout, QGroupBox, QSplitter, QDialog, QTextBrowser,
+    QDialogButtonBox,
 )
 from PyQt5.QtCore import pyqtSignal, Qt
+
+class TutorialDialog(QDialog):
+    """配置教程弹窗"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("使用教程")
+        self.resize(640, 520)
+        layout = QVBoxLayout(self)
+
+        browser = QTextBrowser()
+        browser.setOpenExternalLinks(True)
+        browser.setStyleSheet(
+            "QTextBrowser { font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif; "
+            "font-size: 13px; background: #FEFEFE; padding: 12px; }"
+        )
+        browser.setHtml(self._build_content())
+        layout.addWidget(browser)
+
+        btn_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        btn_box.accepted.connect(self.accept)
+        layout.addWidget(btn_box)
+
+    @staticmethod
+    def _build_content() -> str:
+        return """\
+<style>
+h3 { color: #4CAF50; border-bottom: 2px solid #A5D6A7; padding-bottom: 4px; }
+b { color: #2E7D32; }
+code { background: #E8F5E9; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+ol { margin: 4px 0; padding-left: 22px; }
+ul { margin: 4px 0; }
+li { margin: 6px 0; }
+</style>
+
+<h3>🔧 手把手配置教程</h3>
+<ol>
+<li><b>搞到 API Key</b><br>
+打开 <a href='https://open.bigmodel.cn'>open.bigmodel.cn</a>（此处以智谱 AI 的免费小模型为例，你也可以用其他任意兼容 OpenAI 的 API）→ 点右上角「注册」→ 手机号或邮箱注册 → 登录后进控制台 → 左侧点「API Keys」→ 点「创建 API Key」→ 复制那串乱码</li>
+
+<li><b>填进插件（通过界面修改，无需改文件）</b><br>
+游戏菜单 →「插件管理器」→「插件列表」→ 找到「llm_minesweeper_controller」→ 右键点击 →「设置...」→ 在弹窗的「插件配置」区域填写：
+<ul>
+<li><b>API 密钥</b>：粘贴刚才复制的那串乱码</li>
+<li><b>API 基础 URL</b>：<code>https://open.bigmodel.cn/api/paas/v4/</code></li>
+<li><b>模型名称</b>：<code>glm-4-flash</code>（这里只是拿智谱举例，你可以换成其他任何模型）</li>
+<li><b>深度思考</b>：选「关闭」（小模型不支持，否则会报错）</li>
+</ul>
+</li>
+
+<li><b>测试能不能用</b><br>
+回到本插件界面，点「🔗 测试连接」，日志区显示「连接成功」就说明配置对了</li>
+
+<li><b>授权给插件</b><br>
+插件管理器 →「控制授权」→ 把「新游戏」和「鼠标点击」都选上本插件 → 保存</li>
+
+<li><b>勾选允许反控</b><br>
+游戏菜单 →「高级设置」→ 把「允许鼠标点击」和「允许重新开局」勾上（不勾的话插件点不动格子）</li>
+
+<li><b>开玩</b><br>
+回到本插件界面，点「🤖 分析并操作」就开始自动扫雷了</li>
+</ol>
+
+<p style='color:#999; margin-top:16px;'>💡 <code>glm-4-flash</code> 是智谱 AI 的永久免费模型，128K 上下文，支持自动调用工具。用完赠送额度后仍然免费，只是速度会慢一些。</p>
+"""
 
 
 class LlmMinesweeperControllerWidget(QWidget):
@@ -80,17 +147,31 @@ class LlmMinesweeperControllerWidget(QWidget):
 
         # 控制按钮
         button_layout = QHBoxLayout()
-        self._analyze_button = QPushButton("🤖 分析并操作")
-        self._analyze_button.setStyleSheet("padding: 6px; font-size: 14px;")
-        self._stop_button = QPushButton("⏹ 停止")
-        self._stop_button.setStyleSheet("padding: 6px; font-size: 14px;")
-        self._stop_button.setEnabled(False)  # 默认禁用，有任务时才启用
-        self._test_button = QPushButton("🔗 测试连接")
-        self._clear_chat_button = QPushButton("🗑 清除对话")
-        self._clear_log_button = QPushButton("🗑 清除日志")
+        button_layout.setSpacing(8)
+
+        def make_btn(text: str) -> QPushButton:
+            btn = QPushButton(text)
+            btn.setSizePolicy(
+                btn.sizePolicy().horizontalPolicy(),
+                btn.sizePolicy().verticalPolicy(),
+            )
+            btn.setStyleSheet(
+                "QPushButton { padding: 5px 16px; font-size: 13px; }"
+                "QPushButton:disabled { color: #999; }"
+            )
+            return btn
+
+        self._analyze_button = make_btn("🤖 分析并操作")
+        self._stop_button = make_btn("⏹ 停止")
+        self._stop_button.setEnabled(False)
+        self._test_button = make_btn("🔗 测试")
+        self._tutorial_button = make_btn("📖 教程")
+        self._clear_chat_button = make_btn("🗑 清除对话")
+        self._clear_log_button = make_btn("🗑 清除日志")
         button_layout.addWidget(self._analyze_button)
         button_layout.addWidget(self._stop_button)
         button_layout.addWidget(self._test_button)
+        button_layout.addWidget(self._tutorial_button)
         button_layout.addWidget(self._clear_chat_button)
         button_layout.addWidget(self._clear_log_button)
         layout.addLayout(button_layout)
@@ -106,6 +187,7 @@ class LlmMinesweeperControllerWidget(QWidget):
         # 按钮事件
         self._clear_log_button.clicked.connect(self._clear_log)
         self._clear_chat_button.clicked.connect(self._clear_chat)
+        self._tutorial_button.clicked.connect(self._show_tutorial)
 
     def _on_log(self, text: str) -> None:
         from datetime import datetime
@@ -141,6 +223,10 @@ class LlmMinesweeperControllerWidget(QWidget):
     def _on_stop_clicked(self) -> None:
         """停止按钮点击处理"""
         self._stop_signal.emit()
+
+    def _show_tutorial(self) -> None:
+        dialog = TutorialDialog(self)
+        dialog.exec_()
 
     def _clear_log(self) -> None:
         self._log_text.clear()
@@ -179,3 +265,5 @@ class LlmMinesweeperControllerWidget(QWidget):
 
     def set_stop_button_callback(self, callback) -> None:
         self._stop_button.clicked.connect(callback)
+
+
