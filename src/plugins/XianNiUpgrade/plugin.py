@@ -305,7 +305,7 @@ class XianNiUpgradePlugin(BasePlugin):
 
             match actual_md5:
                 case "d5fd61ae1372297aa7008d7b7cd8a13b":
-                    return self._validate_metasweeper322(exe, replay_path)
+                    return self._validate_metasweeper_3_2_2(exe, replay_path)
                 case _:
                     self.logger.error(f"未知法器 MD5: {actual_md5}")
                     return None
@@ -313,7 +313,7 @@ class XianNiUpgradePlugin(BasePlugin):
             self.logger.error(f"校验失败: {e}")
             return None
 
-    def _validate_metasweeper322(self, exe: Path, replay_path: str) -> dict | None:
+    def _validate_metasweeper_3_2_2(self, exe: Path, replay_path: str) -> dict | None:
         """元扫雷 3.2.2 的录像校验与解析"""
         try:
             cmd = [str(exe), "-c", replay_path]
@@ -446,6 +446,8 @@ class XianNiUpgradePlugin(BasePlugin):
         }
 
     def _on_game_finished(self, event: GameFinishedEvent):
+        # self.logger.info(event.game_state)
+        # self.logger.info(event)
         if event.game_state != 6:
             return
 

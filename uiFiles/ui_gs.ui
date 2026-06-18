@@ -37,13 +37,9 @@
   <property name="focusPolicy">
    <enum>Qt::ClickFocus</enum>
   </property>
-  <property name="windowTitle">
-   <string notr="true"/>
-  </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>media/cat.ico</normaloff>media/cat.ico</iconset>
-  </property>
+   <property name="windowTitle">
+    <string notr="true"/>
+   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>18</number>
@@ -726,25 +722,6 @@ background-color:rgb(255, 255, 255)
            </property>
            <property name="text">
             <string>自动保存录像集</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox_filter_forever">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>勾选后永远使用筛选法埋雷，否则会适时改用调整法</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true"/>
-           </property>
-           <property name="text">
-            <string>永远使用筛选法埋雷（不推荐）</string>
            </property>
           </widget>
          </item>

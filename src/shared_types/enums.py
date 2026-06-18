@@ -46,7 +46,7 @@ class GameBoardState(BaseDiaPlayEnum):
     """
     游戏板状态枚举
 
-    这些魔数遵循 ms_toollib 标准。
+    这些魔数遵循Metasweeper的状态标准，不遵循ms_toollib标准。
     'ready'、'study'、'show'、'playing'、'joking'、
     # 'fail'、'win'、'jofail'、'jowin'、'display'、'showdisplay'
     jofail：作弊过且失败

@@ -29,7 +29,6 @@ class ui_Form(Ui_Form):
         self.country = self.game_setting.value('DEFAULT/country', None, str)
         self.autosave_video = self.game_setting.value('DEFAULT/autosave_video', None, bool)
         self.autosave_video_set = self.game_setting.value('DEFAULT/autosave_video_set', None, bool)
-        self.filter_forever = self.game_setting.value('DEFAULT/filter_forever', None, bool)
         self.end_then_flag = self.game_setting.value('DEFAULT/end_then_flag', None, bool)
         self.cursor_limit = self.game_setting.value('DEFAULT/cursor_limit', None, bool)
         self.board_constraint = mainWindow.board_constraint
@@ -90,7 +89,6 @@ class ui_Form(Ui_Form):
         self.checkBox_auto_notification.setChecked(self.auto_notification)
         self.checkBox_autosave_video.setChecked(self.autosave_video)
         self.checkBox_autosave_video_set.setChecked(self.autosave_video_set)
-        self.checkBox_filter_forever.setChecked(self.filter_forever)
         self.lineEdit_constraint.setText(self.board_constraint)
         self.spinBox_attempt_times_limit.setValue (self.attempt_times_limit)
         self.lineEdit_label.setText(self.player_identifier)
@@ -123,7 +121,6 @@ class ui_Form(Ui_Form):
         self.country = self.comboBox_country.currentText()
         self.autosave_video = self.checkBox_autosave_video.isChecked()
         self.autosave_video_set = self.checkBox_autosave_video_set.isChecked()
-        self.filter_forever = self.checkBox_filter_forever.isChecked()
         self.board_constraint = self.lineEdit_constraint.text()
         self.attempt_times_limit = self.spinBox_attempt_times_limit.value()
         self.end_then_flag = self.checkBox_end_then_flag.isChecked() # 游戏结束后自动标雷
@@ -139,7 +136,6 @@ class ui_Form(Ui_Form):
         self.game_setting.set_value("DEFAULT/auto_notification", self.auto_notification)
         self.game_setting.set_value("DEFAULT/autosave_video", self.autosave_video)
         self.game_setting.set_value("DEFAULT/autosave_video_set", self.autosave_video_set)
-        self.game_setting.set_value("DEFAULT/filter_forever", self.filter_forever)
         self.game_setting.set_value("DEFAULT/player_identifier", self.player_identifier)
         self.game_setting.set_value("DEFAULT/race_identifier", self.race_identifier)
         self.game_setting.set_value("DEFAULT/unique_identifier", self.unique_identifier)

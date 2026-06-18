@@ -13,6 +13,7 @@ import superGUI
 import gameAbout
 import gameSettings
 import gameSettingShortcuts
+import gameAdvancedSettings
 import captureScreen
 import mine_num_bar
 import gameRecordPop
@@ -77,6 +78,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.action_kuaijiejian.triggered.connect(self.action_QEvent)
         self.action_mouse.triggered.connect(self.action_mouse_setting)
         self.actiongaun_yv.triggered.connect(self.action_AEvent)
+        self.action_advance.triggered.connect(self.action_AdvancedSettings)
         self.actionauto_update.triggered.connect(self.auto_Update)
         self.actionopen.triggered.connect(self.action_OpenFile)
         self.actionchajian.triggered.connect(self.action_OpenPluginDialog)
@@ -323,7 +325,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     # 处理数据相关。不处理前端显示
     def onGameFinished(self, new_game_state):
         # 不论如何都必然生成数据
-        if self.label.ms_board.game_board_state == utils.GameBoardState.Playing.value:
+        if self.label.ms_board.game_board_state == 2:
             self.label.ms_board.step_game_state("replay")
         self.dump_evf_file_data()
         # 发信号给插件，游戏结束了
@@ -459,8 +461,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             # 假如标识不以"[lag]"开头，则误差大于100ms时重开。
             # 假如标识以"[lag]"开头，则误差大于1000ms、或误差大于50ms且大于10%时重开。
             gap_ms = abs(t * 1000 - since_time_unix_2)
-            if gap_ms > 100 and\
-                    (self.game_state == "playing" or self.game_state == "joking"):
+            if gap_ms > 100 and self.game_state == "playing":
                 if self.player_identifier[:5] != "[lag]":
                     self.gameRestart()
                 elif gap_ms > 1000 or gap_ms > 50 and\
@@ -1291,7 +1292,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.set_country_flag()
             self.autosave_video = ui.autosave_video
             self.autosave_video_set = ui.autosave_video_set
-            self.filter_forever = ui.filter_forever
 
             self.board_constraint = ui.board_constraint
             self.attempt_times_limit = ui.attempt_times_limit
@@ -1313,6 +1313,14 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                 "mode": self.gameMode,
             })
             self.score_board_manager.show(self.label.ms_board, index_type=1)
+
+    def action_AdvancedSettings(self):
+        ui = gameAdvancedSettings.ui_Form(self)
+        ui.Dialog.setModal(True)
+        ui.Dialog.show()
+        ui.Dialog.exec_()
+        if ui.alter:
+            self.filter_forever = ui.filter_forever
 
     def action_QEvent(self):
         # 快捷键设置的回调

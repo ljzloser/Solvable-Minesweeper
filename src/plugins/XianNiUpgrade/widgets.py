@@ -171,7 +171,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <p style="margin:8px 0;">扫雷一途，亦如修道——<br>
 步步惊心，一念生，一念死；<br>
 勘破迷障，洞悉本源，方得超脱。</p>
-<p style="margin:8px 0;">今有《仙逆》之法则，立此天地道统：<br>
+<p style="margin:8px 0;">今有仙界之法则，立此天地道统：<br>
 胜则增道行，积修为，破境界，证长生；<br>
 败则归凡尘，从头越，砺道心。</p>
 <p style="margin:8px 0; text-align:right;">—— 道不可须臾离也</p>
@@ -224,17 +224,17 @@ th { background: #F3E5F5; color: #6A1B9A; }
 
 <p><b>竞速经验</b>（仅标准模式·标准难度）：</p>
 <ul>
-<li>初级：<code>(1/100) × (10/用时)^3.5</code></li>
-<li>中级：<code>(1/8) × (60/用时)^3.5</code></li>
-<li>高级：<code>(240/用时)^3.5</code></li>
+<li>初级：<code>(1/100) × (10/rtime)^3.5</code></li>
+<li>中级：<code>(1/8) × (60/rtime)^3.5</code></li>
+<li>高级：<code>(240/rtime)^3.5</code></li>
 </ul>
 
 <p><b>效率经验</b>（仅标准模式·标准难度）：</p>
 <ul>
-<li>效率指标 <code>IOE = 3BV / (左键 + 右键 + 双击)</code></li>
+<li>效率指标 <code>IOE = 3BV / (lefts + rights + chordings)</code></li>
 <li>初级：IOE ≥ 0.95 时 <code>IOE^3.5</code></li>
-<li>中级：IOE ≥ 0.9 时 <code>10 × IOE^4</code>（有标）/ <code>20 × IOE^5</code>（盲扫）</li>
-<li>高级：IOE ≥ 0.8 时 <code>100 × IOE^10</code>（有标）/ <code>10000 × IOE^50</code>（盲扫）</li>
+<li>中级：IOE ≥ 0.9 时 <code>10 × IOE^4</code>（标雷）/ <code>20 × IOE^5</code>（盲扫）</li>
+<li>高级：IOE ≥ 0.8 时 <code>100 × IOE^10</code>（标雷）/ <code>10000 × IOE^50</code>（盲扫）</li>
 </ul>
 
 <p><b>总经验</b> = 基础 + 稀有 + 竞速 + 效率，上限 99999/局。</p>
