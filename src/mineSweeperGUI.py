@@ -1092,10 +1092,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         if len(del_items) < 9:
             ui = gameRecordPop.ui_Form(
                 self.r_path, del_items, b.bbbv, nf_items, self.mainWindow)
-            ui.Dialog.setModal(True)
             ui.label_16.setText(mode_text)
             ui.Dialog.show()
-            ui.Dialog.exec_()
+            self._popup_dialog = ui
+            ui.Dialog.finished.connect(lambda _: setattr(self, '_popup_dialog', None))
 
     # 根据条件是否满足，尝试追加evfs文件
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）

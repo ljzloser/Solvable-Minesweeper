@@ -162,6 +162,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
         # 正常情况的鼠标移动事件，与高亮的显示有关
         if self.game_state == 'playing' or self.game_state == 'joking' or self.game_state == 'ready':
             # self._step_and_send('mv', i, j)
+            self.label.ms_board.step('mv', (i, j))
             self.label.update()
         # 按住空格后的鼠标移动事件，与概率的显示有关
         elif self.game_state == 'show' or self.game_state == 'study':
