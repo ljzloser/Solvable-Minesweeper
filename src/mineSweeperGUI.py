@@ -47,6 +47,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
         super(MineSweeperGUI, self).__init__(MainWindow, args)
 
+        raw = self.game_setting.value('DEFAULT/allowed_controls', '', str)
+        self._allowed_controls: set[str] = set(raw.split(',')) if raw else set()
+
         self.time_10ms: int = 0  # 已毫秒为单位的游戏时间，全局统一的
         self.showTime(self.time_10ms // 100)
 
@@ -1320,7 +1323,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
+            self.gameRestart()
             self.filter_forever = ui.filter_forever
+            self._allowed_controls = ui._allowed_controls.copy()
 
     def action_QEvent(self):
         # 快捷键设置的回调
@@ -1544,7 +1549,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         return self.label.ms_board.game_board_state == 3 and self.gameMode == 0
 
     def is_fair(self) -> bool:
+        '''
+        有任何局面约束或反控就为不fair
+        '''
         if self.board_constraint:
+            return False
+        if self._allowed_controls:
             return False
         return self.game_state in ("win", "fail", "playing")
 

@@ -206,6 +206,9 @@ if __name__ == "__main__":
             """处理新游戏命令"""
             from lib_zmq_plugins.shared.base import CommandResponse
 
+            if 'new_game' not in ui._allowed_controls:
+                return CommandResponse(request_id=cmd.request_id, success=False)
+
             # 根据 level 确定参数
             if cmd.level == GameLevel.BEGINNER.value:
                 rows, cols, mines = 8, 8, 10
@@ -225,6 +228,9 @@ if __name__ == "__main__":
         def handle_mouse_click(cmd: MouseClickCommand):
             """处理鼠标点击命令"""
             from lib_zmq_plugins.shared.base import CommandResponse
+
+            if 'mouse_click' not in ui._allowed_controls:
+                return CommandResponse(request_id=cmd.request_id, success=False)
 
             print(
                 f"[MouseClickCommand] row={cmd.row}, col={cmd.col}, button={cmd.button}")
