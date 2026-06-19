@@ -9,8 +9,10 @@ from pathlib import Path
 from typing import Any
 
 import msgspec
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QCoreApplication, pyqtSignal
 from PyQt5.QtWidgets import QWidget
+
+_translate = QCoreApplication.translate
 
 from plugin_sdk import (
     BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
@@ -27,8 +29,8 @@ class HistoryConfig(OtherInfoBase):
 
     float_decimals = IntConfig(
         default=2,
-        label="小数位数",
-        description="查询窗口中浮点数显示的小数位数",
+        label=_translate("Form", "小数位数"),
+        description=_translate("Form", "查询窗口中浮点数显示的小数位数"),
         min_value=0,
         max_value=10,
     )
@@ -36,25 +38,25 @@ class HistoryConfig(OtherInfoBase):
     # 隐藏字段：保存排序和过滤状态
     saved_filter = TextConfig(
         default="[]",
-        label="保存的过滤条件",
+        label="saved_filter",
         visible=False,
     )
 
     saved_sort = TextConfig(
         default="[]",
-        label="保存的排序条件",
+        label="saved_sort",
         visible=False,
     )
 
     saved_show_fields = TextConfig(
         default="[]",
-        label="保存的列显示配置",
+        label="saved_show_fields",
         visible=False,
     )
 
     page_size = ChoiceConfig(
         default="50",
-        label="每页条数",
+        label=_translate("Form", "每页条数"),
         choices=[
             ("10", "10"),
             ("20", "20"),
@@ -81,8 +83,8 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
-            name="历史记录",
-            description="游戏历史记录（SQLite 持久化）",
+            name=_translate("Form", "历史记录"),
+            description=_translate("Form", "游戏历史记录（SQLite 持久化）"),
             author="ljzloser",
             version="1.0.0",
             icon=make_plugin_icon("#7b1fa2", "\N{SCROLL}"),

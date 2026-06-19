@@ -8,6 +8,10 @@ import json
 from typing import Dict, Any, Callable, List, Optional, get_type_hints
 from dataclasses import dataclass, field
 
+from PyQt5.QtCore import QCoreApplication
+
+_translate = QCoreApplication.translate
+
 
 @dataclass
 class ParameterInfo:
@@ -156,7 +160,7 @@ class FunctionRegistry:
         """执行注册的函数"""
         func_info = self.get_function(name)
         if not func_info or not func_info.function:
-            return {"success": False, "error": f"函数 '{name}' 未注册"}
+            return {"success": False, "error": _translate("Form", "函数 '%1' 未注册").replace("%1", name)}
 
         try:
             sig = inspect.signature(func_info.function)
@@ -188,7 +192,7 @@ class FunctionRegistry:
                 return {"success": True, "result": result}
 
         except Exception as e:
-            return {"success": False, "error": f"函数执行失败: {str(e)}"}
+            return {"success": False, "error": _translate("Form", "函数执行失败: %1").replace("%1", str(e))}
 
     def handle_tool_calls(self, tool_calls: List[Dict[str, Any]], 
                           logger=None, widget=None) -> List[Dict[str, Any]]:
@@ -218,16 +222,16 @@ class FunctionRegistry:
             if logger:
                 logger.info(f"处理 tool call: {func_name}, 参数: {func_args}")
             if widget:
-                widget.log_message(f"LLM 调用: {func_name}({func_args})")
+                widget.log_message(_translate("Form", "LLM 调用: %1(%2)").replace("%1", func_name).replace("%2", str(func_args)))
 
             # 执行函数
             result = self.execute_function(func_name, func_args)
 
             if widget:
                 if result.get("success"):
-                    widget.log_message(f"执行成功: {func_name}")
+                    widget.log_message(_translate("Form", "执行成功: %1").replace("%1", func_name))
                 else:
-                    widget.log_message(f"执行失败: {func_name} - {result.get('error', '未知错误')}")
+                    widget.log_message(_translate("Form", "执行失败: %1 - %2").replace("%1", func_name).replace("%2", result.get('error', _translate("Form", "未知错误"))))
 
             # 构建工具结果消息
             result_msg = {

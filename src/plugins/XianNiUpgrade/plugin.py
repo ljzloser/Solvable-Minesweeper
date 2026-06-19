@@ -13,7 +13,10 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QWidget, QMessageBox
+
+_translate = QCoreApplication.translate
 
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -117,7 +120,7 @@ class XianNiUpgradePlugin(BasePlugin):
             name="xian_ni_upgrade",
             version="1.0.0",
             author="eee555",
-            description="仙逆背景的修炼体系 - 每局扫雷胜利获得经验，从凡人修炼到一招摧毁108颗修正星的绝世强者",
+            description=_translate("Form", "仙逆背景的修炼体系 - 每局扫雷胜利获得经验，从凡人修炼到一招摧毁108颗修正星的绝世强者"),
             icon=make_plugin_icon("#8E24AA", "仙", 64),
             window_mode=WindowMode.TAB,
         )
@@ -280,7 +283,7 @@ class XianNiUpgradePlugin(BasePlugin):
     def _get_or_create_pid(self, identifier: str) -> int:
         identifier = identifier.strip()
         if not identifier:
-            identifier = "匿名玩家"
+            identifier = _translate("Form", "匿名玩家")
         try:
             return self._identifiers.index(identifier)
         except ValueError:

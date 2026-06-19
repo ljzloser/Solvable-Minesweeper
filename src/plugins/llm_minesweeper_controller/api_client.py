@@ -8,6 +8,10 @@ import requests
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 
+from PyQt5.QtCore import QCoreApplication
+
+_translate = QCoreApplication.translate
+
 
 @dataclass
 class ChatResponse:
@@ -128,13 +132,13 @@ class LLMClient:
             return self._parse_success_response(response_data)
 
         except requests.exceptions.Timeout:
-            return ChatResponse(success=False, error=f"请求超时 ({self.timeout}秒)")
+            return ChatResponse(success=False, error=_translate("Form", "请求超时 (%1秒)").replace("%1", str(self.timeout)))
         except requests.exceptions.ConnectionError:
-            return ChatResponse(success=False, error="连接失败，请检查网络和API地址")
+            return ChatResponse(success=False, error=_translate("Form", "连接失败，请检查网络和API地址"))
         except requests.exceptions.RequestException as e:
-            return ChatResponse(success=False, error=f"请求异常: {str(e)}")
+            return ChatResponse(success=False, error=_translate("Form", "请求异常: %1").replace("%1", str(e)))
         except Exception as e:
-            return ChatResponse(success=False, error=f"未知错误: {str(e)}")
+            return ChatResponse(success=False, error=_translate("Form", "未知错误: %1").replace("%1", str(e)))
 
     def _parse_success_response(self, response_data: Dict[str, Any]) -> ChatResponse:
         """解析成功的API响应"""
@@ -167,7 +171,7 @@ class LLMClient:
                 success=True,
                 status_code=200,
                 raw_data=response_data,
-                error=f"解析响应失败: {str(e)}",
+                error=_translate("Form", "解析响应失败: %1").replace("%1", str(e)),
             )
 
     @staticmethod

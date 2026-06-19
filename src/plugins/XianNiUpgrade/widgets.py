@@ -16,7 +16,9 @@ from PyQt5.QtWidgets import (
     QFrame, QAbstractItemView, QPushButton, QFileDialog,
     QMessageBox, QDialog, QLineEdit, QTextBrowser, QDialogButtonBox
 )
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QCoreApplication
+
+_translate = QCoreApplication.translate
 from PyQt5.QtGui import QPixmap, QResizeEvent, QPainter
 
 from .models import LEVEL_LABELS, MODE_LABELS
@@ -78,26 +80,26 @@ class AbsorbDialog(QDialog):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setWindowTitle("吸收灵气")
+        self.setWindowTitle(_translate("Form", "吸收灵气"))
         self.resize(500, 150)
         layout = QVBoxLayout(self)
 
         exe_row = QHBoxLayout()
         self._exe_edit = QLineEdit()
-        self._exe_edit.setPlaceholderText("选择验证法器...")
-        browse_exe = QPushButton("浏览")
+        self._exe_edit.setPlaceholderText(_translate("Form", "选择验证法器..."))
+        browse_exe = QPushButton(_translate("Form", "浏览"))
         browse_exe.clicked.connect(self._browse_exe)
-        exe_row.addWidget(QLabel("验证法器:"))
+        exe_row.addWidget(QLabel(_translate("Form", "验证法器:")))
         exe_row.addWidget(self._exe_edit)
         exe_row.addWidget(browse_exe)
         layout.addLayout(exe_row)
 
         replay_row = QHBoxLayout()
         self._replay_edit = QLineEdit()
-        self._replay_edit.setPlaceholderText("选择灵箓目录...")
-        browse_replay = QPushButton("浏览")
+        self._replay_edit.setPlaceholderText(_translate("Form", "选择灵箓目录..."))
+        browse_replay = QPushButton(_translate("Form", "浏览"))
         browse_replay.clicked.connect(self._browse_replay)
-        replay_row.addWidget(QLabel("灵箓目录:"))
+        replay_row.addWidget(QLabel(_translate("Form", "灵箓目录:")))
         replay_row.addWidget(self._replay_edit)
         replay_row.addWidget(browse_replay)
         layout.addLayout(replay_row)
@@ -106,21 +108,21 @@ class AbsorbDialog(QDialog):
 
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        ok_btn = QPushButton("确认")
+        ok_btn = QPushButton(_translate("Form", "确认"))
         ok_btn.clicked.connect(self.accept)
-        cancel_btn = QPushButton("取消")
+        cancel_btn = QPushButton(_translate("Form", "取消"))
         cancel_btn.clicked.connect(self.reject)
         btn_row.addWidget(ok_btn)
         btn_row.addWidget(cancel_btn)
         layout.addLayout(btn_row)
 
     def _browse_exe(self):
-        path, _ = QFileDialog.getOpenFileName(self, "选择验证法器", "", "法器 (*.exe);;所有文件 (*)")
+        path, _ = QFileDialog.getOpenFileName(self, _translate("Form", "选择验证法器"), "", _translate("Form", "法器 (*.exe);;所有文件 (*)"))
         if path:
             self._exe_edit.setText(path)
 
     def _browse_replay(self):
-        path = QFileDialog.getExistingDirectory(self, "选择灵箓目录")
+        path = QFileDialog.getExistingDirectory(self, _translate("Form", "选择灵箓目录"))
         if path:
             self._replay_edit.setText(path)
 
@@ -133,7 +135,7 @@ class RulesDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("天地法则")
+        self.setWindowTitle(_translate("Form", "天地法则"))
         self.resize(660, 520)
         layout = QVBoxLayout(self)
 
@@ -152,7 +154,7 @@ class RulesDialog(QDialog):
 
     @staticmethod
     def _build_content() -> str:
-        return """\
+        return _translate("Form", """\
 <style>
 h2 { color: #6A1B9A; border-bottom: 2px solid #CE93D8; padding-bottom: 4px; }
 h3 { color: #8E24AA; margin-top: 16px; }
@@ -258,7 +260,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 
 <h3>五、存档说明</h3>
 <p>存档文件 <code>player_data.dat</code> 保存在插件数据目录，包含多玩家信息、修行日志和已导入录像记录（最多保存 1000 条）。不可轻易删除，否则只能在下个版本中用“吸收灵气”重新导入录像。</p>
-"""
+""")
 
 
 class LevelDisplay(QWidget):
@@ -284,7 +286,7 @@ class LevelDisplay(QWidget):
         self._player_label.setAlignment(Qt.AlignCenter)
         info_layout.addWidget(self._player_label)
 
-        self._rank_label = QLabel("凡人")
+        self._rank_label = QLabel(_translate("Form", "凡人"))
         self._rank_label.setStyleSheet("color: #01579B; font-size: 28px; font-weight: bold; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif;")
         self._rank_label.setAlignment(Qt.AlignCenter)
         self._rank_label.setWordWrap(True)
@@ -295,7 +297,7 @@ class LevelDisplay(QWidget):
         self._level_label.setAlignment(Qt.AlignCenter)
         info_layout.addWidget(self._level_label)
 
-        self._total_xp_label = QLabel("修为: 0")
+        self._total_xp_label = QLabel(_translate("Form", "修为: 0"))
         self._total_xp_label.setStyleSheet("color: #0288D1; font-size: 14px; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif;")
         self._total_xp_label.setAlignment(Qt.AlignCenter)
         info_layout.addWidget(self._total_xp_label)
@@ -314,7 +316,7 @@ class LevelDisplay(QWidget):
         info_layout.addWidget(self._progress)
 
         btn_row = QHBoxLayout()
-        law_btn = QPushButton("天地法则")
+        law_btn = QPushButton(_translate("Form", "天地法则"))
         law_btn.setFixedHeight(22)
         law_btn.setCursor(Qt.PointingHandCursor)
         law_btn.setStyleSheet(
@@ -325,7 +327,7 @@ class LevelDisplay(QWidget):
         law_btn.clicked.connect(self.law_clicked.emit)
         btn_row.addWidget(law_btn)
 
-        absorb_btn = QPushButton("吸收灵气")
+        absorb_btn = QPushButton(_translate("Form", "吸收灵气"))
         absorb_btn.setFixedHeight(22)
         absorb_btn.setCursor(Qt.PointingHandCursor)
         absorb_btn.setStyleSheet(
@@ -346,7 +348,7 @@ class LevelDisplay(QWidget):
             "QLabel { background: #E1F5FE; "
             " border: 2px solid #4FC3F7; color: #0277BD; font-size: 14px; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }"
         )
-        self._image_label.setText("等待仙躯\n形象加载...")
+        self._image_label.setText(_translate("Form", "等待仙躯\n形象加载..."))
         layout.addWidget(self._image_label)
 
     def set_image(self, raw_bytes: bytes | None):
@@ -354,20 +356,20 @@ class LevelDisplay(QWidget):
             self._image_label.set_raw(raw_bytes)
             return
         self._image_label.set_raw(None)
-        self._image_label.setText("暂无仙躯\n形象")
+        self._image_label.setText(_translate("Form", "暂无仙躯\n形象"))
 
     def update_info(self, player_name: str, rank: str, level: int, total_xp: int, xp_curr: int, xp_need: int):
         self._player_label.setText(player_name)
         self._rank_label.setText(rank)
         self._level_label.setText(f"Lv.{level}")
-        self._total_xp_label.setText(f"修为: {total_xp}")
+        self._total_xp_label.setText(_translate("Form", "修为: %1").replace("%1", str(total_xp)))
         if xp_need > 0:
             pct = min(xp_curr * 100 // xp_need, 100)
             self._progress.setValue(pct)
-            self._progress.setFormat(f"{pct}% | 还需 {xp_need - xp_curr} 道行")
+            self._progress.setFormat(_translate("Form", "%1% | 还需 %2 道行").replace("%1", str(pct)).replace("%2", str(xp_need - xp_curr)))
         else:
             self._progress.setValue(100)
-            self._progress.setFormat("已圆满")
+            self._progress.setFormat(_translate("Form", "已圆满"))
 
 
 class XianNiUpgradeUI(QWidget):
@@ -397,7 +399,7 @@ class XianNiUpgradeUI(QWidget):
         self._level_display.law_clicked.connect(self._on_law_clicked)
         layout.addWidget(self._level_display, 3)
 
-        group = QGroupBox("修行日志")
+        group = QGroupBox(_translate("Form", "修行日志"))
         group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }")
         group_layout = QVBoxLayout(group)
 
@@ -406,7 +408,7 @@ class XianNiUpgradeUI(QWidget):
         self._table.setMinimumHeight(130)
         self._table.setStyleSheet("QTableWidget { font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; } QTableWidget::item { border-bottom: 1px solid #E0E0E0; } QHeaderView::section { font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; border: none; }")
         self._table.setShowGrid(False)
-        self._table.setHorizontalHeaderLabels(["时刻", "境阶", "法式", "耗时", "衍数", "道行"])
+        self._table.setHorizontalHeaderLabels([_translate("Form", "时刻"), _translate("Form", "境阶"), _translate("Form", "法式"), _translate("Form", "耗时"), _translate("Form", "衍数"), _translate("Form", "道行")])
         self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
         self._table.setColumnWidth(0, 150)
         for c in range(1, 6):
@@ -445,28 +447,28 @@ class XianNiUpgradeUI(QWidget):
 
     def _on_absorb_clicked(self):
         if not self._validate_cb or not self._absorb_cb:
-            QMessageBox.warning(self, "提示", "插件未就绪")
+            QMessageBox.warning(self, _translate("Form", "提示"), _translate("Form", "插件未就绪"))
             return
         dialog = AbsorbDialog(self)
         if dialog.exec_() != QDialog.Accepted:
             return
         exe_path, replay_path = dialog.get_paths()
         if not exe_path or not replay_path:
-            QMessageBox.warning(self, "提示", "请填写验证法器和灵箓目录")
+            QMessageBox.warning(self, _translate("Form", "提示"), _translate("Form", "请填写验证法器和灵箓目录"))
             return
 
         preview = self._validate_cb(exe_path, replay_path)
         if preview is None:
-            QMessageBox.warning(self, "吸收灵气失败", "验证失败，请查看插件日志")
+            QMessageBox.warning(self, _translate("Form", "吸收灵气失败"), _translate("Form", "验证失败，请查看插件日志"))
             return
         if not preview["new_files"]:
-            QMessageBox.information(self, "吸收灵气", "没有新的灵箓需要导入")
+            QMessageBox.information(self, _translate("Form", "吸收灵气"), _translate("Form", "没有新的灵箓需要导入"))
             return
 
         gained = self._absorb_cb(preview)
         QMessageBox.information(
-            self, "吸收灵气完成",
-            f"新增 {len(preview['new_files'])} 道灵箓\n获得 {gained} 道行"
+            self, _translate("Form", "吸收灵气完成"),
+            _translate("Form", "新增 %1 道灵箓\n获得 %2 道行").replace("%1", str(len(preview['new_files']))).replace("%2", str(gained))
         )
 
     def _do_update(self, data: dict):

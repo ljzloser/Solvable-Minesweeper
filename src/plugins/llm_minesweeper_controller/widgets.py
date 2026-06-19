@@ -9,14 +9,16 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QGroupBox, QSplitter, QDialog, QTextBrowser,
     QDialogButtonBox,
 )
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QCoreApplication
+
+_translate = QCoreApplication.translate
 
 class TutorialDialog(QDialog):
     """配置教程弹窗"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("使用教程")
+        self.setWindowTitle(_translate("Form", "使用教程"))
         self.resize(640, 520)
         layout = QVBoxLayout(self)
 
@@ -35,7 +37,7 @@ class TutorialDialog(QDialog):
 
     @staticmethod
     def _build_content() -> str:
-        return """\
+        return _translate("Form", """\
 <style>
 h3 { color: #4CAF50; border-bottom: 2px solid #A5D6A7; padding-bottom: 4px; }
 b { color: #2E7D32; }
@@ -74,7 +76,7 @@ li { margin: 6px 0; }
 </ol>
 
 <p style='color:#999; margin-top:16px;'>💡 <code>glm-4-flash</code> 是智谱 AI 的永久免费模型，128K 上下文，支持自动调用工具。用完赠送额度后仍然免费，只是速度会慢一些。</p>
-"""
+""")
 
 
 class LlmMinesweeperControllerWidget(QWidget):
@@ -92,9 +94,9 @@ class LlmMinesweeperControllerWidget(QWidget):
         layout = QVBoxLayout(self)
 
         # 状态显示
-        status_group = QGroupBox("状态")
+        status_group = QGroupBox(_translate("Form", "状态"))
         status_layout = QHBoxLayout()
-        self._status_label = QLabel("就绪")
+        self._status_label = QLabel(_translate("Form", "就绪"))
         self._status_label.setStyleSheet("font-weight: bold;")
         status_layout.addWidget(self._status_label)
         status_group.setLayout(status_layout)
@@ -135,7 +137,7 @@ class LlmMinesweeperControllerWidget(QWidget):
         layout.addWidget(main_splitter, stretch=1)
 
         # 日志显示区
-        log_group = QGroupBox("日志")
+        log_group = QGroupBox(_translate("Form", "日志"))
         log_layout = QVBoxLayout()
         self._log_text = QTextEdit()
         self._log_text.setReadOnly(True)
@@ -161,13 +163,13 @@ class LlmMinesweeperControllerWidget(QWidget):
             )
             return btn
 
-        self._analyze_button = make_btn("🤖 分析并操作")
-        self._stop_button = make_btn("⏹ 停止")
+        self._analyze_button = make_btn(_translate("Form", "🤖 分析并操作"))
+        self._stop_button = make_btn(_translate("Form", "⏹ 停止"))
         self._stop_button.setEnabled(False)
-        self._test_button = make_btn("🔗 测试")
-        self._tutorial_button = make_btn("📖 教程")
-        self._clear_chat_button = make_btn("🗑 清除对话")
-        self._clear_log_button = make_btn("🗑 清除日志")
+        self._test_button = make_btn(_translate("Form", "🔗 测试"))
+        self._tutorial_button = make_btn(_translate("Form", "📖 教程"))
+        self._clear_chat_button = make_btn(_translate("Form", "🗑 清除对话"))
+        self._clear_log_button = make_btn(_translate("Form", "🗑 清除日志"))
         button_layout.addWidget(self._analyze_button)
         button_layout.addWidget(self._stop_button)
         button_layout.addWidget(self._test_button)

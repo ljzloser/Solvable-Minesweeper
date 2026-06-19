@@ -6,11 +6,13 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, QModelIndex, QTimer
+from PyQt5.QtCore import QCoreApplication, Qt, QModelIndex, QTimer
 from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtWidgets import QTableView
 
 from .models import HistoryData
+
+_translate = QCoreApplication.translate
 
 
 class AutoEditTableView(QTableView):
@@ -134,9 +136,14 @@ class FilterModel(QStandardItemModel):
 
     def __init__(self, parent=None):
         super().__init__(0, 6, parent)
-        self.setHorizontalHeaderLabels(
-            ["左括号", "字段", "比较符", "值", "右括号", "逻辑符"]
-        )
+        self.setHorizontalHeaderLabels([
+            _translate("Form", "左括号"),
+            _translate("Form", "字段"),
+            _translate("Form", "比较符"),
+            _translate("Form", "值"),
+            _translate("Form", "右括号"),
+            _translate("Form", "逻辑符"),
+        ])
 
     def data(self, index, role=Qt.DisplayRole):
         """重写 data 方法，格式化某些列的显示"""
@@ -199,7 +206,10 @@ class SortModel(QStandardItemModel):
 
     def __init__(self, parent=None):
         super().__init__(0, 2, parent)
-        self.setHorizontalHeaderLabels(["排序字段", "升序/降序"])
+        self.setHorizontalHeaderLabels([
+            _translate("Form", "排序字段"),
+            _translate("Form", "升序/降序"),
+        ])
 
     def get_row_data(self, row: int) -> dict:
         """获取指定行的所有数据"""

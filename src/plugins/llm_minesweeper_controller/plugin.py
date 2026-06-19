@@ -9,7 +9,9 @@ import json
 from typing import Any, Dict, List, Optional
 
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication
+
+_translate = QCoreApplication.translate
 
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from plugin_sdk.config_types import OtherInfoBase
@@ -143,42 +145,42 @@ class ExecutionSummary:
 
     def to_summary_text(self) -> str:
         """生成压缩摘要文本"""
-        lines = ["[历史执行摘要]"]
+        lines = [_translate("Form", "[历史执行摘要]")]
 
         # 统计信息
         stats = []
         if self.clicks > 0:
-            stats.append(f"左键{self.clicks}次")
+            stats.append(_translate("Form", "左键%1次").replace("%1", str(self.clicks)))
         if self.flags > 0:
-            stats.append(f"标旗{self.flags}次")
+            stats.append(_translate("Form", "标旗%1次").replace("%1", str(self.flags)))
         if self.unflags > 0:
-            stats.append(f"取消标旗{self.unflags}次")
+            stats.append(_translate("Form", "取消标旗%1次").replace("%1", str(self.unflags)))
         if self.middles > 0:
-            stats.append(f"中键{self.middles}次")
+            stats.append(_translate("Form", "中键%1次").replace("%1", str(self.middles)))
         if self.queries > 0:
-            stats.append(f"查询{self.queries}次")
+            stats.append(_translate("Form", "查询%1次").replace("%1", str(self.queries)))
         if self.games_started > 0:
-            stats.append(f"新游戏{self.games_started}次")
+            stats.append(_translate("Form", "新游戏%1次").replace("%1", str(self.games_started)))
 
         if stats:
-            lines.append(f"执行统计: {', '.join(stats)}")
+            lines.append(_translate("Form", "执行统计: %1").replace("%1", ', '.join(stats)))
 
         # 最近的操作记录（简化为统计格式）
         click_actions = [a for a in self.actions if a.get(
             "func") == "click_cell"]
         if click_actions:
             recent = click_actions[-5:]  # 只保留最近5个
-            lines.append(f"最近操作({len(click_actions)}个点击):")
+            lines.append(_translate("Form", "最近操作(%1个点击):").replace("%1", str(len(click_actions))))
             for a in recent:
                 args = a["args"]
                 button = args.get("button", "")
                 col, row = args.get("col"), args.get("row")
-                btn_name = {"left": "左", "right": "右",
-                            "middle": "中"}.get(button, button)
-                lines.append(f"  - {btn_name}键({col},{row})")
+                btn_name = {"left": _translate("Form", "左"), "right": _translate("Form", "右"),
+                            "middle": _translate("Form", "中")}.get(button, button)
+                lines.append(_translate("Form", "  - %1键(%2,%3)").replace("%1", btn_name).replace("%2", str(col)).replace("%3", str(row)))
 
         if self.last_game_status:
-            lines.append(f"最后游戏: {self.last_game_status}")
+            lines.append(_translate("Form", "最后游戏: %1").replace("%1", self.last_game_status))
 
         return "\n".join(lines)
 
@@ -256,7 +258,7 @@ class LLMWorker(QThread):
             summary_text = self._execution_summary.to_summary_text()
             result.append({
                 "role": "user",
-                "content": f"[上下文压缩] 以下是之前的执行摘要:\n{summary_text}"
+                "content": _translate("Form", "[上下文压缩] 以下是之前的执行摘要:\n%1").replace("%1", summary_text)
             })
 
         # 添加最近的消息（最多到下限）
@@ -363,7 +365,7 @@ class LLMWorker(QThread):
         if summary.actions or summary.queries > 0 or summary.clicks > 0:
             self._execution_summary = summary
             summary_text = summary.to_summary_text()
-            self.log_signal.emit(f"📦 上下文压缩: 合并了 {len(old_msgs)} 条旧消息")
+            self.log_signal.emit(_translate("Form", "📦 上下文压缩: 合并了 %1 条旧消息").replace("%1", str(len(old_msgs))))
 
             # 移除之前的压缩摘要消息（避免累积）
             self.messages[:] = [m for m in self.messages
@@ -374,7 +376,7 @@ class LLMWorker(QThread):
                 [m for m in self.messages if m.get("role") == "system"])
             self.messages.insert(insert_idx, {
                 "role": "user",
-                "content": f"[上下文压缩] 以下是之前的执行摘要:\n{summary_text}"
+                "content": _translate("Form", "[上下文压缩] 以下是之前的执行摘要:\n%1").replace("%1", summary_text)
             })
 
     def run(self):
@@ -395,7 +397,7 @@ class LLMWorker(QThread):
             while True:
                 # 检查停止标志
                 if self._stop_flag or self.isInterruptionRequested():
-                    self.finished_signal.emit(False, "用户请求停止")
+                    self.finished_signal.emit(False, _translate("Form", "用户请求停止"))
                     return
 
                 # 只在超过上限时才裁剪历史消息
@@ -403,39 +405,47 @@ class LLMWorker(QThread):
                     [m for m in self.messages if m.get("role") != "system"])
                 if current_msg_count > self.max_history:
                     self._trim_history()
+                    after_trim = len([m for m in self.messages if m.get('role') != 'system'])
                     self.log_signal.emit(
-                        f"📦 上下文压缩: {current_msg_count} -> {len([m for m in self.messages if m.get('role') != 'system'])} 条 (上限: {self.max_history}, 下限: {self.min_history})")
+                        _translate("Form", "📦 上下文压缩: %1 -> %2 条 (上限: %3, 下限: %4)")
+                        .replace("%1", str(current_msg_count))
+                        .replace("%2", str(after_trim))
+                        .replace("%3", str(self.max_history))
+                        .replace("%4", str(self.min_history)))
 
                 self.log_signal.emit(
-                    f"当前历史消息数: {current_msg_count} (上限: {self.max_history}, 下限: {self.min_history})")
+                    _translate("Form", "当前历史消息数: %1 (上限: %2, 下限: %3)")
+                    .replace("%1", str(current_msg_count))
+                    .replace("%2", str(self.max_history))
+                    .replace("%3", str(self.min_history)))
 
                 round_num += 1
-                self.log_signal.emit(f"=== 第 {round_num} 轮对话 ===")
+                self.log_signal.emit(_translate("Form", "=== 第 %1 轮对话 ===").replace("%1", str(round_num)))
 
                 # 如果连续查询次数过多，添加强制决策提示
                 if consecutive_query_count >= MAX_CONSECUTIVE_QUERIES:
                     force_decision_prompt = (
-                        f"[系统] 你已连续查询棋盘 {consecutive_query_count} 次但未执行任何操作！"
+                        _translate("Form", "[系统] 你已连续查询棋盘 %1 次但未执行任何操作！"
                         "现在必须基于已有信息做出决策：要么执行 click_cell 操作，要么调用 start_new_game。"
-                        "不要继续查询棋盘状态！"
+                        "不要继续查询棋盘状态！").replace("%1", str(consecutive_query_count))
                     )
                     self.messages.append(
                         {"role": "user", "content": force_decision_prompt})
-                    self.log_signal.emit("⚠️ 强制决策：连续查询次数过多，要求AI必须执行操作")
+                    self.log_signal.emit(_translate("Form", "⚠️ 强制决策：连续查询次数过多，要求AI必须执行操作"))
                     consecutive_query_count = 0  # 重置计数
 
                 # 如果连续点击但棋盘无变化，添加强制决策提示
                 if consecutive_no_change_count >= MAX_CONSECUTIVE_NO_CHANGE:
                     force_decision_prompt = (
-                        f"[系统] 警告！你已连续 {consecutive_no_change_count} 次执行点击操作，但棋盘状态没有变化！"
+                        _translate("Form", "[系统] 警告！你已连续 %1 次执行点击操作，但棋盘状态没有变化！"
                         "可能的原因：1) 点击了已揭开的格子 2) 点击了边界外 3) 游戏已结束。"
                         "请先调用 get_board_state 检查当前状态，再决定下一步操作。"
-                        "如果游戏已结束（win/fail），必须调用 start_new_game 开始新游戏！"
+                        "如果游戏已结束（win/fail），必须调用 start_new_game 开始新游戏！").replace("%1", str(consecutive_no_change_count))
                     )
                     self.messages.append(
                         {"role": "user", "content": force_decision_prompt})
                     self.log_signal.emit(
-                        f"⚠️ 强制检查：连续{consecutive_no_change_count}次点击无效果，要求检查棋盘状态")
+                        _translate("Form", "⚠️ 强制检查：连续%1次点击无效果，要求检查棋盘状态").replace("%1", str(consecutive_no_change_count)))
                     consecutive_no_change_count = 0  # 重置计数
 
                 # 调用 LLM（清理消息中的无效值）
@@ -455,7 +465,7 @@ class LLMWorker(QThread):
 
                 if not response.success:
                     self.finished_signal.emit(
-                        False, f"API 调用失败: {response.error}")
+                        False, _translate("Form", "API 调用失败: %1").replace("%1", response.error))
                     return
 
                 # 检查是否需要调用工具
@@ -486,7 +496,7 @@ class LLMWorker(QThread):
                         except json.JSONDecodeError:
                             func_args = {}
 
-                        self.log_signal.emit(f"调用函数: {func_name}({func_args})")
+                        self.log_signal.emit(_translate("Form", "调用函数: %1(%2)").replace("%1", func_name).replace("%2", str(func_args)))
                         self.chat_signal.emit(
                             "tool", f"{func_name}({func_args})")
 
@@ -494,7 +504,7 @@ class LLMWorker(QThread):
                         result = self.registry.execute_function(
                             func_name, func_args)
 
-                        self.log_signal.emit(f"执行结果: {result}")
+                        self.log_signal.emit(_translate("Form", "执行结果: %1").replace("%1", str(result)))
 
                         # 构建 tool 结果消息
                         tool_msg = LLMClient.build_tool_result_message(
@@ -526,30 +536,34 @@ class LLMWorker(QThread):
                                     if current_hash == last_click_board_hash:
                                         consecutive_no_change_count += 1
                                         self.log_signal.emit(
-                                            f"⚠️ 棋盘无变化! 连续无变化次数: {consecutive_no_change_count}/{MAX_CONSECUTIVE_NO_CHANGE}")
+                                            _translate("Form", "⚠️ 棋盘无变化! 连续无变化次数: %1/%2")
+                                            .replace("%1", str(consecutive_no_change_count))
+                                            .replace("%2", str(MAX_CONSECUTIVE_NO_CHANGE)))
                                     else:
                                         consecutive_no_change_count = 0
                                         last_click_board_hash = current_hash
-                                        self.log_signal.emit("✓ 棋盘已更新")
+                                        self.log_signal.emit(_translate("Form", "✓ 棋盘已更新"))
 
                     # 根据是否有实际操作更新连续查询计数
                     if has_action:
                         consecutive_query_count = 0
-                        self.log_signal.emit("✓ 检测到实际操作，重置查询计数")
+                        self.log_signal.emit(_translate("Form", "✓ 检测到实际操作，重置查询计数"))
                     else:
                         consecutive_query_count += 1
                         self.log_signal.emit(
-                            f"⚠️ 无实际操作，连续查询计数: {consecutive_query_count}/{MAX_CONSECUTIVE_QUERIES}")
+                            _translate("Form", "⚠️ 无实际操作，连续查询计数: %1/%2")
+                            .replace("%1", str(consecutive_query_count))
+                            .replace("%2", str(MAX_CONSECUTIVE_QUERIES)))
 
                     # 继续下一轮对话（让 LLM 处理工具结果）
                     continue
 
                 # 没有 tool_calls，对话结束
-                self.finished_signal.emit(True, "LLM 分析完成")
+                self.finished_signal.emit(True, _translate("Form", "LLM 分析完成"))
                 return
 
         except Exception as e:
-            self.finished_signal.emit(False, f"执行异常: {str(e)}")
+            self.finished_signal.emit(False, _translate("Form", "执行异常: %1").replace("%1", str(e)))
 
 
 class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig]):
@@ -614,7 +628,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         self.logger.info(f"NewGameCommand 权限: {has_new_game}")
         self.logger.info(f"MouseClickCommand 权限: {has_click}")
         self._widget.log_message(
-            f"权限: NewGame={has_new_game}, MouseClick={has_click}")
+            _translate("Form", "权限: NewGame=%1, MouseClick=%2").replace("%1", str(has_new_game)).replace("%2", str(has_click)))
 
     def _init_llm_client(self) -> None:
         """初始化 LLM 客户端"""
@@ -633,11 +647,11 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
                 timeout=timeout,
             )
             self.logger.info("LLM 客户端已初始化")
-            self._widget.log_message(f"LLM 客户端已初始化 (model: {model})")
+            self._widget.log_message(_translate("Form", "LLM 客户端已初始化 (model: %1)").replace("%1", model))
         else:
             self.llm_client = None
             self.logger.warning("未配置 API 密钥")
-            self._widget.log_message("未配置 API 密钥，LLM 功能不可用")
+            self._widget.log_message(_translate("Form", "未配置 API 密钥，LLM 功能不可用"))
 
     def _init_function_registry(self) -> None:
         """初始化 Function 注册表"""
@@ -689,15 +703,15 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         """控制权限变更回调"""
         if cmd_type == NewGameCommand:
             self._widget.log_message(
-                f"NewGameCommand 权限: {'已授权' if granted else '未授权'}")
+                _translate("Form", "NewGameCommand 权限: %1").replace("%1", _translate("Form", "已授权") if granted else _translate("Form", "未授权")))
         elif cmd_type == MouseClickCommand:
             self._widget.log_message(
-                f"MouseClickCommand 权限: {'已授权' if granted else '未授权'}")
+                _translate("Form", "MouseClickCommand 权限: %1").replace("%1", _translate("Form", "已授权") if granted else _translate("Form", "未授权")))
 
     def _on_config_changed(self, name: str, value) -> None:
         """配置变化回调"""
         self.logger.info(f"配置变化: {name} = {value}")
-        self._widget.log_message(f"配置更新: {name}")
+        self._widget.log_message(_translate("Form", "配置更新: %1").replace("%1", name))
 
         # API 相关配置变化时重新初始化客户端
         if name in ["api_key", "api_base_url", "model_name", "request_timeout"]:
@@ -705,7 +719,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
 
     def _on_board_update(self, event: BoardUpdateEvent) -> None:
         """处理棋盘更新事件"""
-        self._widget.log_message("收到棋盘更新事件")
+        self._widget.log_message(_translate("Form", "收到棋盘更新事件"))
 
         # 更新当前棋盘状态
         self._current_board = self._extract_board_data(event)
@@ -723,22 +737,22 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         - 7/8: display 相关
         """
         status_names = {
-            1: "准备",
-            2: "游戏中",
-            3: "胜利",
-            4: "失败",
-            5: "显示概率",
-            6: "研究模式",
-            7: "播放录像",
-            8: "播放概率",
+            1: _translate("Form", "准备"),
+            2: _translate("Form", "游戏中"),
+            3: _translate("Form", "胜利"),
+            4: _translate("Form", "失败"),
+            5: _translate("Form", "显示概率"),
+            6: _translate("Form", "研究模式"),
+            7: _translate("Form", "播放录像"),
+            8: _translate("Form", "播放概率"),
         }
 
         last_name = status_names.get(
-            event.last_status, f"未知({event.last_status})")
+            event.last_status, _translate("Form", "未知(%1)").replace("%1", str(event.last_status)))
         current_name = status_names.get(
-            event.current_status, f"未知({event.current_status})")
+            event.current_status, _translate("Form", "未知(%1)").replace("%1", str(event.current_status)))
 
-        self._widget.log_message(f"游戏状态变化: {last_name} -> {current_name}")
+        self._widget.log_message(_translate("Form", "游戏状态变化: %1 -> %2").replace("%1", last_name).replace("%2", current_name))
 
         # 始终更新游戏状态
         self._game_status = event.current_status
@@ -753,15 +767,15 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
                 self._worker._execution_summary = None
                 # 通知 UI 摘要已清空
                 self._widget.update_summary("")
-                self._widget.log_message("已清空历史上下文")
+                self._widget.log_message(_translate("Form", "已清空历史上下文"))
 
         # 更新状态显示
         if event.current_status == 3:
-            self._widget.update_status("游戏胜利!")
+            self._widget.update_status(_translate("Form", "游戏胜利!"))
         elif event.current_status == 4:
-            self._widget.update_status("游戏失败!")
+            self._widget.update_status(_translate("Form", "游戏失败!"))
         elif event.current_status == 2:
-            self._widget.update_status("游戏中...")
+            self._widget.update_status(_translate("Form", "游戏中..."))
 
     # ═══════════════════════════════════════════════════════════════
     # LLM 对话流程
@@ -770,43 +784,43 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
     def _test_connection(self) -> None:
         """测试 API 连接"""
         if not self.llm_client:
-            self._widget.log_message("请先配置 API 密钥")
+            self._widget.log_message(_translate("Form", "请先配置 API 密钥"))
             return
 
-        self._widget.log_message("正在测试连接...")
+        self._widget.log_message(_translate("Form", "正在测试连接..."))
         self._widget.set_buttons_enabled(False)
 
         response = self.llm_client.test_connection()
 
         if response.success:
-            self._widget.update_status("连接成功")
-            self._widget.log_message(f"连接成功! 模型: {self.other_info.model_name}")
+            self._widget.update_status(_translate("Form", "连接成功"))
+            self._widget.log_message(_translate("Form", "连接成功! 模型: %1").replace("%1", self.other_info.model_name))
         else:
-            self._widget.update_status("连接失败")
-            self._widget.log_message(f"连接失败: {response.error}")
+            self._widget.update_status(_translate("Form", "连接失败"))
+            self._widget.log_message(_translate("Form", "连接失败: %1").replace("%1", response.error))
 
         self._widget.set_buttons_enabled(True)
 
     def _auto_continue_analysis(self) -> None:
         """自动继续分析（异常中断后）"""
         if self._game_status != 2:  # 不是进行中
-            self._widget.log_message("游戏已结束，不再继续分析")
+            self._widget.log_message(_translate("Form", "游戏已结束，不再继续分析"))
             return
 
         if self._worker and self._worker.isRunning():
             return
 
-        self._widget.log_message("自动继续分析...")
+        self._widget.log_message(_translate("Form", "自动继续分析..."))
         self._start_analysis()
 
     def _start_analysis(self) -> None:
         """开始 LLM 分析"""
         if not self.llm_client:
-            self._widget.log_message("请先配置 API 密钥")
+            self._widget.log_message(_translate("Form", "请先配置 API 密钥"))
             return
 
         if self._worker and self._worker.isRunning():
-            self._widget.log_message("已有分析任务在运行")
+            self._widget.log_message(_translate("Form", "已有分析任务在运行"))
             return
 
         # 重置用户停止标志
@@ -840,11 +854,11 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         """停止 LLM 分析"""
         if self._worker and self._worker.isRunning():
             self.logger.info("用户请求停止 LLM 分析")
-            self._widget.log_message("正在停止分析...")
+            self._widget.log_message(_translate("Form", "正在停止分析..."))
             self._user_stopped = True
             self._worker.stop()
         else:
-            self._widget.log_message("没有正在运行的分析任务")
+            self._widget.log_message(_translate("Form", "没有正在运行的分析任务"))
 
     def _on_analysis_finished(self, success: bool, message: str) -> None:
         """分析完成回调"""
@@ -853,20 +867,20 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         self._widget.set_buttons_enabled(True)
 
         if success:
-            self._widget.update_status("分析完成")
+            self._widget.update_status(_translate("Form", "分析完成"))
         else:
-            self._widget.update_status("分析中断")
+            self._widget.update_status(_translate("Form", "分析中断"))
         self._widget.log_message(message)
 
         # 如果是用户主动停止，不再自动继续分析
         if self._user_stopped:
-            self._widget.log_message("用户已停止，不再自动继续")
+            self._widget.log_message(_translate("Form", "用户已停止，不再自动继续"))
             return
 
         # 无论成功还是失败，如果游戏状态是进行中，自动继续分析
         # 防止AI没有进行任何函数调用就结束
         if self._game_status == 2:  # playing
-            self._widget.log_message("游戏进行中，1秒后继续分析...")
+            self._widget.log_message(_translate("Form", "游戏进行中，1秒后继续分析..."))
             from PyQt5.QtCore import QTimer
             QTimer.singleShot(1000, self._auto_continue_analysis)
 
@@ -881,16 +895,13 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
         board_state = self._get_current_board_state()
         game_status = board_state.get('game_status', 'unknown')
 
-        board_info = f"""当前棋盘状态:
-- 行数: {board_state.get('rows', 0)}
-- 列数: {board_state.get('cols', 0)}
-- 剩余地雷: {board_state.get('mines_remaining', 0)}
-- 游戏时间: {board_state.get('game_time', 0):.1f}秒
-- 游戏状态: {game_status}
-- 棋盘数据 (cells[row][col], -1=未揭开, 0-8=周围地雷数, F=标旗, M=踩到的地雷):
-{json.dumps(board_state.get('cells', []), ensure_ascii=False)}
-
-请分析当前局面并选择最佳操作。"""
+        board_info = (_translate("Form", "当前棋盘状态:\n- 行数: %1\n- 列数: %2\n- 剩余地雷: %3\n- 游戏时间: %4秒\n- 游戏状态: %5\n- 棋盘数据 (cells[row][col], -1=未揭开, 0-8=周围地雷数, F=标旗, M=踩到的地雷):\n%6\n\n请分析当前局面并选择最佳操作。")
+            .replace("%1", str(board_state.get('rows', 0)))
+            .replace("%2", str(board_state.get('cols', 0)))
+            .replace("%3", str(board_state.get('mines_remaining', 0)))
+            .replace("%4", f"{board_state.get('game_time', 0):.1f}")
+            .replace("%5", game_status)
+            .replace("%6", json.dumps(board_state.get('cells', []), ensure_ascii=False)))
 
         messages.append({"role": "user", "content": board_info})
 
@@ -909,7 +920,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             button: 鼠标按钮 ("left" 或 "right")
         """
         if not self.has_control_auth(MouseClickCommand):
-            return {"success": False, "error": "无权限执行鼠标点击命令"}
+            return {"success": False, "error": _translate("Form", "无权限执行鼠标点击命令")}
 
         try:
             # button 转换: "left" -> 0, "right" -> 2
@@ -924,16 +935,16 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             )
             self.send_command(click_cmd)
 
-            self._widget.log_message(f"已点击格子: 行{row}, 列{col}, 按钮: {button}")
+            self._widget.log_message(_translate("Form", "已点击格子: 行%1, 列%2, 按钮: %3").replace("%1", str(row)).replace("%2", str(col)).replace("%3", button))
             return {
                 "success": True,
-                "message": f"格子点击已执行: 行{row}, 列{col}, {button}",
+                "message": _translate("Form", "格子点击已执行: 行%1, 列%2, %3").replace("%1", str(row)).replace("%2", str(col)).replace("%3", button),
                 "coordinates": {"row": row, "col": col},
                 "button": button,
             }
 
         except Exception as e:
-            error_msg = f"执行格子点击失败: {str(e)}"
+            error_msg = _translate("Form", "执行格子点击失败: %1").replace("%1", str(e))
             self.logger.error(error_msg)
             return {"success": False, "error": error_msg}
 
@@ -944,7 +955,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             difficulty: 游戏难度 ("easy", "medium", "hard")，默认使用配置中的 default_difficulty
         """
         if not self.has_control_auth(NewGameCommand):
-            return {"success": False, "error": "无权限执行新游戏命令"}
+            return {"success": False, "error": _translate("Form", "无权限执行新游戏命令")}
 
         try:
             # 使用配置中的默认难度
@@ -977,10 +988,10 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             rows, cols, mines = board_params.get(difficulty, (16, 16, 40))
 
             self._widget.log_message(
-                f"已开始新游戏，难度: {difficulty} ({rows}x{cols}, {mines}雷)")
+                _translate("Form", "已开始新游戏，难度: %1 (%2x%3, %4雷)").replace("%1", difficulty).replace("%2", str(rows)).replace("%3", str(cols)).replace("%4", str(mines)))
             return {
                 "success": True,
-                "message": f"新游戏已开始，难度: {difficulty}",
+                "message": _translate("Form", "新游戏已开始，难度: %1").replace("%1", difficulty),
                 "difficulty": difficulty,
                 "level": level,
                 "rows": rows,
@@ -989,7 +1000,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             }
 
         except Exception as e:
-            error_msg = f"开始新游戏失败: {str(e)}"
+            error_msg = _translate("Form", "开始新游戏失败: %1").replace("%1", str(e))
             self.logger.error(error_msg)
             return {"success": False, "error": error_msg}
 
@@ -1045,7 +1056,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
                 "offset": {"col": 0, "row": 0},
                 "size": {"rows": 0, "cols": 0},
                 "full_board_size": {"rows": 0, "cols": 0},
-                "error": "棋盘数据不可用",
+                "error": _translate("Form", "棋盘数据不可用"),
             }
 
         full_cells = self._current_board.get("cells", [])
@@ -1059,7 +1070,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
                 "offset": {"col": 0, "row": 0},
                 "size": {"rows": 0, "cols": 0},
                 "full_board_size": {"rows": 0, "cols": 0},
-                "error": "棋盘为空",
+                "error": _translate("Form", "棋盘为空"),
             }
 
         # 计算局部区域边界
