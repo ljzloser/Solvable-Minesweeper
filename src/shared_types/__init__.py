@@ -6,6 +6,7 @@
 from .events import (
     BoardUpdateEvent,
     GameStatusChangeEvent,
+    LanguageChangeEvent,
     EVENT_TYPES,
 )
 
@@ -27,6 +28,7 @@ __all__ = [
     # 事件
     "BoardUpdateEvent",
     "GameStatusChangeEvent",
+    "LanguageChangeEvent",
     "EVENT_TYPES",
     # 指令
     "NewGameCommand",

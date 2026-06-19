@@ -15,7 +15,7 @@ _translate = QCoreApplication.translate
 
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from plugin_sdk.config_types import OtherInfoBase
-from shared_types.events import BoardUpdateEvent, GameStatusChangeEvent
+from shared_types.events import BoardUpdateEvent, GameStatusChangeEvent, LanguageChangeEvent
 from shared_types.commands import NewGameCommand, MouseClickCommand
 
 from .widgets import LlmMinesweeperControllerWidget
@@ -586,6 +586,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
     def _setup_subscriptions(self) -> None:
         self.subscribe(BoardUpdateEvent, self._on_board_update)
         self.subscribe(GameStatusChangeEvent, self._on_game_status_change)
+        self.subscribe(LanguageChangeEvent, self._on_language_change)
 
     def _create_widget(self) -> QWidget | None:
         self._widget = LlmMinesweeperControllerWidget()
@@ -776,6 +777,9 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
             self._widget.update_status(_translate("Form", "游戏失败!"))
         elif event.current_status == 2:
             self._widget.update_status(_translate("Form", "游戏中..."))
+
+    def _on_language_change(self, event: LanguageChangeEvent) -> None:
+        self.run_on_gui(self._widget.retranslateUi)
 
     # ═══════════════════════════════════════════════════════════════
     # LLM 对话流程

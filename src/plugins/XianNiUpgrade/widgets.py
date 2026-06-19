@@ -316,27 +316,27 @@ class LevelDisplay(QWidget):
         info_layout.addWidget(self._progress)
 
         btn_row = QHBoxLayout()
-        law_btn = QPushButton(_translate("Form", "天地法则"))
-        law_btn.setFixedHeight(22)
-        law_btn.setCursor(Qt.PointingHandCursor)
-        law_btn.setStyleSheet(
+        self._law_btn = QPushButton(_translate("Form", "天地法则"))
+        self._law_btn.setFixedHeight(22)
+        self._law_btn.setCursor(Qt.PointingHandCursor)
+        self._law_btn.setStyleSheet(
             "QPushButton { background: transparent; color: #AB47BC; border: none; "
             "font-size: 12px; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }"
             "QPushButton:hover { color: #8E24AA; }"
         )
-        law_btn.clicked.connect(self.law_clicked.emit)
-        btn_row.addWidget(law_btn)
+        self._law_btn.clicked.connect(self.law_clicked.emit)
+        btn_row.addWidget(self._law_btn)
 
-        absorb_btn = QPushButton(_translate("Form", "吸收灵气"))
-        absorb_btn.setFixedHeight(22)
-        absorb_btn.setCursor(Qt.PointingHandCursor)
-        absorb_btn.setStyleSheet(
+        self._absorb_btn = QPushButton(_translate("Form", "吸收灵气"))
+        self._absorb_btn.setFixedHeight(22)
+        self._absorb_btn.setCursor(Qt.PointingHandCursor)
+        self._absorb_btn.setStyleSheet(
             "QPushButton { background: transparent; color: #64B5F6; border: none; "
             "font-size: 12px; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }"
             "QPushButton:hover { color: #42A5F5; }"
         )
-        absorb_btn.clicked.connect(self.absorb_clicked.emit)
-        btn_row.addWidget(absorb_btn)
+        self._absorb_btn.clicked.connect(self.absorb_clicked.emit)
+        btn_row.addWidget(self._absorb_btn)
         info_layout.addLayout(btn_row)
 
         layout.addWidget(info_frame, stretch=1)
@@ -350,6 +350,15 @@ class LevelDisplay(QWidget):
         )
         self._image_label.setText(_translate("Form", "等待仙躯\n形象加载..."))
         layout.addWidget(self._image_label)
+
+    def retranslateUi(self):
+        self._rank_label.setText(_translate("Form", "凡人"))
+        self._level_label.setText("Lv.0")
+        self._total_xp_label.setText(_translate("Form", "修为: 0"))
+        self._progress.setFormat(_translate("Form", "已圆满"))
+        self._law_btn.setText(_translate("Form", "天地法则"))
+        self._absorb_btn.setText(_translate("Form", "吸收灵气"))
+        self._image_label.setText(_translate("Form", "等待仙躯\n形象加载..."))
 
     def set_image(self, raw_bytes: bytes | None):
         if raw_bytes:
@@ -399,9 +408,9 @@ class XianNiUpgradeUI(QWidget):
         self._level_display.law_clicked.connect(self._on_law_clicked)
         layout.addWidget(self._level_display, 3)
 
-        group = QGroupBox(_translate("Form", "修行日志"))
-        group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }")
-        group_layout = QVBoxLayout(group)
+        self._log_group = QGroupBox(_translate("Form", "修行日志"))
+        self._log_group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; font-family: 'Microsoft YaHei', '微软雅黑', 'Segoe UI', Arial, sans-serif; }")
+        group_layout = QVBoxLayout(self._log_group)
 
         self._table = QTableWidget()
         self._table.setColumnCount(6)
@@ -419,7 +428,19 @@ class XianNiUpgradeUI(QWidget):
         self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         group_layout.addWidget(self._table)
 
-        layout.addWidget(group, 2)
+        layout.addWidget(self._log_group, 2)
+
+    def retranslateUi(self):
+        self._log_group.setTitle(_translate("Form", "修行日志"))
+        self._table.setHorizontalHeaderLabels([
+            _translate("Form", "时刻"),
+            _translate("Form", "境阶"),
+            _translate("Form", "法式"),
+            _translate("Form", "耗时"),
+            _translate("Form", "衍数"),
+            _translate("Form", "道行"),
+        ])
+        self._level_display.retranslateUi()
 
     def set_image_dir(self, image_dir: Path):
         self._image_dir = image_dir

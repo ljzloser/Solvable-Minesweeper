@@ -16,8 +16,10 @@ import loguru
 from lib_zmq_plugins.client.zmq_client import ZMQClient
 from lib_zmq_plugins.log import LogHandler
 from lib_zmq_plugins.shared.base import BaseEvent, get_event_tag
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
 
 from shared_types import EVENT_TYPES, COMMAND_TYPES
+from shared_types.events import LanguageChangeEvent
 
 from .event_dispatcher import EventDispatcher
 from plugin_sdk.plugin_base import BasePlugin
@@ -28,6 +30,34 @@ if TYPE_CHECKING:
     from PyQt5.QtWidgets import QApplication, QWidget
 
 logger = loguru.logger.bind(name="PluginManager")
+
+
+class _TranslatorInstaller(QObject):
+    """线程安全地在主线程安装 QTranslator"""
+    _signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self._translator = None
+        self._signal.connect(self._install, Qt.QueuedConnection)
+
+    def install(self, language: str) -> None:
+        self._signal.emit(language)
+
+    def _install(self, language: str) -> None:
+        from PyQt5.QtCore import QCoreApplication, QTranslator
+        app = QCoreApplication.instance()
+        if app is None:
+            return
+        if self._translator is not None:
+            app.removeTranslator(self._translator)
+            self._translator = None
+        if language != "zh_CN":
+            qm_path = Path(__file__).resolve().parent.parent / f"{language}.qm"
+            if qm_path.exists():
+                self._translator = QTranslator()
+                self._translator.load(str(qm_path))
+                app.installTranslator(self._translator)
 
 
 class _LogHandler(LogHandler):
@@ -94,6 +124,7 @@ class PluginManager:
         # 主窗口
         self._main_window = None
         self._app = None
+        self._translator_installer = None
 
         # 注册类型
         self._client.register_event_types(*EVENT_TYPES)
@@ -192,6 +223,9 @@ class PluginManager:
         if self._started:
             return
 
+        # 在主线程创建，确保 QueuedConnection 投递到主线程事件循环
+        self._translator_installer = _TranslatorInstaller()
+
         self._load_plugins()
         self._client.connect()
         self._setup_zmq_subscriptions()
@@ -275,11 +309,17 @@ class PluginManager:
     # ZMQ 订阅（使用事件类）
     # ═══════════════════════════════════════════════════════════════════
 
+    def _install_translator(self, language: str) -> None:
+        """在插件进程的 QApplication 上安装对应语言的翻译器（线程安全）"""
+        if self._translator_installer is None:
+            self._translator_installer = _TranslatorInstaller()
+        self._translator_installer.install(language)
+
     def _setup_zmq_subscriptions(self) -> None:
         """设置 ZMQ 事件订阅"""
         from shared_types.events import ShowPluginManagerEvent
         for event_type in EVENT_TYPES:
-            if event_type is ShowPluginManagerEvent:
+            if event_type is ShowPluginManagerEvent or event_type is LanguageChangeEvent:
                 continue
             tag = get_event_tag(event_type)
             # 订阅 ZMQ 事件，收到后分发给内部插件
@@ -290,6 +330,10 @@ class PluginManager:
         self._client.subscribe(
             ShowPluginManagerEvent,
             lambda _: self._main_window._show_requested.emit() if self._main_window else None,
+        )
+        self._client.subscribe(
+            LanguageChangeEvent,
+            self._on_language_change,
         )
 
     # ═══════════════════════════════════════════════════════════════════
@@ -363,6 +407,11 @@ class PluginManager:
     # ═══════════════════════════════════════════════════════════════════
     # ZMQ 回调
     # ═══════════════════════════════════════════════════════════════════
+
+    def _on_language_change(self, event: LanguageChangeEvent) -> None:
+        self._install_translator(event.language)
+        tag = get_event_tag(LanguageChangeEvent)
+        self._dispatcher.dispatch(tag, event)
 
     def _on_connected(self) -> None:
         logger.info("Connected to main process")

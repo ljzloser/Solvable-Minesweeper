@@ -12,6 +12,9 @@ from country_name import country_name
 import os, sys
 from typing import List, Tuple
 
+from shared_types.events import LanguageChangeEvent
+from plugin_sdk import GameServerBridge
+
 version = "元3.3.0"
 # AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
 STATS_DAT_KEY = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节 AES-128 key
@@ -469,7 +472,9 @@ class Ui_MainWindow(Ui_MainWindow):
         self.game_setting.set_value("DEFAULT/language", language)
         self.game_setting.sync()
         # mm.updata_ini(self.game_setting_path, [("DEFAULT", "language", language)])
-        self.language = language
+        if language != self.language:
+            self.language = language
+            GameServerBridge.instance().send_event(LanguageChangeEvent(language=language))
 
 
     def read_or_create_game_setting(self):

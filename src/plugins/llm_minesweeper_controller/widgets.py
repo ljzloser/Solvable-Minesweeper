@@ -94,13 +94,13 @@ class LlmMinesweeperControllerWidget(QWidget):
         layout = QVBoxLayout(self)
 
         # 状态显示
-        status_group = QGroupBox(_translate("Form", "状态"))
+        self._status_group = QGroupBox(_translate("Form", "状态"))
         status_layout = QHBoxLayout()
         self._status_label = QLabel(_translate("Form", "就绪"))
         self._status_label.setStyleSheet("font-weight: bold;")
         status_layout.addWidget(self._status_label)
-        status_group.setLayout(status_layout)
-        layout.addWidget(status_group)
+        self._status_group.setLayout(status_layout)
+        layout.addWidget(self._status_group)
 
         # 上下文摘要 + 对话区（水平布局）
         main_splitter = QSplitter(Qt.Horizontal)
@@ -137,15 +137,15 @@ class LlmMinesweeperControllerWidget(QWidget):
         layout.addWidget(main_splitter, stretch=1)
 
         # 日志显示区
-        log_group = QGroupBox(_translate("Form", "日志"))
+        self._log_group = QGroupBox(_translate("Form", "日志"))
         log_layout = QVBoxLayout()
         self._log_text = QTextEdit()
         self._log_text.setReadOnly(True)
         self._log_text.setMaximumHeight(80)
         self._log_text.setStyleSheet("font-size: 11px; color: #666;")
         log_layout.addWidget(self._log_text)
-        log_group.setLayout(log_layout)
-        layout.addWidget(log_group)
+        self._log_group.setLayout(log_layout)
+        layout.addWidget(self._log_group)
 
         # 控制按钮
         button_layout = QHBoxLayout()
@@ -190,6 +190,17 @@ class LlmMinesweeperControllerWidget(QWidget):
         self._clear_log_button.clicked.connect(self._clear_log)
         self._clear_chat_button.clicked.connect(self._clear_chat)
         self._tutorial_button.clicked.connect(self._show_tutorial)
+
+    def retranslateUi(self):
+        self._status_group.setTitle(_translate("Form", "状态"))
+        self._log_group.setTitle(_translate("Form", "日志"))
+        self._status_label.setText(_translate("Form", "就绪"))
+        self._analyze_button.setText(_translate("Form", "🤖 分析并操作"))
+        self._stop_button.setText(_translate("Form", "⏹ 停止"))
+        self._test_button.setText(_translate("Form", "🔗 测试"))
+        self._tutorial_button.setText(_translate("Form", "📖 教程"))
+        self._clear_chat_button.setText(_translate("Form", "🗑 清除对话"))
+        self._clear_log_button.setText(_translate("Form", "🗑 清除日志"))
 
     def _on_log(self, text: str) -> None:
         from datetime import datetime

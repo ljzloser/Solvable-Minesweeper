@@ -126,6 +126,18 @@ class HistoryMainWidget(QWidget):
         self._connect_signals()
         self.load_data()
 
+    def retranslateUi(self):
+        self.setWindowTitle(_translate("Form", "历史记录"))
+        self.query_button.setText(_translate("Form", "查询"))
+        self.filter_button.setText(_translate("Form", "过滤"))
+        self.sort_button.setText(_translate("Form", "排序"))
+        self.columns_button.setText(_translate("Form", "列设置"))
+        self.previous_button.setText(_translate("Form", "上一页"))
+        self.next_button.setText(_translate("Form", "下一页"))
+        self.filter_label.setText(_translate("Form", "过滤: 无"))
+        self.sort_label.setText(_translate("Form", "排序: 无"))
+        self.limit_label.setText(_translate("Form", "共0行,0页"))
+
     def set_filter_sort_state(self, filter_json: str, sort_json: str) -> None:
         """设置排序和过滤状态（由插件调用）"""
         try:

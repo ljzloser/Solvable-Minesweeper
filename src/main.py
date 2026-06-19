@@ -201,6 +201,12 @@ if __name__ == "__main__":
 
         GameServerBridge.instance().start()
 
+        # 等插件连接后同步初始语言
+        from PyQt5.QtCore import QTimer
+        from shared_types.events import LanguageChangeEvent
+        QTimer.singleShot(2000, lambda: GameServerBridge.instance().send_event(
+            LanguageChangeEvent(language=ui.language)))
+
         # 注册控制命令处理器（自动在主线程执行）
         def handle_new_game(cmd: NewGameCommand):
             """处理新游戏命令"""

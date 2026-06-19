@@ -24,7 +24,7 @@ from Crypto.Random import get_random_bytes
 import ms_toollib as ms
 
 from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
-from shared_types.events import CloseEvent, GameFinishedEvent
+from shared_types.events import CloseEvent, GameFinishedEvent, LanguageChangeEvent
 
 from .widgets import XianNiUpgradeUI
 from .models import LEVEL_NAMES, LEVEL_LABELS, MODE_LABELS, get_image_index
@@ -128,6 +128,7 @@ class XianNiUpgradePlugin(BasePlugin):
     def _setup_subscriptions(self) -> None:
         self.subscribe(GameFinishedEvent, self._on_game_finished)
         self.subscribe(CloseEvent, self._on_close)
+        self.subscribe(LanguageChangeEvent, self._on_language_change)
 
     def _create_widget(self) -> QWidget:
         self._ui = XianNiUpgradeUI()
@@ -491,6 +492,9 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _on_close(self, event: CloseEvent):
         self._save_data()
+
+    def _on_language_change(self, event: LanguageChangeEvent) -> None:
+        self.run_on_gui(self._ui.retranslateUi)
 
     def _push_ui_update(self):
         self._ui._signal_update.emit(self._build_update_data())

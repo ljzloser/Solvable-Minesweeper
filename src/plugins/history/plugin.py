@@ -18,7 +18,7 @@ from plugin_sdk import (
     BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
     OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
 )
-from shared_types.events import GameFinishedEvent
+from shared_types.events import GameFinishedEvent, LanguageChangeEvent
 from plugins.services.history import HistoryService, GameRecord
 
 from .widgets import HistoryMainWidget
@@ -97,6 +97,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(GameFinishedEvent, self._on_video_save)
+        self.subscribe(LanguageChangeEvent, self._on_language_change)
 
     def _create_widget(self) -> QWidget:
         db_path = self.data_dir / "history.db"
@@ -131,6 +132,9 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
         self.video_save_over.connect(self._widget.query_button.click)
         return self._widget
+
+    def _on_language_change(self, event: LanguageChangeEvent) -> None:
+        self.run_on_gui(self._widget.retranslateUi)
 
     def _on_filter_sort_state_changed(self, filter_json: str, sort_json: str) -> None:
         """保存排序和过滤状态"""

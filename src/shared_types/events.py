@@ -71,7 +71,6 @@ class ContextChangeEvent(BaseEvent, tag="context_change"):
     filter_forever: bool = False
     board_constraint: str = ""
     attempt_times_limit: int = 100000
-    language: str = "en_US"
 
 
 class ButtonClickEvent(BaseEvent, tag="button_click"):
@@ -146,6 +145,11 @@ class ShowPluginManagerEvent(BaseEvent, tag="show_plugin_manager"):
     pass
 
 
+class LanguageChangeEvent(BaseEvent, tag="language_change"):
+    """语言变化事件。"""
+    language: str = "en_US"
+
+
 EVENT_TYPES = [
     BoardUpdateEvent,
     GameStatusChangeEvent,
@@ -153,4 +157,5 @@ EVENT_TYPES = [
     GameFinishedEvent,
     CloseEvent,
     ShowPluginManagerEvent,
+    LanguageChangeEvent,
 ]
