@@ -7,3 +7,10 @@ pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.
 pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% -ts pl_PL.ts -noobsolete
 
 pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% -ts de_DE.ts -noobsolete
+
+pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% -ts ja_JP.ts -noobsolete
+
+lrelease en_US.ts
+lrelease pl_PL.ts
+lrelease de_DE.ts
+lrelease ja_JP.ts

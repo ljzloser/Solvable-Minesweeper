@@ -822,7 +822,7 @@ li { margin: 6px 0; }
 &lt;h3&gt;🔧 手把手配置教程&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;b&gt;搞到 API Key&lt;/b&gt;&lt;br&gt;
-打开 &lt;a href='https://open.bigmodel.cn'&gt;open.bigmodel.cn&lt;/a&gt;（此处以智谱 AI 的免费小模型为例，你也可以用其他任意兼容 OpenAI 的 API）→ 点右上角「注册」→ 手机号或邮箱注册 → 登录后进控制台 → 左侧点「API Keys」→ 点「创建 API Key」→ 复制那串乱码&lt;/li&gt;
+打开 &lt;a href=&apos;https://open.bigmodel.cn&apos;&gt;open.bigmodel.cn&lt;/a&gt;（此处以智谱 AI 的免费小模型为例，你也可以用其他任意兼容 OpenAI 的 API）→ 点右上角「注册」→ 手机号或邮箱注册 → 登录后进控制台 → 左侧点「API Keys」→ 点「创建 API Key」→ 复制那串乱码&lt;/li&gt;
 
 &lt;li&gt;&lt;b&gt;填进插件（通过界面修改，无需改文件）&lt;/b&gt;&lt;br&gt;
 游戏菜单 →「插件管理器」→「插件列表」→ 找到「llm_minesweeper_controller」→ 右键点击 →「设置...」→ 在弹窗的「插件配置」区域填写：
@@ -847,7 +847,7 @@ li { margin: 6px 0; }
 回到本插件界面，点「🤖 分析并操作」就开始自动扫雷了&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p style='color:#999; margin-top:16px;'&gt;💡 &lt;code&gt;glm-4-flash&lt;/code&gt; 是智谱 AI 的永久免费模型，128K 上下文，支持自动调用工具。用完赠送额度后仍然免费，只是速度会慢一些。&lt;/p&gt;
+&lt;p style=&apos;color:#999; margin-top:16px;&apos;&gt;💡 &lt;code&gt;glm-4-flash&lt;/code&gt; 是智谱 AI 的永久免费模型，128K 上下文，支持自动调用工具。用完赠送额度后仍然免费，只是速度会慢一些。&lt;/p&gt;
 </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1338,7 +1338,7 @@ li { margin: 6px 0; }
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="163"/>
-        <source>函数 '%1' 未注册</source>
+        <source>函数 &apos;%1&apos; 未注册</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2163,147 +2163,147 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="ui_main_board.py" line="519"/>
+        <location filename="ui_main_board.py" line="532"/>
         <source>元扫雷</source>
         <translation>Trałowiec Meta</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="520"/>
+        <location filename="ui_main_board.py" line="533"/>
         <source>游戏</source>
         <translation>Gra</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="522"/>
+        <location filename="ui_main_board.py" line="535"/>
         <source>设置</source>
         <translation>Zakładać</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="524"/>
+        <location filename="ui_main_board.py" line="537"/>
         <source>帮助</source>
         <translation>Pomoc</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="526"/>
+        <location filename="ui_main_board.py" line="539"/>
         <source>新游戏</source>
         <translation>Nowa gra</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="527"/>
+        <location filename="ui_main_board.py" line="540"/>
         <source>初级</source>
         <translation>młodszy</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="528"/>
+        <location filename="ui_main_board.py" line="541"/>
         <source>中级</source>
         <translation>pośredni</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="529"/>
+        <location filename="ui_main_board.py" line="542"/>
         <source>高级</source>
         <translation>Starszy</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="530"/>
+        <location filename="ui_main_board.py" line="543"/>
         <source>自定义</source>
         <translation>Dostosowywania</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="531"/>
+        <location filename="ui_main_board.py" line="544"/>
         <source>退出</source>
         <translation>kończyć</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="532"/>
+        <location filename="ui_main_board.py" line="545"/>
         <source>游戏设置</source>
         <translation>Ustawienia gry</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="533"/>
+        <location filename="ui_main_board.py" line="546"/>
         <source>关于</source>
         <translation>o</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="534"/>
+        <location filename="ui_main_board.py" line="547"/>
         <source>快捷键设置</source>
         <translation>Ustawienia skrótu</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="535"/>
+        <location filename="ui_main_board.py" line="548"/>
         <source>打开</source>
         <translation>Otwórz go</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="536"/>
+        <location filename="ui_main_board.py" line="549"/>
         <source>鼠标设置</source>
         <translation>Ustawienia myszy</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="537"/>
+        <location filename="ui_main_board.py" line="550"/>
         <source>保存</source>
         <translation>Zapisz</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="538"/>
+        <location filename="ui_main_board.py" line="551"/>
         <source>回放</source>
         <translation>Powtórka</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="539"/>
+        <location filename="ui_main_board.py" line="552"/>
         <source>检查更新</source>
         <translation>Sprawdź dostępność aktualizacji</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="525"/>
+        <location filename="ui_main_board.py" line="538"/>
         <source>查看</source>
         <translation>Widok</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="542"/>
+        <location filename="ui_main_board.py" line="555"/>
         <source>成就</source>
         <translation>Osiągnięcia</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="543"/>
+        <location filename="ui_main_board.py" line="556"/>
         <source>个人纪录</source>
         <translation>Rekordy osobiste</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="544"/>
+        <location filename="ui_main_board.py" line="557"/>
         <source>插件</source>
         <translation>Wtyczki</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="540"/>
+        <location filename="ui_main_board.py" line="553"/>
         <source>录像目录</source>
         <translation>Katalog powtórek</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="541"/>
+        <location filename="ui_main_board.py" line="554"/>
         <source>设置目录</source>
         <translation>Katalog ustawień</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="521"/>
+        <location filename="ui_main_board.py" line="534"/>
         <source>导出</source>
         <translation type="unfinished">Eksportuj</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="523"/>
+        <location filename="ui_main_board.py" line="536"/>
         <source>语言</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="545"/>
+        <location filename="ui_main_board.py" line="558"/>
         <source>高级设置</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="546"/>
+        <location filename="ui_main_board.py" line="559"/>
         <source>Arbiter CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="547"/>
+        <location filename="ui_main_board.py" line="560"/>
         <source>Arbiter dat</source>
         <translation type="unfinished"></translation>
     </message>

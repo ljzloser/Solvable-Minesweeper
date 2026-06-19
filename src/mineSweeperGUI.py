@@ -95,6 +95,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             lambda: self.trans_language("pl_PL"))
         self.german_action.triggered.connect(
             lambda: self.trans_language("de_DE"))
+        self.japanese_action.triggered.connect(
+            lambda: self.trans_language("ja_JP"))
         self.actionArbiter_CSV.triggered.connect(self._export_arbiter_csv)
 
         # 查看菜单

@@ -1,52 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de_DE" sourcelanguage="zh">
+<TS version="2.1" language="ja_JP" sourcelanguage="zh_CN">
 <context>
     <name>Form</name>
     <message>
-        <location filename="ui_advanced.py" line="93"/>
-        <source>确定</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <location filename="../plugins/XianNiUpgrade/widgets.py" line="113"/>
-        <source>取消</source>
-        <translation>Abbrechen</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="463"/>
-        <source>结束后标雷</source>
-        <translation>Minen markieren nach Spielende</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="454"/>
-        <source>标识：</source>
-        <translation>Markierungen:</translation>
-    </message>
-    <message>
-        <location filename="ui_advanced.py" line="92"/>
-        <source>永远使用筛选法埋雷（不推荐）</source>
-        <translation>Immer Minen nach Zufallsprinzip platzieren (nicht empfohlen)</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="461"/>
-        <source>自动保存录像（推荐）</source>
-        <translation>Automatisches Speichern von Videos (empfohlen)</translation>
-    </message>
-    <message>
         <location filename="ui_gameSettings.py" line="444"/>
         <source>游戏模式：</source>
-        <translation>Spielmodus:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="453"/>
-        <source>方格边长：</source>
-        <translation>Quadratische Seitenlängen:</translation>
+        <translation>ゲームモード：</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="130"/>
         <source>标准</source>
-        <translation>Standard</translation>
+        <translation>標準</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="131"/>
@@ -56,242 +21,117 @@
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="133"/>
         <source>强无猜</source>
-        <translation>Stark &amp; Ungeschnitten</translation>
+        <translation>強ノー推測</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="134"/>
         <source>弱无猜</source>
-        <translation>Schwäche ohne zu raten</translation>
+        <translation>弱ノー推測</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="132"/>
         <source>经典无猜</source>
-        <translation>Klassisch - Kein Raten</translation>
+        <translation>クラシックノー推測</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="135"/>
         <source>准无猜</source>
-        <translation>Nicht erraten</translation>
+        <translation>準ノー推測</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="136"/>
         <source>强可猜</source>
-        <translation>Starke Vermutung</translation>
+        <translation>強推測可</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="137"/>
         <source>弱可猜</source>
-        <translation>Schwach erratbar</translation>
+        <translation>弱推測可</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="551"/>
-        <source>尝试次数：</source>
-        <translation>Anzahl der Versuche:</translation>
+        <location filename="ui_gameSettings.py" line="453"/>
+        <source>方格边长：</source>
+        <translation>セルサイズ：</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="555"/>
-        <source>局面约束：</source>
-        <translation>Situative Zwänge:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="465"/>
-        <source>自动重开：</source>
-        <translation>Automatische Wiedereröffnung:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="459"/>
-        <source>国家或地区：</source>
-        <translation>Land oder Region:</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="339"/>
-        <source>关于</source>
-        <translation>Über</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="134"/>
-        <source>自定义设置</source>
-        <translation>Benutzerdefinierte Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="138"/>
-        <source>行数(row)</source>
-        <translation>Zeilen</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="139"/>
-        <source>列数(column)</source>
-        <translation>Spalten</translation>
-    </message>
-    <message>
-        <location filename="ui_defined_parameter.py" line="140"/>
-        <source>雷数(number)</source>
-        <translation>Minenanzahl</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="341"/>
-        <source>模式：</source>
-        <translation>Modus:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="554"/>
-        <source>雷数：</source>
-        <translation>Anzahl der Donner:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="549"/>
-        <source>高度：</source>
-        <translation>Höhe:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="550"/>
-        <source>宽度：</source>
-        <translation>Breite:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="552"/>
-        <source>边长：</source>
-        <translation>Seitenlänge:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="524"/>
-        <source>快捷键[4]</source>
-        <translation>Tastenkombinationen [4]</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="540"/>
-        <source>快捷键[5]</source>
-        <translation>Tastenkombinationen [5]</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettingShortcuts.py" line="556"/>
-        <source>快捷键[6]</source>
-        <translation>Tastenkombinationen [6]</translation>
-    </message>
-    <message>
-        <location filename="ui_score_board.py" line="122"/>
-        <source>计数器</source>
-        <translation>Zähler</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="340"/>
-        <source>恭喜打破：</source>
-        <translation>Herzlichen Glückwunsch zu Break:</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="342"/>
-        <source>未标雷（标准）</source>
-        <translation>Nicht markierte Minen (Standard)</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="343"/>
-        <source>Time成绩！</source>
-        <translation>Time Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="344"/>
-        <source>3BV/s成绩！</source>
-        <translation>3BV/s Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="345"/>
-        <source>STNB成绩！</source>
-        <translation>STNB Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="346"/>
-        <source>IOE成绩！</source>
-        <translation>IOE Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="347"/>
-        <source>Path成绩！</source>
-        <translation>Path Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="348"/>
-        <source>RQP成绩！</source>
-        <translation>RQP Errungenschaften!</translation>
-    </message>
-    <message>
-        <location filename="../plugins/XianNiUpgrade/models.py" line="121"/>
-        <source>初级</source>
-        <translation>Junior</translation>
-    </message>
-    <message>
-        <location filename="ui_record_pop.py" line="354"/>
-        <source>个人最佳！</source>
-        <translation>Persönliche Bestleistung!</translation>
-    </message>
-    <message>
-        <location filename="../plugins/XianNiUpgrade/models.py" line="122"/>
-        <source>中级</source>
-        <translation>Fortgeschrittene</translation>
-    </message>
-    <message>
-        <location filename="../plugins/XianNiUpgrade/models.py" line="123"/>
-        <source>高级</source>
-        <translation>Experte</translation>
-    </message>
-    <message>
-        <location filename="ui_advanced.py" line="91"/>
-        <source>勾选后永远使用筛选法埋雷，否则会适时改用调整法</source>
-        <translation>Wenn diese Option aktiviert ist, wird beim Verlegen von Minen immer die Screening-Methode verwendet. Andernfalls wird gegebenenfalls auf die Anpassungsmethode umgeschaltet</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="460"/>
-        <source>完成后自动将录像保存到replay文件夹下</source>
-        <translation>Aufzeichnung nach Abschluss automatisch im Ordner &quot;Replay&quot; speichern</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="466"/>
-        <source>允许纪录弹窗（推荐）</source>
-        <translation>Popup für Aufzeichnung zulassen (empfohlen)</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="457"/>
-        <source>用于参加比赛</source>
-        <translation>Zur Turnierteilnahme</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="458"/>
-        <source>比赛标识：</source>
-        <translation>Turnierkennung:</translation>
-    </message>
-    <message>
-        <location filename="ui_gameSettings.py" line="464"/>
-        <source>光标不能超出边框</source>
-        <translation>Der Cursor darf nicht über den Rand hinausragen</translation>
+        <location filename="ui_gameSettings.py" line="454"/>
+        <source>标识：</source>
+        <translation>ID：</translation>
     </message>
     <message>
         <location filename="ui_gameSettings.py" line="455"/>
         <source>用于与其他人相区分，但不希望排名网站和软件展示出来</source>
-        <translation>Dient dazu, sich von anderen zu unterscheiden, ist jedoch nicht für die Anzeige durch Ranking-Websites und Software vorgesehen</translation>
+        <translation>他者と区別するID（ランキング非表示）</translation>
     </message>
     <message>
         <location filename="ui_gameSettings.py" line="456"/>
         <source>个性标识：</source>
-        <translation>Personalisierte Identifizierung:</translation>
+        <translation>個人ID：</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="190"/>
-        <source>重播</source>
-        <translation>Wiederholung</translation>
+        <location filename="ui_gameSettings.py" line="457"/>
+        <source>用于参加比赛</source>
+        <translation>大会参加用</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="191"/>
-        <source>播放/暂停</source>
-        <translation>Abspielen/Pause</translation>
+        <location filename="ui_gameSettings.py" line="458"/>
+        <source>比赛标识：</source>
+        <translation>大会ID：</translation>
     </message>
     <message>
-        <location filename="ui_video_control.py" line="192"/>
-        <source>滑动滚轮修改播放速度</source>
-        <translation>Scrollrad zum Ändern der Abspielgeschwindigkeit</translation>
+        <location filename="ui_gameSettings.py" line="459"/>
+        <source>国家或地区：</source>
+        <translation>国／地域：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="460"/>
+        <source>完成后自动将录像保存到replay文件夹下</source>
+        <translation>終了後リプレイを自動保存</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="461"/>
+        <source>自动保存录像（推荐）</source>
+        <translation>リプレイ自動保存（推奨）</translation>
     </message>
     <message>
         <location filename="ui_gameSettings.py" line="462"/>
         <source>自动保存录像集</source>
-        <translation>&quot;evfs&quot; automatisch speichern</translation>
+        <translation>リプレイ集自動保存</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="463"/>
+        <source>结束后标雷</source>
+        <translation>終了後に地雷表示</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="464"/>
+        <source>光标不能超出边框</source>
+        <translation>カーソル枠外禁止</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="465"/>
+        <source>自动重开：</source>
+        <translation>自動再開：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettings.py" line="466"/>
+        <source>允许纪录弹窗（推荐）</source>
+        <translation>記録ポップアップ許可（推奨）</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="555"/>
+        <source>局面约束：</source>
+        <translation>盤面制約：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="551"/>
+        <source>尝试次数：</source>
+        <translation>試行回数：</translation>
+    </message>
+    <message>
+        <location filename="ui_advanced.py" line="93"/>
+        <source>确定</source>
+        <translation>確定</translation>
     </message>
     <message>
         <location filename="ui_advanced.py" line="94"/>
@@ -299,514 +139,674 @@
         <translation>Return</translation>
     </message>
     <message>
-        <location filename="ui_about.py" line="247"/>
-        <source>作者</source>
-        <translation>Autor</translation>
+        <location filename="../plugins/XianNiUpgrade/widgets.py" line="113"/>
+        <source>取消</source>
+        <translation>キャンセル</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="240"/>
         <source>元扫雷是由资深扫雷玩家与软件工程师共同打造的一款现代化复刻。</source>
-        <translation>Meta Minesweeper ist eine moderne Neuauflage, die von erfahrenen Minesweeper-Spielern und Softwareingenieuren gemeinsam entwickelt wurde.</translation>
+        <translation>MetaMinesweeperは経験豊富なプレイヤーとエンジニアが開発した現代的リメイクです。</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="241"/>
         <source>Copyright © 2020-2025 元扫雷开发团队, 版权所有</source>
-        <translation>Copyright © 2020-2025 Meta Minesweeper Entwicklerteam, alle Rechte vorbehalten</translation>
+        <translation>Copyright © 2020-2025 MetaMinesweeper Dev Team</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="339"/>
+        <source>关于</source>
+        <translation>バージョン情報</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="243"/>
         <source>教程</source>
-        <translation>Tutorial</translation>
+        <translation>チュートリアル</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="244"/>
         <source>开发：王嘉宁、李京志</source>
-        <translation>Entwicklung: 王嘉宁, 李京志</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="246"/>
-        <source>元扫雷接受有益的贡献，包括新的玩法、规则、插件等。</source>
-        <translation>Meta Minesweeper akzeptiert hilfreiche Beiträge, einschließlich neuer Spielmodi, Regeln, Plugins usw.</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="248"/>
-        <source>反馈</source>
-        <translation>Feedback</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="249"/>
-        <source>感谢您考虑支持我们的开源项目，赞助时请备注项目名称+您的称呼+其他要求，例如元扫雷+张先生+建议添加**功能。您的赞助将有助于项目的持续发展和改进，使我们能够继续提高软件的质量。</source>
-        <translation>Vielen Dank, dass Sie in Erwägung ziehen, unser Open-Source-Projekt zu unterstützen. Bitte geben Sie beim Sponsoring den Projektnamen + Ihren Namen + weitere Anforderungen an, z.&#x202f;B. Meta Minesweeper + Herr Zhang + Vorschlag zur Hinzufügung einer **Funktion. Ihre Unterstützung wird die kontinuierliche Weiterentwicklung und Verbesserung des Projekts fördern und es uns ermöglichen, die Qualität der Software weiter zu steigern.</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="250"/>
-        <source>赞助</source>
-        <translation>Sponsoring</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="251"/>
-        <source>1. 在非商业用途前提下，用户有权不受任何限制地对“元扫雷”软件进行复制、存储及传播。</source>
-        <translation>1. Unter der Voraussetzung der nichtkommerziellen Nutzung hat der Benutzer das Recht, die Software „Meta Minesweeper“ uneingeschränkt zu kopieren, zu speichern und zu verbreiten.</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="252"/>
-        <source>2. 由“元扫雷”软件生成的录像文件，其全部所有权归对应玩家本人所有。</source>
-        <translation>2. Sämtliche Eigentumsrechte an von der Software „Meta Minesweeper“ erzeugten Aufnahme-Dateien gehören ausschließlich dem jeweiligen Spieler.</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="253"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;3. 本项目源代码遵循GPLv3并附加额外条款发布。该额外条款特别禁止任何未经开发团队授权的商业使用行为，并对项目相关收益的分配方式作出明确约定。具体内容详见&lt;a href=&quot;https://github.com/eee555/Metasweeper/blob/master/LICENSE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LICENSE&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;3. Der Quellcode dieses Projekts wird unter GPLv3 mit zusätzlichen Bestimmungen veröffentlicht. Diese Zusatzbestimmungen untersagen insbesondere jegliche kommerzielle Nutzung ohne Genehmigung des Entwicklerteams und regeln ausdrücklich die Verteilung von projektrelevanten Einnahmen. Details siehe&lt;a href=&quot;https://github.com/eee555/Metasweeper/blob/master/LICENSE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LICENSE&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <location filename="ui_about.py" line="254"/>
-        <source>协议</source>
-        <translation>Vereinbarung</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/history_table.py" line="107"/>
-        <source>播放</source>
-        <translation>Abspielen</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/history_table.py" line="108"/>
-        <source>导出</source>
-        <translation>Exportieren</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/history_table.py" line="109"/>
-        <source>刷新</source>
-        <translation>Aktualisieren</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/history_table.py" line="165"/>
-        <source>导出evf文件</source>
-        <translation>EVF-Datei exportieren</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/main_widget.py" line="66"/>
-        <source>历史记录</source>
-        <translation>Verlauf</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="24"/>
-        <source>与</source>
-        <translation>and</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="24"/>
-        <source>或</source>
-        <translation>or</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="63"/>
-        <source>等于</source>
-        <translation>Gleich</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="64"/>
-        <source>不等于</source>
-        <translation>Ungleich</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="65"/>
-        <source>大于</source>
-        <translation>Größer als</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="66"/>
-        <source>小于</source>
-        <translation>Kleiner als</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="67"/>
-        <source>大于等于</source>
-        <translation>Größer oder gleich</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="68"/>
-        <source>小于等于</source>
-        <translation>Kleiner oder gleich</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="69"/>
-        <source>包含</source>
-        <translation>Enthält</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/models.py" line="70"/>
-        <source>不包含</source>
-        <translation>Enthält nicht</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/sort_dialog.py" line="74"/>
-        <source>添加</source>
-        <translation>Hinzufügen</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/sort_dialog.py" line="76"/>
-        <source>删除</source>
-        <translation>Löschen</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/sort_dialog.py" line="75"/>
-        <source>插入</source>
-        <translation>Einfügen</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/main_widget.py" line="73"/>
-        <source>查询</source>
-        <translation>Abfrage</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/main_widget.py" line="96"/>
-        <source>上一页</source>
-        <translation>Vorherige Seite</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/main_widget.py" line="100"/>
-        <source>下一页</source>
-        <translation>Nächste Seite</translation>
+        <translation>開発：王嘉寧、李京志</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="245"/>
         <source>致谢：濮天羿、向飞宇、钟言、翁逸杰、张砷镓、Thomas Kolar</source>
-        <translation>Danksagungen: 濮天羿, 向飞宇, 钟言, 翁逸杰, 张砷镓, Thomas Kolar</translation>
+        <translation>謝辞：濮天羿、向飛宇、鐘言、翁逸杰、張砷鎵、Thomas Kolar</translation>
     </message>
     <message>
-        <location filename="../videoControl.py" line="463"/>
-        <source>录像</source>
-        <translation>Wiedergabe</translation>
+        <location filename="ui_about.py" line="246"/>
+        <source>元扫雷接受有益的贡献，包括新的玩法、规则、插件等。</source>
+        <translation>新たな遊び方やルール、プラグインの貢献を歓迎します。</translation>
     </message>
     <message>
-        <location filename="../plugins/History/columns_dialog.py" line="69"/>
-        <source>全选</source>
-        <translation>Alles auswählen</translation>
+        <location filename="ui_about.py" line="247"/>
+        <source>作者</source>
+        <translation>作者</translation>
     </message>
     <message>
-        <location filename="../videoControl.py" line="167"/>
-        <source>导出选中的录像</source>
-        <translation>Ausgewählte Aufzeichnungen exportieren</translation>
+        <location filename="ui_about.py" line="248"/>
+        <source>反馈</source>
+        <translation>フィードバック</translation>
     </message>
     <message>
-        <location filename="../videoControl.py" line="292"/>
-        <source>时间</source>
-        <translation>Zeit</translation>
+        <location filename="ui_about.py" line="249"/>
+        <source>感谢您考虑支持我们的开源项目，赞助时请备注项目名称+您的称呼+其他要求，例如元扫雷+张先生+建议添加**功能。您的赞助将有助于项目的持续发展和改进，使我们能够继续提高软件的质量。</source>
+        <translation>スポンサーにはプロジェクト名＋お名前＋要望をご記入ください（例：MetaMinesweeper＋鈴木＋XX機能追加希望）。ご支援がプロジェクトの発展に役立ちます。</translation>
     </message>
     <message>
-        <location filename="../videoControl.py" line="300"/>
-        <source>事件</source>
-        <translation>Ereignis</translation>
+        <location filename="ui_about.py" line="250"/>
+        <source>赞助</source>
+        <translation>スポンサー</translation>
     </message>
     <message>
-        <location filename="../videoControl.py" line="308"/>
-        <source>标签</source>
-        <translation>Bezeichnung</translation>
+        <location filename="ui_about.py" line="251"/>
+        <source>1. 在非商业用途前提下，用户有权不受任何限制地对“元扫雷”软件进行复制、存储及传播。</source>
+        <translation>1. 非営利目的の場合、ユーザーはMetaMinesweeperを無制限に複製、保存、配布できます。</translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="252"/>
+        <source>2. 由“元扫雷”软件生成的录像文件，其全部所有权归对应玩家本人所有。</source>
+        <translation>2. 本ソフトで生成したリプレイファイルの所有権は該当プレイヤーに帰属します。</translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="253"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;3. 本项目源代码遵循GPLv3并附加额外条款发布。该额外条款特别禁止任何未经开发团队授权的商业使用行为，并对项目相关收益的分配方式作出明确约定。具体内容详见&lt;a href=&quot;https://github.com/eee555/Metasweeper/blob/master/LICENSE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LICENSE&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;3. 本プロジェクトのソースコードはGPLv3及び追加条項に従って公開されています。追加条項は、開発チームの許可なき商業利用を禁止し、プロジェクト収益の分配方法を明示します。詳細は&lt;a href=&quot;https://github.com/eee555/Metasweeper/blob/master/LICENSE&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LICENSE&lt;/span&gt;&lt;/a&gt;を参照してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="ui_about.py" line="254"/>
+        <source>协议</source>
+        <translation>ライセンス</translation>
+    </message>
+    <message>
+        <location filename="ui_defined_parameter.py" line="134"/>
+        <source>自定义设置</source>
+        <translation>カスタム設定</translation>
+    </message>
+    <message>
+        <location filename="ui_defined_parameter.py" line="138"/>
+        <source>行数(row)</source>
+        <translation>行数(row)</translation>
+    </message>
+    <message>
+        <location filename="ui_defined_parameter.py" line="139"/>
+        <source>列数(column)</source>
+        <translation>列数(column)</translation>
+    </message>
+    <message>
+        <location filename="ui_defined_parameter.py" line="140"/>
+        <source>雷数(number)</source>
+        <translation>地雷数(number)</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="341"/>
+        <source>模式：</source>
+        <translation>モード：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="554"/>
+        <source>雷数：</source>
+        <translation>地雷数：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="549"/>
+        <source>高度：</source>
+        <translation>高さ：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="550"/>
+        <source>宽度：</source>
+        <translation>幅：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="552"/>
+        <source>边长：</source>
+        <translation>辺長：</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="524"/>
+        <source>快捷键[4]</source>
+        <translation>ショートカット[4]</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="540"/>
+        <source>快捷键[5]</source>
+        <translation>ショートカット[5]</translation>
+    </message>
+    <message>
+        <location filename="ui_gameSettingShortcuts.py" line="556"/>
+        <source>快捷键[6]</source>
+        <translation>ショートカット[6]</translation>
+    </message>
+    <message>
+        <location filename="ui_score_board.py" line="122"/>
+        <source>计数器</source>
+        <translation>カウンター</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="340"/>
+        <source>恭喜打破：</source>
+        <translation>記録更新おめでとう：</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="342"/>
+        <source>未标雷（标准）</source>
+        <translation>ノーフラッグ（標準）</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="343"/>
+        <source>Time成绩！</source>
+        <translation>Time記録！</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="344"/>
+        <source>3BV/s成绩！</source>
+        <translation>3BV/s記録！</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="345"/>
+        <source>STNB成绩！</source>
+        <translation>STNB記録！</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="346"/>
+        <source>IOE成绩！</source>
+        <translation>IOE記録！</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="347"/>
+        <source>Path成绩！</source>
+        <translation>Path記録！</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="348"/>
+        <source>RQP成绩！</source>
+        <translation>RQP記録！</translation>
+    </message>
+    <message>
+        <location filename="../plugins/XianNiUpgrade/models.py" line="121"/>
+        <source>初级</source>
+        <translation>初級</translation>
+    </message>
+    <message>
+        <location filename="ui_record_pop.py" line="354"/>
+        <source>个人最佳！</source>
+        <translation>自己ベスト！</translation>
+    </message>
+    <message>
+        <location filename="../plugins/XianNiUpgrade/models.py" line="122"/>
+        <source>中级</source>
+        <translation>中級</translation>
+    </message>
+    <message>
+        <location filename="../plugins/XianNiUpgrade/models.py" line="123"/>
+        <source>高级</source>
+        <translation>上級</translation>
     </message>
     <message>
         <location filename="ui_advanced.py" line="87"/>
         <source>高级设置</source>
-        <translation type="unfinished"></translation>
+        <translation>詳細設定</translation>
     </message>
     <message>
         <location filename="ui_advanced.py" line="88"/>
         <source>插件类</source>
-        <translation type="unfinished"></translation>
+        <translation>プラグイン操作</translation>
     </message>
     <message>
         <location filename="ui_advanced.py" line="89"/>
         <source>允许插件的控制类命令后（如点击格子、重开新局等），当前局面的录像将自动标记为&quot;非正式&quot;，不计入任何排名与统计数据。各命令需要在&lt;a href=&quot;plugin:manager&quot; style=&quot;color:#00A2E8; text-decoration:underline;&quot;&gt;插件管理器&lt;/a&gt;中完成授权后才生效。</source>
-        <translation type="unfinished"></translation>
+        <translation>プラグインによる制御命令（セルクリック、新規ゲーム等）を許可すると、当該リプレイは自動的に「非公式」とマークされ、ランキングや統計に反映されません。各命令の権限は&lt;a href=&quot;plugin:manager&quot; style=&quot;color:#00A2E8; text-decoration:underline;&quot;&gt;プラグイン管理器&lt;/a&gt;で設定してください。</translation>
     </message>
     <message>
         <location filename="ui_advanced.py" line="90"/>
         <source>算法类</source>
-        <translation type="unfinished"></translation>
+        <translation>アルゴリズム</translation>
+    </message>
+    <message>
+        <location filename="ui_advanced.py" line="91"/>
+        <source>勾选后永远使用筛选法埋雷，否则会适时改用调整法</source>
+        <translation>ONで常にふるい法、OFFで状況に応じ調整法</translation>
+    </message>
+    <message>
+        <location filename="ui_advanced.py" line="92"/>
+        <source>永远使用筛选法埋雷（不推荐）</source>
+        <translation>常にふるい法で配置（非推奨）</translation>
+    </message>
+    <message>
+        <location filename="ui_video_control.py" line="190"/>
+        <source>重播</source>
+        <translation>再生</translation>
+    </message>
+    <message>
+        <location filename="ui_video_control.py" line="191"/>
+        <source>播放/暂停</source>
+        <translation>再生／一時停止</translation>
+    </message>
+    <message>
+        <location filename="ui_video_control.py" line="192"/>
+        <source>滑动滚轮修改播放速度</source>
+        <translation>ホイールで速度変更</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="463"/>
+        <source>录像</source>
+        <translation>録画</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/columns_dialog.py" line="69"/>
+        <source>全选</source>
+        <translation>すべて選択</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="167"/>
+        <source>导出选中的录像</source>
+        <translation>選択リプレイをエクスポート</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="292"/>
+        <source>时间</source>
+        <translation>時間</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="300"/>
+        <source>事件</source>
+        <translation>イベント</translation>
+    </message>
+    <message>
+        <location filename="../videoControl.py" line="308"/>
+        <source>标签</source>
+        <translation>タグ</translation>
     </message>
     <message>
         <location filename="../plugins/History/plugin.py" line="30"/>
         <source>小数位数</source>
-        <translation type="unfinished"></translation>
+        <translation>小数点桁数</translation>
     </message>
     <message>
         <location filename="../plugins/History/plugin.py" line="30"/>
         <source>查询窗口中浮点数显示的小数位数</source>
-        <translation type="unfinished"></translation>
+        <translation>照会画面の小数点表示桁数</translation>
     </message>
     <message>
         <location filename="../plugins/History/plugin.py" line="57"/>
         <source>每页条数</source>
-        <translation type="unfinished"></translation>
+        <translation>1ページの件数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/main_widget.py" line="66"/>
+        <source>历史记录</source>
+        <translation>履歴</translation>
     </message>
     <message>
         <location filename="../plugins/History/plugin.py" line="85"/>
         <source>游戏历史记录（SQLite 持久化）</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム履歴（SQLite保存）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/main_widget.py" line="73"/>
+        <source>查询</source>
+        <translation>照会</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="74"/>
         <source>过滤</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルター</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="75"/>
         <source>排序</source>
-        <translation type="unfinished"></translation>
+        <translation>並び替え</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="76"/>
         <source>列设置</source>
-        <translation type="unfinished"></translation>
+        <translation>列設定</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/main_widget.py" line="96"/>
+        <source>上一页</source>
+        <translation>前へ</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/main_widget.py" line="100"/>
+        <source>下一页</source>
+        <translation>次へ</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="490"/>
         <source>错误</source>
-        <translation type="unfinished"></translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="239"/>
         <source>历史记录数据库不存在</source>
-        <translation type="unfinished"></translation>
+        <translation>履歴DBが存在しません</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="262"/>
         <source>共0行,0页</source>
-        <translation type="unfinished"></translation>
+        <translation>0行,0ページ</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="268"/>
         <source>共%1行,%2页</source>
-        <translation type="unfinished"></translation>
+        <translation>合計%1行,%2ページ</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="274"/>
         <source>加载历史记录失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>履歴読込失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="378"/>
         <source>第%1行 右括号数量大于左括号数量，请检查</source>
-        <translation type="unfinished"></translation>
+        <translation>%1行目 右括弧＞左括弧です</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="396"/>
         <source>第%1行 %2 不是数字</source>
-        <translation type="unfinished"></translation>
+        <translation>%1行目 %2 は数字ではありません</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="474"/>
         <source>第%1行 %2 不是合法的日期时间</source>
-        <translation type="unfinished"></translation>
+        <translation>%1行目 %2 は有効な日時ではありません</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="444"/>
         <source>第%1行 %2 不是合法的枚举选项</source>
-        <translation type="unfinished"></translation>
+        <translation>%1行目 %2 は無効な選択肢です</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="490"/>
         <source>左括号数量和右括号数量不匹配，请检查</source>
-        <translation type="unfinished"></translation>
+        <translation>括弧の数が一致しません</translation>
     </message>
     <message>
         <location filename="../plugins/History/sort_dialog.py" line="130"/>
         <source>升序</source>
-        <translation type="unfinished"></translation>
+        <translation>昇順</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="524"/>
         <source>过滤: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルター: %1</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="527"/>
         <source>过滤: 无</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルター: なし</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="532"/>
         <source>排序: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>並び替え: %1</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="535"/>
         <source>排序: 无</source>
-        <translation type="unfinished"></translation>
+        <translation>並び替え: なし</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/history_table.py" line="107"/>
+        <source>播放</source>
+        <translation>再生</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/history_table.py" line="108"/>
+        <source>导出</source>
+        <translation>エクスポート</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/history_table.py" line="109"/>
+        <source>刷新</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/history_table.py" line="165"/>
+        <source>导出evf文件</source>
+        <translation>evfをエクスポート</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>左括号</source>
-        <translation type="unfinished"></translation>
+        <translation>左括弧</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>字段</source>
-        <translation type="unfinished"></translation>
+        <translation>フィールド</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>比较符</source>
-        <translation type="unfinished"></translation>
+        <translation>比較演算子</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>值</source>
-        <translation type="unfinished"></translation>
+        <translation>値</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>右括号</source>
-        <translation type="unfinished"></translation>
+        <translation>右括弧</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="139"/>
         <source>逻辑符</source>
-        <translation type="unfinished"></translation>
+        <translation>論理演算子</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="209"/>
         <source>排序字段</source>
-        <translation type="unfinished"></translation>
+        <translation>並び替えフィールド</translation>
     </message>
     <message>
         <location filename="../plugins/History/table_views.py" line="209"/>
         <source>升序/降序</source>
-        <translation type="unfinished"></translation>
+        <translation>昇順／降順</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="24"/>
+        <source>与</source>
+        <translation>かつ</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="24"/>
+        <source>或</source>
+        <translation>または</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="63"/>
+        <source>等于</source>
+        <translation>等しい</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="64"/>
+        <source>不等于</source>
+        <translation>等しくない</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="65"/>
+        <source>大于</source>
+        <translation>より大</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="66"/>
+        <source>小于</source>
+        <translation>より小</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="67"/>
+        <source>大于等于</source>
+        <translation>以上</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="68"/>
+        <source>小于等于</source>
+        <translation>以下</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="69"/>
+        <source>包含</source>
+        <translation>含む</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/models.py" line="70"/>
+        <source>不包含</source>
+        <translation>含まない</translation>
     </message>
     <message>
         <location filename="../plugins/History/filter_dialog.py" line="34"/>
         <source>过滤条件</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルター条件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/sort_dialog.py" line="74"/>
+        <source>添加</source>
+        <translation>追加</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/sort_dialog.py" line="75"/>
+        <source>插入</source>
+        <translation>挿入</translation>
+    </message>
+    <message>
+        <location filename="../plugins/History/sort_dialog.py" line="76"/>
+        <source>删除</source>
+        <translation>削除</translation>
     </message>
     <message>
         <location filename="../plugins/History/sort_dialog.py" line="29"/>
         <source>排序条件</source>
-        <translation type="unfinished"></translation>
+        <translation>並び替え条件</translation>
     </message>
     <message>
         <location filename="../plugins/History/sort_dialog.py" line="64"/>
         <source>降序</source>
-        <translation type="unfinished"></translation>
+        <translation>降順</translation>
     </message>
     <message>
         <location filename="../plugins/History/columns_dialog.py" line="56"/>
         <source>列设置（右键/Ctrl+Shift+↑↓ 排序）</source>
-        <translation type="unfinished"></translation>
+        <translation>列設定（右クリ/Ctrl+Shift+↑↓）</translation>
     </message>
     <message>
         <location filename="../plugins/History/columns_dialog.py" line="70"/>
         <source>取消全选</source>
-        <translation type="unfinished"></translation>
+        <translation>全解除</translation>
     </message>
     <message>
         <location filename="../plugins/History/columns_dialog.py" line="126"/>
         <source>上移 (Ctrl+Shift+↑)</source>
-        <translation type="unfinished"></translation>
+        <translation>上へ (Ctrl+Shift+↑)</translation>
     </message>
     <message>
         <location filename="../plugins/History/columns_dialog.py" line="127"/>
         <source>下移 (Ctrl+Shift+↓)</source>
-        <translation type="unfinished"></translation>
+        <translation>下へ (Ctrl+Shift+↓)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="16"/>
         <source>API密钥</source>
-        <translation type="unfinished"></translation>
+        <translation>APIキー</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="21"/>
         <source>API基础URL</source>
-        <translation type="unfinished"></translation>
+        <translation>APIベースURL</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="26"/>
         <source>模型名称</source>
-        <translation type="unfinished"></translation>
+        <translation>モデル名</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="31"/>
         <source>请求超时(秒)</source>
-        <translation type="unfinished"></translation>
+        <translation>タイムアウト(秒)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="37"/>
         <source>默认游戏难度</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルト難易度</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="37"/>
         <source>初级 (8x8, 10雷)</source>
-        <translation type="unfinished"></translation>
+        <translation>初級 (8x8, 10地雷)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="37"/>
         <source>中级 (16x16, 40雷)</source>
-        <translation type="unfinished"></translation>
+        <translation>中級 (16x16, 40地雷)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="37"/>
         <source>高级 (16x30, 99雷)</source>
-        <translation type="unfinished"></translation>
+        <translation>上級 (16x30, 99地雷)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="48"/>
         <source>自动执行LLM操作(否则需确认)</source>
-        <translation type="unfinished"></translation>
+        <translation>LLM操作を自動実行</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="53"/>
         <source>温度参数(0-100)</source>
-        <translation type="unfinished"></translation>
+        <translation>温度(0-100)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="58"/>
         <source>上下文上限</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテキスト上限</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="58"/>
         <source>超过此值时触发压缩</source>
-        <translation type="unfinished"></translation>
+        <translation>この値を超えると圧縮</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="64"/>
         <source>上下文下限</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテキスト下限</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="64"/>
         <source>压缩后保留的最少消息数</source>
-        <translation type="unfinished"></translation>
+        <translation>圧縮後の最小保持数</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="70"/>
         <source>深度思考</source>
-        <translation type="unfinished"></translation>
+        <translation>Deep Thinking</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="70"/>
         <source>关闭</source>
-        <translation type="unfinished"></translation>
+        <translation>オフ</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="70"/>
         <source>低</source>
-        <translation type="unfinished"></translation>
+        <translation>低</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="179"/>
         <source>中</source>
-        <translation type="unfinished"></translation>
+        <translation>中</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/config.py" line="70"/>
         <source>高</source>
-        <translation type="unfinished"></translation>
+        <translation>高</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="21"/>
         <source>使用教程</source>
-        <translation type="unfinished"></translation>
+        <translation>使い方</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="40"/>
@@ -854,398 +854,399 @@ li { margin: 6px 0; }
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="97"/>
         <source>状态</source>
-        <translation type="unfinished"></translation>
+        <translation>状態</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="99"/>
         <source>就绪</source>
-        <translation type="unfinished"></translation>
+        <translation>準備完了</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="140"/>
         <source>日志</source>
-        <translation type="unfinished"></translation>
+        <translation>ログ</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="166"/>
         <source>🤖 分析并操作</source>
-        <translation type="unfinished"></translation>
+        <translation>🤖 分析して操作</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="167"/>
         <source>⏹ 停止</source>
-        <translation type="unfinished"></translation>
+        <translation>⏹ 停止</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="169"/>
         <source>🔗 测试</source>
-        <translation type="unfinished"></translation>
+        <translation>🔗 テスト</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="170"/>
         <source>📖 教程</source>
-        <translation type="unfinished"></translation>
+        <translation>📖 使い方</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="171"/>
         <source>🗑 清除对话</source>
-        <translation type="unfinished"></translation>
+        <translation>🗑 会話クリア</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/widgets.py" line="172"/>
         <source>🗑 清除日志</source>
-        <translation type="unfinished"></translation>
+        <translation>🗑 ログクリア</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="148"/>
         <source>[历史执行摘要]</source>
-        <translation type="unfinished"></translation>
+        <translation>[実行履歴サマリー]</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="153"/>
         <source>左键%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>左%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="155"/>
         <source>标旗%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>フラグ%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="157"/>
         <source>取消标旗%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>解除%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="159"/>
         <source>中键%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>中%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="161"/>
         <source>查询%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>照会%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="163"/>
         <source>新游戏%1次</source>
-        <translation type="unfinished"></translation>
+        <translation>新規%1回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="166"/>
         <source>执行统计: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>実行統計: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="173"/>
         <source>最近操作(%1个点击):</source>
-        <translation type="unfinished"></translation>
+        <translation>最近の操作(%1クリック):</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="178"/>
         <source>左</source>
-        <translation type="unfinished"></translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="178"/>
         <source>右</source>
-        <translation type="unfinished"></translation>
+        <translation>右</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="180"/>
         <source>  - %1键(%2,%3)</source>
-        <translation type="unfinished"></translation>
+        <translation>  - %1(%2,%3)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="183"/>
         <source>最后游戏: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>最終: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="377"/>
         <source>[上下文压缩] 以下是之前的执行摘要:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>[圧縮] 実行サマリー:
+%1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="368"/>
         <source>📦 上下文压缩: 合并了 %1 条旧消息</source>
-        <translation type="unfinished"></translation>
+        <translation>📦 %1件の古いメッセージを統合</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="400"/>
         <source>用户请求停止</source>
-        <translation type="unfinished"></translation>
+        <translation>ユーザーが停止要求</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="409"/>
         <source>📦 上下文压缩: %1 -&gt; %2 条 (上限: %3, 下限: %4)</source>
-        <translation type="unfinished"></translation>
+        <translation>📦 %1→%2件 (上限%3, 下限%4)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="416"/>
         <source>当前历史消息数: %1 (上限: %2, 下限: %3)</source>
-        <translation type="unfinished"></translation>
+        <translation>履歴: %1件 (上限%2, 下限%3)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="423"/>
         <source>=== 第 %1 轮对话 ===</source>
-        <translation type="unfinished"></translation>
+        <translation>=== 第%1ラウンド ===</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="427"/>
         <source>[系统] 你已连续查询棋盘 %1 次但未执行任何操作！现在必须基于已有信息做出决策：要么执行 click_cell 操作，要么调用 start_new_game。不要继续查询棋盘状态！</source>
-        <translation type="unfinished"></translation>
+        <translation>[システム] %1回連続照会、未操作。click_cellかstart_new_gameを実行。</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="434"/>
         <source>⚠️ 强制决策：连续查询次数过多，要求AI必须执行操作</source>
-        <translation type="unfinished"></translation>
+        <translation>⚠️ 強制判断：連続照会超過、AIは操作を実行</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="439"/>
         <source>[系统] 警告！你已连续 %1 次执行点击操作，但棋盘状态没有变化！可能的原因：1) 点击了已揭开的格子 2) 点击了边界外 3) 游戏已结束。请先调用 get_board_state 检查当前状态，再决定下一步操作。如果游戏已结束（win/fail），必须调用 start_new_game 开始新游戏！</source>
-        <translation type="unfinished"></translation>
+        <translation>[システム] %1回連続クリック効果なし。get_board_stateで確認後、終了ならstart_new_gameを実行。</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="447"/>
         <source>⚠️ 强制检查：连续%1次点击无效果，要求检查棋盘状态</source>
-        <translation type="unfinished"></translation>
+        <translation>⚠️ %1回連続効果なし、盤面確認が必要</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="467"/>
         <source>API 调用失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>API呼出失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="499"/>
         <source>调用函数: %1(%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>関数: %1(%2)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="507"/>
         <source>执行结果: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>結果: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="538"/>
         <source>⚠️ 棋盘无变化! 连续无变化次数: %1/%2</source>
-        <translation type="unfinished"></translation>
+        <translation>⚠️ 盤面変化なし %1/%2回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="545"/>
         <source>✓ 棋盘已更新</source>
-        <translation type="unfinished"></translation>
+        <translation>✓ 盤面更新済</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="550"/>
         <source>✓ 检测到实际操作，重置查询计数</source>
-        <translation type="unfinished"></translation>
+        <translation>✓ 操作検出、照会カウントリセット</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="553"/>
         <source>⚠️ 无实际操作，连续查询计数: %1/%2</source>
-        <translation type="unfinished"></translation>
+        <translation>⚠️ 操作なし 照会%1/%2回</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="562"/>
         <source>LLM 分析完成</source>
-        <translation type="unfinished"></translation>
+        <translation>LLM分析完了</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="566"/>
         <source>执行异常: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>実行異常: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="630"/>
         <source>权限: NewGame=%1, MouseClick=%2</source>
-        <translation type="unfinished"></translation>
+        <translation>権限: NewGame=%1, MouseClick=%2</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="650"/>
         <source>LLM 客户端已初始化 (model: %1)</source>
-        <translation type="unfinished"></translation>
+        <translation>LLM初期化完了 (model: %1)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="654"/>
         <source>未配置 API 密钥，LLM 功能不可用</source>
-        <translation type="unfinished"></translation>
+        <translation>APIキー未設定。LLM機能利用不可</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="705"/>
         <source>NewGameCommand 权限: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>NewGame権限: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="708"/>
         <source>已授权</source>
-        <translation type="unfinished"></translation>
+        <translation>許可済</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="708"/>
         <source>未授权</source>
-        <translation type="unfinished"></translation>
+        <translation>未許可</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="708"/>
         <source>MouseClickCommand 权限: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>MouseClick権限: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="714"/>
         <source>配置更新: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>設定更新: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="722"/>
         <source>收到棋盘更新事件</source>
-        <translation type="unfinished"></translation>
+        <translation>盤面更新受信</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="740"/>
         <source>准备</source>
-        <translation type="unfinished"></translation>
+        <translation>準備</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="741"/>
         <source>游戏中</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム中</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="742"/>
         <source>胜利</source>
-        <translation type="unfinished"></translation>
+        <translation>勝利</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="743"/>
         <source>失败</source>
-        <translation type="unfinished"></translation>
+        <translation>敗北</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="744"/>
         <source>显示概率</source>
-        <translation type="unfinished"></translation>
+        <translation>確率表示</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="745"/>
         <source>研究模式</source>
-        <translation type="unfinished"></translation>
+        <translation>研究モード</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="746"/>
         <source>播放录像</source>
-        <translation type="unfinished"></translation>
+        <translation>リプレイ</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="747"/>
         <source>播放概率</source>
-        <translation type="unfinished"></translation>
+        <translation>確率再生</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="752"/>
         <source>未知(%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>不明(%1)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="755"/>
         <source>游戏状态变化: %1 -&gt; %2</source>
-        <translation type="unfinished"></translation>
+        <translation>状態: %1→%2</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="770"/>
         <source>已清空历史上下文</source>
-        <translation type="unfinished"></translation>
+        <translation>履歴コンテキストクリア</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="774"/>
         <source>游戏胜利!</source>
-        <translation type="unfinished"></translation>
+        <translation>勝利！</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="776"/>
         <source>游戏失败!</source>
-        <translation type="unfinished"></translation>
+        <translation>敗北！</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="778"/>
         <source>游戏中...</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム中…</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="819"/>
         <source>请先配置 API 密钥</source>
-        <translation type="unfinished"></translation>
+        <translation>APIキーを設定してください</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="790"/>
         <source>正在测试连接...</source>
-        <translation type="unfinished"></translation>
+        <translation>接続テスト中…</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="796"/>
         <source>连接成功</source>
-        <translation type="unfinished"></translation>
+        <translation>接続成功</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="797"/>
         <source>连接成功! 模型: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>接続成功！モデル: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="799"/>
         <source>连接失败</source>
-        <translation type="unfinished"></translation>
+        <translation>接続失敗</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="800"/>
         <source>连接失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>接続失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="807"/>
         <source>游戏已结束，不再继续分析</source>
-        <translation type="unfinished"></translation>
+        <translation>終了、分析停止</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="813"/>
         <source>自动继续分析...</source>
-        <translation type="unfinished"></translation>
+        <translation>自動継続…</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="823"/>
         <source>已有分析任务在运行</source>
-        <translation type="unfinished"></translation>
+        <translation>既に分析中</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="857"/>
         <source>正在停止分析...</source>
-        <translation type="unfinished"></translation>
+        <translation>停止中…</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="861"/>
         <source>没有正在运行的分析任务</source>
-        <translation type="unfinished"></translation>
+        <translation>実行中の分析なし</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="870"/>
         <source>分析完成</source>
-        <translation type="unfinished"></translation>
+        <translation>分析完了</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="872"/>
         <source>分析中断</source>
-        <translation type="unfinished"></translation>
+        <translation>分析中断</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="877"/>
         <source>用户已停止，不再自动继续</source>
-        <translation type="unfinished"></translation>
+        <translation>ユーザー停止、自動継続なし</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="883"/>
         <source>游戏进行中，1秒后继续分析...</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム中、1秒後に継続…</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="898"/>
@@ -1259,177 +1260,186 @@ li { margin: 6px 0; }
 %6
 
 请分析当前局面并选择最佳操作。</source>
-        <translation type="unfinished"></translation>
+        <translation>現在の盤面:
+- 行数: %1
+- 列数: %2
+- 残り地雷: %3
+- 経過時間: %4秒
+- 状態: %5
+- 盤面データ (cells[row][col], -1=未オープン, 0-8=周辺地雷数, F=フラグ, M=踏んだ地雷):
+%6
+
+現在の局面を分析し最適な操作を選択してください。</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="923"/>
         <source>无权限执行鼠标点击命令</source>
-        <translation type="unfinished"></translation>
+        <translation>マウスクリック権限なし</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="938"/>
         <source>已点击格子: 行%1, 列%2, 按钮: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>クリック: %1行%2列 %3</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="941"/>
         <source>格子点击已执行: 行%1, 列%2, %3</source>
-        <translation type="unfinished"></translation>
+        <translation>実行済: %1行%2列 %3</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="947"/>
         <source>执行格子点击失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>クリック失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="958"/>
         <source>无权限执行新游戏命令</source>
-        <translation type="unfinished"></translation>
+        <translation>新規ゲーム権限なし</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="990"/>
         <source>已开始新游戏，难度: %1 (%2x%3, %4雷)</source>
-        <translation type="unfinished"></translation>
+        <translation>新規: %1 (%2x%3, %4地雷)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="994"/>
         <source>新游戏已开始，难度: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>新規開始: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="1003"/>
         <source>开始新游戏失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>新規失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="1059"/>
         <source>棋盘数据不可用</source>
-        <translation type="unfinished"></translation>
+        <translation>盤面データなし</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="1073"/>
         <source>棋盘为空</source>
-        <translation type="unfinished"></translation>
+        <translation>盤面空</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/api_client.py" line="135"/>
         <source>请求超时 (%1秒)</source>
-        <translation type="unfinished"></translation>
+        <translation>タイムアウト (%1秒)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/api_client.py" line="137"/>
         <source>连接失败，请检查网络和API地址</source>
-        <translation type="unfinished"></translation>
+        <translation>接続失敗。ネットワークを確認</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/api_client.py" line="139"/>
         <source>请求异常: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>リクエスト異常: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/api_client.py" line="141"/>
         <source>未知错误: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>不明エラー: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/api_client.py" line="170"/>
         <source>解析响应失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>応答解析失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="163"/>
         <source>函数 &apos;%1&apos; 未注册</source>
-        <translation type="unfinished"></translation>
+        <translation>関数 %1 未登録</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="195"/>
         <source>函数执行失败: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>関数失敗: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="225"/>
         <source>LLM 调用: %1(%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>LLM呼出: %1(%2)</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="232"/>
         <source>执行成功: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>成功: %1</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="234"/>
         <source>执行失败: %1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>失敗: %1 - %2</translation>
     </message>
     <message>
         <location filename="../plugins/llm_minesweeper_controller/function_registry.py" line="234"/>
         <source>未知错误</source>
-        <translation type="unfinished"></translation>
+        <translation>不明エラー</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/plugin.py" line="119"/>
         <source>仙逆背景的修炼体系 - 每局扫雷胜利获得经验，从凡人修炼到一招摧毁108颗修正星的绝世强者</source>
-        <translation type="unfinished"></translation>
+        <translation>仙逆世界観の修練 - 勝利で経験値獲得、凡人から絶世の強者へ</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/plugin.py" line="286"/>
         <source>匿名玩家</source>
-        <translation type="unfinished"></translation>
+        <translation>匿名プレイヤー</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="465"/>
         <source>吸收灵气</source>
-        <translation type="unfinished"></translation>
+        <translation>霊気吸収</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="89"/>
         <source>选择验证法器...</source>
-        <translation type="unfinished"></translation>
+        <translation>検証法器を選択…</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="100"/>
         <source>浏览</source>
-        <translation type="unfinished"></translation>
+        <translation>参照</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="92"/>
         <source>验证法器:</source>
-        <translation type="unfinished"></translation>
+        <translation>検証法器:</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="99"/>
         <source>选择灵箓目录...</source>
-        <translation type="unfinished"></translation>
+        <translation>霊符フォルダを選択…</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="102"/>
         <source>灵箓目录:</source>
-        <translation type="unfinished"></translation>
+        <translation>霊符フォルダ:</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="111"/>
         <source>确认</source>
-        <translation type="unfinished"></translation>
+        <translation>確認</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="120"/>
         <source>选择验证法器</source>
-        <translation type="unfinished"></translation>
+        <translation>検証法器の選択</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="120"/>
         <source>法器 (*.exe);;所有文件 (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>法器 (*.exe);;全ファイル (*)</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="125"/>
         <source>选择灵箓目录</source>
-        <translation type="unfinished"></translation>
+        <translation>霊符フォルダの選択</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="319"/>
         <source>天地法则</source>
-        <translation type="unfinished"></translation>
+        <translation>天地の法則</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="157"/>
@@ -1544,620 +1554,623 @@ th { background: #F3E5F5; color: #6A1B9A; }
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="15"/>
         <source>凡人</source>
-        <translation type="unfinished"></translation>
+        <translation>凡人</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="300"/>
         <source>修为: 0</source>
-        <translation type="unfinished"></translation>
+        <translation>修行: 0</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="351"/>
         <source>等待仙躯
 形象加载...</source>
-        <translation type="unfinished"></translation>
+        <translation>仙体
+読込中…</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="359"/>
         <source>暂无仙躯
 形象</source>
-        <translation type="unfinished"></translation>
+        <translation>仙体
+未設定</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="365"/>
         <source>修为: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>修行: %1</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="369"/>
         <source>%1% | 还需 %2 道行</source>
-        <translation type="unfinished"></translation>
+        <translation>%1% | あと %2</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="372"/>
         <source>已圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="402"/>
         <source>修行日志</source>
-        <translation type="unfinished"></translation>
+        <translation>修行記録</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>时刻</source>
-        <translation type="unfinished"></translation>
+        <translation>時刻</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>境阶</source>
-        <translation type="unfinished"></translation>
+        <translation>段階</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>法式</source>
-        <translation type="unfinished"></translation>
+        <translation>様式</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>耗时</source>
-        <translation type="unfinished"></translation>
+        <translation>時間</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>衍数</source>
-        <translation type="unfinished"></translation>
+        <translation>衍数</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="411"/>
         <source>道行</source>
-        <translation type="unfinished"></translation>
+        <translation>道行</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="457"/>
         <source>提示</source>
-        <translation type="unfinished"></translation>
+        <translation>ヒント</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="450"/>
         <source>插件未就绪</source>
-        <translation type="unfinished"></translation>
+        <translation>未準備</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="457"/>
         <source>请填写验证法器和灵箓目录</source>
-        <translation type="unfinished"></translation>
+        <translation>法器と霊符フォルダを入力</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="462"/>
         <source>吸收灵气失败</source>
-        <translation type="unfinished"></translation>
+        <translation>霊気吸収失敗</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="462"/>
         <source>验证失败，请查看插件日志</source>
-        <translation type="unfinished"></translation>
+        <translation>検証失敗。ログ参照</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="465"/>
         <source>没有新的灵箓需要导入</source>
-        <translation type="unfinished"></translation>
+        <translation>新しい霊符なし</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="469"/>
         <source>吸收灵气完成</source>
-        <translation type="unfinished"></translation>
+        <translation>吸収完了</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/widgets.py" line="469"/>
         <source>新增 %1 道灵箓
 获得 %2 道行</source>
-        <translation type="unfinished"></translation>
+        <translation>新規%1件
+%2道行獲得</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="16"/>
         <source>凝气一层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気一層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="17"/>
         <source>凝气二层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気二層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="18"/>
         <source>凝气三层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気三層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="19"/>
         <source>凝气四层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気四層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="20"/>
         <source>凝气五层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気五層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="21"/>
         <source>凝气六层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気六層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="22"/>
         <source>凝气七层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気七層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="23"/>
         <source>凝气八层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気八層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="24"/>
         <source>凝气九层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気九層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="25"/>
         <source>凝气十层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="26"/>
         <source>凝气十一层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十一層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="27"/>
         <source>凝气十二层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十二層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="28"/>
         <source>凝气十三层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十三層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="29"/>
         <source>凝气十四层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十四層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="30"/>
         <source>凝气十五层</source>
-        <translation type="unfinished"></translation>
+        <translation>凝気十五層</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="31"/>
         <source>筑基初期</source>
-        <translation type="unfinished"></translation>
+        <translation>筑基初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="32"/>
         <source>筑基中期</source>
-        <translation type="unfinished"></translation>
+        <translation>筑基中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="33"/>
         <source>筑基后期</source>
-        <translation type="unfinished"></translation>
+        <translation>筑基後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="34"/>
         <source>筑基大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>筑基大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="35"/>
         <source>结丹初期</source>
-        <translation type="unfinished"></translation>
+        <translation>結丹初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="36"/>
         <source>结丹中期</source>
-        <translation type="unfinished"></translation>
+        <translation>結丹中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="37"/>
         <source>结丹后期</source>
-        <translation type="unfinished"></translation>
+        <translation>結丹後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="38"/>
         <source>结丹大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>結丹大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="39"/>
         <source>元婴初期</source>
-        <translation type="unfinished"></translation>
+        <translation>元婴初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="40"/>
         <source>元婴中期</source>
-        <translation type="unfinished"></translation>
+        <translation>元婴中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="41"/>
         <source>元婴后期</source>
-        <translation type="unfinished"></translation>
+        <translation>元婴後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="42"/>
         <source>元婴大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>元婴大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="43"/>
         <source>化神初期</source>
-        <translation type="unfinished"></translation>
+        <translation>化神初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="44"/>
         <source>化神中期</source>
-        <translation type="unfinished"></translation>
+        <translation>化神中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="45"/>
         <source>化神后期</source>
-        <translation type="unfinished"></translation>
+        <translation>化神後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="46"/>
         <source>化神大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>化神大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="47"/>
         <source>婴变初期</source>
-        <translation type="unfinished"></translation>
+        <translation>嬰変初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="48"/>
         <source>婴变中期</source>
-        <translation type="unfinished"></translation>
+        <translation>嬰変中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="49"/>
         <source>婴变后期</source>
-        <translation type="unfinished"></translation>
+        <translation>嬰変後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="50"/>
         <source>婴变大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>嬰変大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="51"/>
         <source>问鼎初期</source>
-        <translation type="unfinished"></translation>
+        <translation>問鼎初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="52"/>
         <source>问鼎中期</source>
-        <translation type="unfinished"></translation>
+        <translation>問鼎中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="53"/>
         <source>问鼎后期</source>
-        <translation type="unfinished"></translation>
+        <translation>問鼎後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="54"/>
         <source>问鼎大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>問鼎大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="55"/>
         <source>阴虚</source>
-        <translation type="unfinished"></translation>
+        <translation>陰虚</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="56"/>
         <source>阳实</source>
-        <translation type="unfinished"></translation>
+        <translation>陽実</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="57"/>
         <source>窥涅初期</source>
-        <translation type="unfinished"></translation>
+        <translation>窺涅初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="58"/>
         <source>窥涅中期</source>
-        <translation type="unfinished"></translation>
+        <translation>窺涅中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="59"/>
         <source>窥涅后期</source>
-        <translation type="unfinished"></translation>
+        <translation>窺涅後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="60"/>
         <source>窥涅大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>窺涅大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="61"/>
         <source>净涅初期</source>
-        <translation type="unfinished"></translation>
+        <translation>浄涅初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="62"/>
         <source>净涅中期</source>
-        <translation type="unfinished"></translation>
+        <translation>浄涅中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="63"/>
         <source>净涅后期</source>
-        <translation type="unfinished"></translation>
+        <translation>浄涅後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="64"/>
         <source>净涅大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>浄涅大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="65"/>
         <source>碎涅初期</source>
-        <translation type="unfinished"></translation>
+        <translation>砕涅初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="66"/>
         <source>碎涅中期</source>
-        <translation type="unfinished"></translation>
+        <translation>砕涅中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="67"/>
         <source>碎涅后期</source>
-        <translation type="unfinished"></translation>
+        <translation>砕涅後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="68"/>
         <source>碎涅大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>砕涅大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="69"/>
         <source>天人一衰</source>
-        <translation type="unfinished"></translation>
+        <translation>天人一衰</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="70"/>
         <source>天人二衰</source>
-        <translation type="unfinished"></translation>
+        <translation>天人二衰</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="71"/>
         <source>天人三衰</source>
-        <translation type="unfinished"></translation>
+        <translation>天人三衰</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="72"/>
         <source>天人四衰</source>
-        <translation type="unfinished"></translation>
+        <translation>天人四衰</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="73"/>
         <source>天人五衰</source>
-        <translation type="unfinished"></translation>
+        <translation>天人五衰</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="74"/>
         <source>空涅初期</source>
-        <translation type="unfinished"></translation>
+        <translation>空涅初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="75"/>
         <source>空涅中期</source>
-        <translation type="unfinished"></translation>
+        <translation>空涅中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="76"/>
         <source>空涅后期</source>
-        <translation type="unfinished"></translation>
+        <translation>空涅後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="77"/>
         <source>空涅大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>空涅大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="78"/>
         <source>空灵初期</source>
-        <translation type="unfinished"></translation>
+        <translation>空霊初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="79"/>
         <source>空灵中期</source>
-        <translation type="unfinished"></translation>
+        <translation>空霊中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="80"/>
         <source>空灵后期</source>
-        <translation type="unfinished"></translation>
+        <translation>空霊後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="81"/>
         <source>空灵大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>空霊大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="82"/>
         <source>空玄初期</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="83"/>
         <source>空玄中期</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="84"/>
         <source>空玄后期</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="85"/>
         <source>空玄大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="86"/>
         <source>空玄一劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄一劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="87"/>
         <source>空玄二劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄二劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="88"/>
         <source>空玄三劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄三劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="89"/>
         <source>空玄四劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄四劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="90"/>
         <source>空玄五劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄五劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="91"/>
         <source>空玄六劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄六劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="92"/>
         <source>空玄七劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄七劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="93"/>
         <source>空玄八劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄八劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="94"/>
         <source>空玄九劫</source>
-        <translation type="unfinished"></translation>
+        <translation>空玄九劫</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="95"/>
         <source>空劫初期</source>
-        <translation type="unfinished"></translation>
+        <translation>空劫初期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="96"/>
         <source>空劫中期</source>
-        <translation type="unfinished"></translation>
+        <translation>空劫中期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="97"/>
         <source>空劫后期</source>
-        <translation type="unfinished"></translation>
+        <translation>空劫後期</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="98"/>
         <source>空劫大圆满</source>
-        <translation type="unfinished"></translation>
+        <translation>空劫大円満</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="99"/>
         <source>大尊</source>
-        <translation type="unfinished"></translation>
+        <translation>大尊</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="100"/>
         <source>金尊</source>
-        <translation type="unfinished"></translation>
+        <translation>金尊</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="101"/>
         <source>天尊</source>
-        <translation type="unfinished"></translation>
+        <translation>天尊</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="102"/>
         <source>跃天尊</source>
-        <translation type="unfinished"></translation>
+        <translation>躍天尊</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="103"/>
         <source>大天尊</source>
-        <translation type="unfinished"></translation>
+        <translation>大天尊</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="104"/>
         <source>踏天一桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天一橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="105"/>
         <source>踏天二桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天二橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="106"/>
         <source>踏天三桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天三橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="107"/>
         <source>踏天四桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天四橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="108"/>
         <source>踏天五桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天五橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="109"/>
         <source>踏天六桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天六橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="110"/>
         <source>踏天七桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天七橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="111"/>
         <source>踏天八桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天八橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="112"/>
         <source>踏天九桥</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天九橋</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="113"/>
         <source>踏天境</source>
-        <translation type="unfinished"></translation>
+        <translation>踏天境</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="114"/>
         <source>厚土境</source>
-        <translation type="unfinished"></translation>
+        <translation>厚土境</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="115"/>
         <source>煌天境</source>
-        <translation type="unfinished"></translation>
+        <translation>煌天境</translation>
     </message>
     <message>
         <location filename="../plugins/XianNiUpgrade/models.py" line="124"/>
         <source>自定义</source>
-        <translation type="unfinished">Personalisierung</translation>
+        <translation>カスタム</translation>
     </message>
 </context>
 <context>
@@ -2165,147 +2178,147 @@ th { background: #F3E5F5; color: #6A1B9A; }
     <message>
         <location filename="ui_main_board.py" line="532"/>
         <source>元扫雷</source>
-        <translation>Meta Minesweeper</translation>
+        <translation>MetaMinesweeper</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="533"/>
         <source>游戏</source>
-        <translation>Spiele</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="535"/>
-        <source>设置</source>
-        <translation>Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="537"/>
-        <source>帮助</source>
-        <translation>Hilfe</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="539"/>
-        <source>新游戏</source>
-        <translation>Neue Spiele</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="540"/>
-        <source>初级</source>
-        <translation>Junior</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="541"/>
-        <source>中级</source>
-        <translation>Zwischenbericht</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="542"/>
-        <source>高级</source>
-        <translation>Fortgeschrittene</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="543"/>
-        <source>自定义</source>
-        <translation>Personalisierung</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="544"/>
-        <source>退出</source>
-        <translation>Rücknahme</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="545"/>
-        <source>游戏设置</source>
-        <translation>Spiel-Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="546"/>
-        <source>关于</source>
-        <translation>Über</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="547"/>
-        <source>快捷键设置</source>
-        <translation>Shortcut-Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="548"/>
-        <source>打开</source>
-        <translation>Öffnen Sie</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="549"/>
-        <source>鼠标设置</source>
-        <translation>Maus-Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="550"/>
-        <source>保存</source>
-        <translation>Speichern</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="551"/>
-        <source>回放</source>
-        <translation>Wiederholung</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="552"/>
-        <source>检查更新</source>
-        <translation>Auf Updates prüfen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="538"/>
-        <source>查看</source>
-        <translation>Ansehen</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="555"/>
-        <source>成就</source>
-        <translation>Erfolge</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="556"/>
-        <source>个人纪录</source>
-        <translation>Persönliche Rekorde</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="557"/>
-        <source>插件</source>
-        <translation>Plugins</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="553"/>
-        <source>录像目录</source>
-        <translation>Wiedergabeverzeichnis</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="554"/>
-        <source>设置目录</source>
-        <translation>Einstellungsverzeichnis</translation>
+        <translation>ゲーム</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="534"/>
         <source>导出</source>
-        <translation type="unfinished">Exportieren</translation>
+        <translation>エクスポート</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="535"/>
+        <source>设置</source>
+        <translation>設定</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="536"/>
         <source>语言</source>
-        <translation type="unfinished"></translation>
+        <translation>言語</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="537"/>
+        <source>帮助</source>
+        <translation>ヘルプ</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="538"/>
+        <source>查看</source>
+        <translation>表示</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="539"/>
+        <source>新游戏</source>
+        <translation>新規ゲーム</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="540"/>
+        <source>初级</source>
+        <translation>初級</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="541"/>
+        <source>中级</source>
+        <translation>中級</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="542"/>
+        <source>高级</source>
+        <translation>上級</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="543"/>
+        <source>自定义</source>
+        <translation>カスタム</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="544"/>
+        <source>退出</source>
+        <translation>終了</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="545"/>
+        <source>游戏设置</source>
+        <translation>ゲーム設定</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="546"/>
+        <source>关于</source>
+        <translation>バージョン情報</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="547"/>
+        <source>快捷键设置</source>
+        <translation>ショートカット設定</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="548"/>
+        <source>打开</source>
+        <translation>開く</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="549"/>
+        <source>鼠标设置</source>
+        <translation>マウス設定</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="550"/>
+        <source>保存</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="551"/>
+        <source>回放</source>
+        <translation>リプレイ</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="552"/>
+        <source>检查更新</source>
+        <translation>更新確認</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="553"/>
+        <source>录像目录</source>
+        <translation>リプレイフォルダ</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="554"/>
+        <source>设置目录</source>
+        <translation>設定フォルダ</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="555"/>
+        <source>成就</source>
+        <translation>実績</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="556"/>
+        <source>个人纪录</source>
+        <translation>個人記録</translation>
+    </message>
+    <message>
+        <location filename="ui_main_board.py" line="557"/>
+        <source>插件</source>
+        <translation>プラグイン</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="558"/>
         <source>高级设置</source>
-        <translation type="unfinished"></translation>
+        <translation>詳細設定</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="559"/>
         <source>Arbiter CSV</source>
-        <translation type="unfinished"></translation>
+        <translation>Arbiter CSV</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="560"/>
         <source>Arbiter dat</source>
-        <translation type="unfinished"></translation>
+        <translation>Arbiter dat</translation>
     </message>
 </context>
 </TS>
