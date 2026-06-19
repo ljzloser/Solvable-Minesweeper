@@ -13,6 +13,8 @@ import os, sys
 from typing import List, Tuple
 
 version = "元3.3.0"
+# AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
+STATS_DAT_KEY = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节 AES-128 key
 
 def resource_path(relative_path: str) -> Path:
     """获取资源文件路径（开发环境 + PyInstaller）

@@ -32,7 +32,9 @@ import hashlib
 import uuid
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-# from PyQt5.QtWidgets import QApplication
+import csv
+from datetime import datetime
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from country_name import country_name
 import metaminesweeper_checksum
 from mainWindowGUI import MainWindow
@@ -93,6 +95,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             lambda: self.trans_language("pl_PL"))
         self.german_action.triggered.connect(
             lambda: self.trans_language("de_DE"))
+        self.actionArbiter_CSV.triggered.connect(self._export_arbiter_csv)
 
         # 查看菜单
         self.action_open_replay.triggered.connect(
@@ -403,11 +406,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         GameServerBridge.instance().send_event(event)
 
         binary_data = record.encode()
-        # AES-GCM 加密。请勿攻击此处。
-        key = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节 AES-128 key
         # GCM 推荐 12 字节 nonce
         nonce = get_random_bytes(12)
-        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
         # 加密并生成认证 tag
         ciphertext, tag = cipher.encrypt_and_digest(binary_data)
         dat_file_path = self.setting_path / 'stats.dat'
@@ -1096,6 +1097,101 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             ui.Dialog.show()
             self._popup_dialog = ui
             ui.Dialog.finished.connect(lambda _: setattr(self, '_popup_dialog', None))
+
+
+    def _export_arbiter_csv(self):
+        '''
+        # 导出 Arbiter CSV，只导出胜利、标准、正式、公平、非自定义的记录
+        '''
+        dat_path = self.setting_path / 'stats.dat'
+        if not dat_path.exists() or dat_path.stat().st_size == 0:
+            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
+            return
+
+        safe_name = self.player_identifier.replace(' ', '_')
+        default_name = f"{safe_name}_stats.csv"
+        save_path, _ = QFileDialog.getSaveFileName(
+            self.mainWindow, "导出 Arbiter CSV",
+            str(self.setting_path / default_name),
+            "CSV文件 (*.csv)"
+        )
+        if not save_path:
+            return
+
+        records = []
+        with open(dat_path, 'rb') as f:
+            f.read(1)  # version byte
+            while True:
+                len_bytes = f.read(2)
+                if not len_bytes or len(len_bytes) < 2:
+                    break
+                blob_length = int.from_bytes(len_bytes, 'big')
+                blob = f.read(blob_length)
+                if not blob or len(blob) < blob_length:
+                    break
+
+                nonce = blob[:12]
+                tag = blob[12:28]
+                ciphertext = blob[28:]
+
+                try:
+                    cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+                    records.append(utils.StatsRecord.decode(plaintext))
+                except Exception:
+                    continue
+
+        if not records:
+            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
+            return
+
+        headers = [
+            "Day", "Month", "Year", "Hour", "Min", "Sec", "mode", "Time",
+            "BBBV", "BBBVs", "style",
+            "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8",
+            "Lcl", "Rcl", "Dcl", "Leff", "Reff", "Deff",
+            "Openings", "Islands", "Path", "GZiNi", "HZiNi"
+        ]
+
+        with open(save_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            
+            record_num = 0
+            for rec in records:
+                if rec.game_state != 6 or rec.mode != 0:
+                    continue  # 只导出胜利的标准记录
+                if not (rec.is_official and rec.is_fair):
+                    continue  # 只导出正式且公平的记录
+
+                if (rec.row, rec.column, rec.mine_num) == (8, 8, 10):
+                    mode = "BEG"
+                elif (rec.row, rec.column, rec.mine_num) == (16, 16, 40):
+                    mode = "INT"
+                elif (rec.row, rec.column, rec.mine_num) == (16, 30, 99):
+                    mode = "EXP"
+                else:
+                    continue
+
+                dt = datetime.fromtimestamp(rec.start_time / 1_000_000 + rec.rtime_ms / 1000.0)
+
+                style = "NF" if rec.rce == 0 else "Flag"
+                list_board = utils.board_bytes_to_board(rec.row, rec.column, rec.board_bytes)
+                board = ms.Board(list_board)
+
+                writer.writerow([
+                    dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second,
+                    mode, rec.rtime_ms / 1000.0, rec.bbbv, rec.bbbv_solved, style,
+                    board.cell0, board.cell1, board.cell2, board.cell3, board.cell4, 
+                    board.cell5, board.cell6, board.cell7, board.cell8,
+                    rec.left, rec.right, rec.double,
+                    rec.lce, rec.rce, rec.dce,
+                    board.op, board.isl, rec.path, rec.zini, board.hzini,
+                ])
+                record_num += 1
+
+        QMessageBox.information(self.mainWindow, "导出成功",
+                                f"已导出 {record_num} 条记录到\n{save_path}")
 
     # 根据条件是否满足，尝试追加evfs文件
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）

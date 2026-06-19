@@ -663,6 +663,25 @@ def board_list_to_bytes(board: List[List[int]]) -> bytes:
     return bytes(raw_data)
 
 
+def board_bytes_to_board(rows: int, cols: int, board_bytes: bytes) -> list[list[int]]:
+    """
+    将压缩的 board_bytes 还原为计算数字后的 list[list[int]] 局面。
+    
+    雷位用 -1 表示，非雷位用 0 表示。
+    可用于构造 ms.Board 等对象进行后续指标计算。
+    """
+    total = rows * cols
+    result = [[0] * cols for _ in range(rows)]
+    for i in range(total):
+        byte_idx = i // 8
+        if byte_idx < len(board_bytes):
+            is_mine = (board_bytes[byte_idx] >> (7 - i % 8)) & 1
+        else:
+            is_mine = 0
+        if is_mine:
+            result[i // cols][i % cols] = -1
+    return ms.cal_board_numbers(result)
+
 
 
 

@@ -676,6 +676,12 @@
     <property name="title">
      <string>游戏</string>
     </property>
+    <widget class="QMenu" name="menu_5">
+     <property name="title">
+      <string>导出</string>
+     </property>
+     <addaction name="actionArbiter_CSV"/>
+    </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
     <addaction name="actionnew_game"/>
@@ -687,6 +693,8 @@
     <addaction name="separator"/>
     <addaction name="action_save"/>
     <addaction name="action_replay"/>
+    <addaction name="separator"/>
+    <addaction name="menu_5"/>
     <addaction name="separator"/>
     <addaction name="actiontui_chu"/>
    </widget>
@@ -1120,6 +1128,28 @@
   <action name="action_advance">
    <property name="text">
     <string>高级设置</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionArbiter_CSV">
+   <property name="text">
+    <string>Arbiter CSV</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionArbiter_dat">
+   <property name="text">
+    <string>Arbiter dat</string>
    </property>
    <property name="font">
     <font>
