@@ -27,7 +27,7 @@ from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
 from shared_types.events import CloseEvent, GameFinishedEvent, LanguageChangeEvent
 
 from .widgets import XianNiUpgradeUI
-from .models import LEVEL_NAMES, LEVEL_LABELS, MODE_LABELS, get_image_index
+from .models import get_image_index
 from . import distribution as _dist
 
 
@@ -425,7 +425,6 @@ class XianNiUpgradePlugin(BasePlugin):
                 "total_xp": 0,
                 "xp_curr": 0,
                 "xp_need": _total_xp(1),
-                "rank": LEVEL_NAMES.get(0, ""),
                 "image_index": get_image_index(0),
                 "history": [],
             }
@@ -444,7 +443,6 @@ class XianNiUpgradePlugin(BasePlugin):
             "total_xp": xp,
             "xp_curr": xp - xp_base,
             "xp_need": xp_next - xp_base,
-            "rank": LEVEL_NAMES.get(level, ""),
             "image_index": get_image_index(level),
             "history": self._history[::-1][:100],
         }
@@ -495,6 +493,7 @@ class XianNiUpgradePlugin(BasePlugin):
 
     def _on_language_change(self, event: LanguageChangeEvent) -> None:
         self.run_on_gui(self._ui.retranslateUi)
+        self._push_ui_update()
 
     def _push_ui_update(self):
         self._ui._signal_update.emit(self._build_update_data())

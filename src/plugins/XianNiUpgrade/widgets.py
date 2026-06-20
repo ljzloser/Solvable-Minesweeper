@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QCoreApplication
 _translate = QCoreApplication.translate
 from PyQt5.QtGui import QPixmap, QResizeEvent, QPainter
 
-from .models import LEVEL_LABELS, MODE_LABELS
+from .models import LEVEL_NAMES, LEVEL_LABELS, MODE_LABELS
 
 
 class AspectLabel(QLabel):
@@ -352,10 +352,6 @@ class LevelDisplay(QWidget):
         layout.addWidget(self._image_label)
 
     def retranslateUi(self):
-        self._rank_label.setText(_translate("Form", "凡人"))
-        self._level_label.setText("Lv.0")
-        self._total_xp_label.setText(_translate("Form", "修为: 0"))
-        self._progress.setFormat(_translate("Form", "已圆满"))
         self._law_btn.setText(_translate("Form", "天地法则"))
         self._absorb_btn.setText(_translate("Form", "吸收灵气"))
         self._image_label.setText(_translate("Form", "等待仙躯\n形象加载..."))
@@ -493,8 +489,9 @@ class XianNiUpgradeUI(QWidget):
         )
 
     def _do_update(self, data: dict):
+        rank = LEVEL_NAMES.get(data["level"], "")
         self._level_display.update_info(
-            data.get("player_name", ""), data["rank"], data["level"],
+            data.get("player_name", ""), rank, data["level"],
             data["total_xp"], data["xp_curr"], data["xp_need"]
         )
         idx = data["image_index"]
