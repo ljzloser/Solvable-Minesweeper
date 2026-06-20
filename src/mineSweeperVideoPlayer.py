@@ -12,7 +12,8 @@ from mainWindowGUI import MainWindow
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):
         super(MineSweeperVideoPlayer, self).__init__(MainWindow, args)
-        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting)
+        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
+                                                     self.mainWindow)
         self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
         
         self.ui_video_control.pushButton_play.clicked.connect(self.video_play)

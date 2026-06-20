@@ -1716,9 +1716,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ctypes.windll.user32.ClipCursor(ctypes.byref(r))
 
     def closeEvent_(self):
-        self.score_board_manager.ui.QWidget.close()
-        if hasattr(self, 'ui_video_control'):
-            self.ui_video_control.QWidget.close()
         self.unlimit_cursor()
         self.game_setting.set_value(
             "DEFAULT/mainWinTop", str(self.mainWindow.y()))

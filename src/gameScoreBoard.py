@@ -11,7 +11,7 @@ class ui_Form(Ui_Form):
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # doubleClick = QtCore.pyqtSignal (int, int)
     # leftClick = QtCore.pyqtSignal (int, int)
-    def __init__(self, r_path, pix_size, parent=None):
+    def __init__(self, r_path, pix_size, parent):
         self.pix_size = pix_size
         self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
@@ -114,7 +114,7 @@ class gameScoreBoardManager():
 
         self.update_score_board_items_type()
         self.index_num = len(self.score_board_items_type)
-        self.ui = ui_Form(r_path, pix_size)
+        self.ui = ui_Form(r_path, pix_size, parent)
         self.ui.tableWidget.doubleClicked.connect(self.__table_change)
         self.ui.tableWidget.clicked.connect(self.__table_ok)
         # self.ui.tableWidget.cellChanged.connect(self.__cell_changed)

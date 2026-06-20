@@ -408,10 +408,10 @@ class ui_Form(QWidget, Ui_Form):
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
-    def __init__(self, r_path, game_setting, parent=None):
+    def __init__(self, r_path, game_setting, parent):
         super (ui_Form, self).__init__()
         self.tab_id = 0
-        self.QWidget = RoundQWidget()
+        self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
         self.game_setting = game_setting
         self.QWidget.closeEvent_.connect(self.close)
