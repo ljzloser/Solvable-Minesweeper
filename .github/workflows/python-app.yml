@@ -1,4 +1,4 @@
-name: Build Metaminesweeper
+name: Build metasweeper
 
 on:
   push:
@@ -28,6 +28,7 @@ jobs:
           lrelease src/ui/en_US.ts -qm src/en_US.qm
           lrelease src/ui/de_DE.ts -qm src/de_DE.qm
           lrelease src/ui/pl_PL.ts -qm src/pl_PL.qm
+          lrelease src/ui/ja_JP.ts -qm src/ja_JP.qm
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -41,16 +42,16 @@ jobs:
           pip install flake8 pyinstaller>=6.19.0 cython
           pip install -r requirements.txt
 
-      - name: Generate metaminesweeper_checksum.pyd
+      - name: Generate metasweeper_checksum.pyd
         run: |
           cd package_tool
           python setup.py build_ext --inplace
-          ren *.pyd metaminesweeper_checksum.pyd
+          ren *.pyd metasweeper_checksum.pyd
           cd ..
-          move package_tool\metaminesweeper_checksum.pyd src\metaminesweeper_checksum.pyd
-          del src\metaminesweeper_checksum.py
+          move package_tool\metasweeper_checksum.pyd src\metasweeper_checksum.pyd
+          del src\metasweeper_checksum.py
 
-      - name: Package with PyInstaller
+      - name: Package main app with PyInstaller
         run: |
           pyinstaller `
             --icon src/media/cat.ico `
@@ -58,16 +59,60 @@ jobs:
             --noconfirm `
             --clean `
             --paths src `
-            --name metaminesweeper `
+            --name metasweeper `
             --add-data "src/media;media" `
             --add-data "src/en_US.qm;." `
             --add-data "src/de_DE.qm;." `
             --add-data "src/pl_PL.qm;." `
+            --add-data "src/ja_JP.qm;." `
             src/main.py
+
+      - name: Package plugin_manager with PyInstaller
+        run: |
+          pyinstaller `
+            --noconfirm `
+            --name plugin_manager `
+            --windowed `
+            --hidden-import sqlite3 `
+            --hidden-import code `
+            --hidden-import xmlrpc `
+            --hidden-import xmlrpc.server `
+            --hidden-import xmlrpc.client `
+            --hidden-import http.server `
+            --hidden-import socketserver `
+            --hidden-import email `
+            --hidden-import email.utils `
+            --distpath dist\plugin_manager_out `
+            src\plugin_manager\_run.py
+
+      - name: Copy plugin resources into metasweeper dist
+        run: |
+          $dest = "dist\metasweeper"
+          Copy-Item "dist\plugin_manager_out\plugin_manager\plugin_manager.exe" -Destination $dest -Force
+          Copy-Item "dist\plugin_manager_out\plugin_manager\_internal\*" -Destination "$dest\_internal" -Recurse -Force
+          Copy-Item "src\plugin_sdk" -Destination "$dest\plugin_sdk" -Recurse -Force
+          Copy-Item "src\plugin_manager" -Destination "$dest\plugin_manager" -Recurse -Force
+          Copy-Item "src\plugins" -Destination "$dest\plugins" -Recurse -Force
+          Copy-Item "src\shared_types" -Destination "$dest\shared_types" -Recurse -Force
+          Copy-Item "plugin-dev-tutorial.md" -Destination $dest -Force
+          Remove-Item "$dest\plugin_manager\_run.py" -Force -ErrorAction SilentlyContinue
+
+      - name: Copy extra dependencies for plugin subprocess
+        run: |
+          python -c "
+import shutil, site, os
+sp = site.getsitepackages()[0]
+dest = 'dist/metasweeper/_internal'
+for pkg in ['debugpy', 'msgspec', 'setuptools']:
+    src = os.path.join(sp, pkg)
+    if os.path.exists(src):
+        shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
+        print(f'Copied {pkg}')
+"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: Metaminesweeper-snapshot
+          name: Metasweeper-snapshot
           path: dist/
