@@ -1085,54 +1085,54 @@ class PluginManagerWindow(QMainWindow):
         menubar = self.menuBar()
 
         # 选项菜单
-        options_menu = menubar.addMenu(self.tr("选项"))
+        self._menu_options = menubar.addMenu(self.tr("选项"))
 
         # 设置子菜单
-        settings_menu = options_menu.addMenu(self.tr("设置"))
+        self._menu_settings = self._menu_options.addMenu(self.tr("设置"))
 
         # 基础设置动作
-        act_basic_settings = settings_menu.addAction(self.tr("基础设置..."))
-        act_basic_settings.triggered.connect(self._open_basic_settings_dialog)
+        self._act_basic_settings = self._menu_settings.addAction(self.tr("基础设置..."))
+        self._act_basic_settings.triggered.connect(self._open_basic_settings_dialog)
 
         # 控制授权动作
-        act_control_auth = settings_menu.addAction(self.tr("控制授权..."))
-        act_control_auth.triggered.connect(self._open_control_auth_dialog)
+        self._act_control_auth = self._menu_settings.addAction(self.tr("控制授权..."))
+        self._act_control_auth.triggered.connect(self._open_control_auth_dialog)
 
-        settings_menu.addSeparator()
+        self._menu_settings.addSeparator()
 
         # 调试动作
-        self._debug_act = settings_menu.addAction(self.tr("启动调试"))
+        self._debug_act = self._menu_settings.addAction(self.tr("启动调试"))
         self._debug_act.triggered.connect(self._start_debug)
 
-        options_menu.addSeparator()
+        self._menu_options.addSeparator()
 
         # 插件开发指南动作
-        act_dev_guide = options_menu.addAction(self.tr("插件开发指南"))
-        act_dev_guide.triggered.connect(self._open_dev_guide)
+        self._act_dev_guide = self._menu_options.addAction(self.tr("插件开发指南"))
+        self._act_dev_guide.triggered.connect(self._open_dev_guide)
 
         # ── 查看菜单 ──
-        view_menu = menubar.addMenu(self.tr("查看"))
+        self._menu_view = menubar.addMenu(self.tr("查看"))
 
         # 日志查看动作
-        act_log_viewer = view_menu.addAction(self.tr("日志查看"))
-        act_log_viewer.triggered.connect(lambda: self._open_log_viewer())
+        self._act_log_viewer = self._menu_view.addAction(self.tr("日志查看"))
+        self._act_log_viewer.triggered.connect(lambda: self._open_log_viewer())
 
         # ── 工具栏 ──
-        toolbar = QToolBar(self.tr("工具栏"))
-        toolbar.setMovable(False)
-        self.addToolBar(toolbar)
+        self._toolbar = QToolBar(self.tr("工具栏"))
+        self._toolbar.setMovable(False)
+        self.addToolBar(self._toolbar)
 
         # 刷新按钮
         self._refresh_btn = QPushButton(self.tr("刷新"))
         self._refresh_btn.setToolTip(self.tr("刷新插件列表"))
-        toolbar.addWidget(self._refresh_btn)
+        self._toolbar.addWidget(self._refresh_btn)
 
-        toolbar.addSeparator()
+        self._toolbar.addSeparator()
 
         # 控制授权按钮
         self._control_auth_btn = QPushButton("🔐 " + self.tr("控制授权"))
         self._control_auth_btn.setToolTip(self.tr("配置插件控制命令权限"))
-        toolbar.addWidget(self._control_auth_btn)
+        self._toolbar.addWidget(self._control_auth_btn)
 
         # ── 主布局：左侧插件列表 + 右侧标签页 ──
         main_splitter = QWidget()
@@ -1146,9 +1146,9 @@ class PluginManagerWindow(QMainWindow):
         left_layout.setContentsMargins(4, 4, 4, 4)
 
         # 标题
-        title_label = QLabel(self.tr("插件列表"))
-        title_label.setStyleSheet("font-weight: bold; padding: 4px;")
-        left_layout.addWidget(title_label)
+        self._title_label = QLabel(self.tr("插件列表"))
+        self._title_label.setStyleSheet("font-weight: bold; padding: 4px;")
+        left_layout.addWidget(self._title_label)
 
         # 插件列表
         lst = QListWidget()
@@ -1182,7 +1182,8 @@ class PluginManagerWindow(QMainWindow):
         conn_w = ConnectionStatusWidget(self._manager.connection_endpoint)
         bar.addPermanentWidget(conn_w)
         self._conn_status = conn_w
-        bar.showMessage(self.tr("正在连接..."))
+        self._status_bar_msg = self.tr("正在连接...")
+        bar.showMessage(self._status_bar_msg)
 
     def _setup_tray_icon(self) -> None:
         """创建系统托盘图标，关闭主窗口时最小化到托盘"""
@@ -1205,6 +1206,43 @@ class PluginManagerWindow(QMainWindow):
         tray.activated.connect(self._on_tray_activated)
         tray.show()
         self._tray_icon = tray
+        self._tray_menu = menu
+        self._tray_act_show = act_show
+        self._tray_act_quit = act_quit
+
+    def retranslateUi(self) -> None:
+        """语言切换时重新应用所有翻译"""
+        self.setWindowTitle(self.tr("插件管理器"))
+        self._menu_options.setTitle(self.tr("选项"))
+        self._menu_settings.setTitle(self.tr("设置"))
+        self._act_basic_settings.setText(self.tr("基础设置..."))
+        self._act_control_auth.setText(self.tr("控制授权..."))
+        dbg_text = self.tr("启动调试")
+        if not self._debug_act.isEnabled():
+            dbg_text = self.tr("调试已启动")
+        self._debug_act.setText(dbg_text)
+        self._act_dev_guide.setText(self.tr("插件开发指南"))
+        self._menu_view.setTitle(self.tr("查看"))
+        self._act_log_viewer.setText(self.tr("日志查看"))
+        self._toolbar.setWindowTitle(self.tr("工具栏"))
+        self._refresh_btn.setText(self.tr("刷新"))
+        self._refresh_btn.setToolTip(self.tr("刷新插件列表"))
+        self._control_auth_btn.setText("🔐 " + self.tr("控制授权"))
+        self._control_auth_btn.setToolTip(self.tr("配置插件控制命令权限"))
+        self._title_label.setText(self.tr("插件列表"))
+        if self._tray_icon is not None:
+            self._tray_icon.setToolTip(self.tr("插件管理器 - 右键打开菜单"))
+            self._tray_act_show.setText(self.tr("显示主窗口"))
+            self._tray_act_quit.setText(self.tr("退出"))
+        self._status_bar_msg = self.tr("正在连接...")
+        bar = self.statusBar()
+        if bar is not None:
+            bar.showMessage(self._status_bar_msg)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            self.retranslateUi()
+        super().changeEvent(event)
 
     @staticmethod
     def _create_tray_icon() -> QIcon:

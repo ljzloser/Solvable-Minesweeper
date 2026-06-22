@@ -117,7 +117,7 @@ class XianNiUpgradePlugin(BasePlugin):
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
-            name="xian_ni_upgrade",
+            name="雷修境界",
             version="1.0.0",
             author="eee555",
             description=_translate("Form", "仙逆背景的修炼体系 - 每局扫雷胜利获得经验，从凡人修炼到一招摧毁108颗修正星的绝世强者"),

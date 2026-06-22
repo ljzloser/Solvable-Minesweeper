@@ -680,7 +680,7 @@
      <property name="title">
       <string>导出</string>
      </property>
-     <addaction name="actionArbiter_CSV"/>
+     <addaction name="action_Arbiter_CSV"/>
     </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
@@ -694,6 +694,7 @@
     <addaction name="action_save"/>
     <addaction name="action_replay"/>
     <addaction name="separator"/>
+    <addaction name="action_import"/>
     <addaction name="menu_5"/>
     <addaction name="separator"/>
     <addaction name="actiontui_chu"/>
@@ -722,6 +723,7 @@
      <addaction name="english_action"/>
      <addaction name="polish_action"/>
      <addaction name="german_action"/>
+     <addaction name="japanese_action"/>
     </widget>
     <addaction name="actionyouxi_she_zhi"/>
     <addaction name="action_kuaijiejian"/>
@@ -741,7 +743,6 @@
     </property>
     <addaction name="actiongaun_yv"/>
     <addaction name="actionauto_update"/>
-    <addaction name="actionchajian"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="font">
@@ -761,6 +762,8 @@
     </property>
     <addaction name="action_open_replay"/>
     <addaction name="action_open_ini"/>
+    <addaction name="separator"/>
+    <addaction name="actionchajian"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -1136,7 +1139,7 @@
     </font>
    </property>
   </action>
-  <action name="actionArbiter_CSV">
+  <action name="action_Arbiter_CSV">
    <property name="text">
     <string>Arbiter CSV</string>
    </property>
@@ -1150,6 +1153,34 @@
   <action name="actionArbiter_dat">
    <property name="text">
     <string>Arbiter dat</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_import">
+   <property name="text">
+    <string>导入</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="japanese_action">
+   <property name="text">
+    <string notr="true">日本語</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">日本語</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">日本語</string>
    </property>
    <property name="font">
     <font>
