@@ -12,17 +12,17 @@
 ; 官网
 #define MyAppURL "https://github.com/eee555/Metasweeper"
 ; 运行主程序名称
-#define MyAppExeName "metaminesweeper.exe"
+#define MyAppExeName "metasweeper.exe"
 ; 程序目录
-#define AppPath "metaminesweeper"
+#define AppPath "metasweeper"
 ; 根目录
-#define RootPath "Metaminesweeper-snapshot"
+#define RootPath "Metasweeper-snapshot"
 ; 图标
-#define IconPath "metaminesweeper\media\cat.ico"
+#define IconPath "metasweeper\media\cat.ico"
 [Setup]
 ;注意：AppId 的值唯一标识此应用程序。不要在其他应用程序的安装程序中使用相同的 AppId 值。
 ;（要生成新的 GUID，请单击 Tools |在 IDE 中生成 GUID
-AppId={{A5BFCE55-30E5-4A1D-8849-E6372D2CF9D4}
+AppId={A5BFCE55-30E5-4A1D-8849-E6372D2CF9D4}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -43,7 +43,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 ;取消注释以下行以在非管理安装模式下运行（仅为当前用户安装）。
 PrivilegesRequired=admin
-OutputBaseFilename=Metaminesweeper-{#MyAppVersion}
+OutputBaseFilename=Metasweeper-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
