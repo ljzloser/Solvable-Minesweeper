@@ -100,15 +100,15 @@ jobs:
       - name: Copy extra dependencies for plugin subprocess
         run: |
           python -c "
-import shutil, site, os
-sp = site.getsitepackages()[0]
-dest = 'dist/metasweeper/_internal'
-for pkg in ['debugpy', 'msgspec', 'setuptools']:
-    src = os.path.join(sp, pkg)
-    if os.path.exists(src):
-        shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
-        print(f'Copied {pkg}')
-"
+          import shutil, site, os
+          sp = site.getsitepackages()[0]
+          dest = 'dist/metasweeper/_internal'
+          for pkg in ['debugpy', 'msgspec', 'setuptools']:
+              src = os.path.join(sp, pkg)
+              if os.path.exists(src):
+                  shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
+                  print(f'Copied {pkg}')
+          "
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
