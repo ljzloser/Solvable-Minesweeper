@@ -39,7 +39,7 @@ import csv
 from datetime import datetime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from country_name import country_name
-import metaminesweeper_checksum
+import metasweeper_checksum
 from mainWindowGUI import MainWindow
 from datetime import datetime
 from mineSweeperVideoPlayer import MineSweeperVideoPlayer
@@ -58,7 +58,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
-        self.checksum_guard = metaminesweeper_checksum.ChecksumGuard()
+        self.checksum_guard = metasweeper_checksum.ChecksumGuard()
         super(MineSweeperGUI, self).__init__(MainWindow, args)
 
         raw = self.game_setting.value('DEFAULT/allowed_controls', '', str)
@@ -807,7 +807,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 检查校验和模块的签名
         # 调试的时候不会自动存录像，除非将此处改为return True
         # return True
-        return hashlib.sha256(bytes(metaminesweeper_checksum.get_self_key())).hexdigest() ==\
+        return hashlib.sha256(bytes(metasweeper_checksum.get_self_key())).hexdigest() ==\
             '590028493bb58a25ffc76e2e2ad490df839a1f449435c35789d3119ca69e5d4f'
 
     # 搜集数据，生成evf文件的二进制数据，但是不保存

@@ -129,9 +129,9 @@ def cli_check_file(file_path: str) -> int:
 
 
 if __name__ == "__main__":
-    # metaminesweeper.exe -c filename.evf用法，检查文件的合法性
-    # metaminesweeper.exe -c filename.evfs
-    # metaminesweeper.exe -c ./somepath/replay
+    # metasweeper.exe -c filename.evf用法，检查文件的合法性
+    # metasweeper.exe -c filename.evfs
+    # metasweeper.exe -c ./somepath/replay
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--check", help="检查文件合法性")
     args, _ = parser.parse_known_args()

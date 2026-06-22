@@ -148,7 +148,7 @@ class HistoryTable(QWidget):
         temp_filename = exec_dir / "tmp.evf"
         self.save_evf(str(temp_filename))
 
-        exe = exec_dir / "metaminesweeper.exe"
+        exe = exec_dir / "metasweeper.exe"
         main_py = exec_dir / "src" / "main.py"
 
         if main_py.exists():

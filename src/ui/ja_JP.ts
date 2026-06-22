@@ -229,12 +229,12 @@
     <message>
         <location filename="ui_about.py" line="240"/>
         <source>元扫雷是由资深扫雷玩家与软件工程师共同打造的一款现代化复刻。</source>
-        <translation>MetaMinesweeperは経験豊富なプレイヤーとエンジニアが開発した現代的リメイクです。</translation>
+        <translation>Metasweeperは経験豊富なプレイヤーとエンジニアが開発した現代的リメイクです。</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="241"/>
         <source>Copyright © 2020-2025 元扫雷开发团队, 版权所有</source>
-        <translation>Copyright © 2020-2025 MetaMinesweeper Dev Team</translation>
+        <translation>Copyright © 2020-2025 Metasweeper Dev Team</translation>
     </message>
     <message>
         <location filename="ui_record_pop.py" line="339"/>
@@ -274,7 +274,7 @@
     <message>
         <location filename="ui_about.py" line="249"/>
         <source>感谢您考虑支持我们的开源项目，赞助时请备注项目名称+您的称呼+其他要求，例如元扫雷+张先生+建议添加**功能。您的赞助将有助于项目的持续发展和改进，使我们能够继续提高软件的质量。</source>
-        <translation>スポンサーにはプロジェクト名＋お名前＋要望をご記入ください（例：MetaMinesweeper＋鈴木＋XX機能追加希望）。ご支援がプロジェクトの発展に役立ちます。</translation>
+        <translation>スポンサーにはプロジェクト名＋お名前＋要望をご記入ください（例：Metasweeper＋鈴木＋XX機能追加希望）。ご支援がプロジェクトの発展に役立ちます。</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="250"/>
@@ -284,7 +284,7 @@
     <message>
         <location filename="ui_about.py" line="251"/>
         <source>1. 在非商业用途前提下，用户有权不受任何限制地对“元扫雷”软件进行复制、存储及传播。</source>
-        <translation>1. 非営利目的の場合、ユーザーはMetaMinesweeperを無制限に複製、保存、配布できます。</translation>
+        <translation>1. 非営利目的の場合、ユーザーはMetasweeperを無制限に複製、保存、配布できます。</translation>
     </message>
     <message>
         <location filename="ui_about.py" line="252"/>
@@ -2404,7 +2404,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
     <message>
         <location filename="ui_main_board.py" line="534"/>
         <source>元扫雷</source>
-        <translation>MetaMinesweeper</translation>
+        <translation>Metasweeper</translation>
     </message>
     <message>
         <location filename="ui_main_board.py" line="535"/>

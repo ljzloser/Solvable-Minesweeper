@@ -186,7 +186,7 @@ class Ui_MainWindow(Ui_MainWindow):
             self.setting_path = r_path.parent
         else:
             # 没权限，改用 %APPDATA%\你的程序名\
-            self.setting_path = Path(os.environ['APPDATA']) / ('MetaMineSweeper' + version[1:])
+            self.setting_path = Path(os.environ['APPDATA']) / ('Metasweeper' + version[1:])
             self.setting_path.mkdir(parents=True, exist_ok=True)
         # r_path是打包后_internal外面那一层，和exe同一级
         self.r_path = r_path
