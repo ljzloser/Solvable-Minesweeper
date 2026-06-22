@@ -29,17 +29,29 @@ import ms_toollib as ms
 import os
 import ctypes
 import hashlib
+import subprocess
+import json
 import uuid
+from pathlib import Path
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import csv
 from datetime import datetime
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metaminesweeper_checksum
 from mainWindowGUI import MainWindow
 from datetime import datetime
 from mineSweeperVideoPlayer import MineSweeperVideoPlayer
+from ui.ui_import import Ui_Form as Ui_Import
+from ui.uiComponents import RoundQDialog
+
+_translate = QCoreApplication.translate
+
+# 已知的验证程序 MD5（元扫雷 3.2.2）
+_KNOWN_IMPORT_MD5S = {
+    "d5fd61ae1372297aa7008d7b7cd8a13b",
+}
 
 
 class MineSweeperGUI(MineSweeperVideoPlayer):
@@ -98,6 +110,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.japanese_action.triggered.connect(
             lambda: self.trans_language("ja_JP"))
         self.action_Arbiter_CSV.triggered.connect(self._export_arbiter_csv)
+        self.action_import.triggered.connect(self._import_replays)
 
         # 查看菜单
         self.action_open_replay.triggered.connect(
@@ -1743,9 +1756,297 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         event = CloseEvent()
         GameServerBridge.instance().send_event(event)
 
+    # ═══════════════════════════════════════════════════════════
+    # 导入录像（从其他版本导入历史记录到 stats.dat）
+    # ═══════════════════════════════════════════════════════════
+
+    def _import_replays(self):
+        """导入其他版本录像"""
+        dialog = ImportDialog(self.mainWindow)
+        dialog.set_import_callback(self._import_workflow)
+        dialog.exec_()
+
+    def _import_workflow(self, exe_path: str, replay_path: str,
+                         progress_bar, label) -> bool:
+        """完整导入流程（在对话框内执行，带进度条）"""
+        from PyQt5.QtWidgets import QApplication
+
+        exe = Path(exe_path)
+        rp = Path(replay_path)
+        if not exe.exists() or not rp.exists():
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
+                                _translate("MainWindow", "路径不存在"))
+            return False
+
+        progress_bar.setRange(0, 1)
+        progress_bar.setValue(0)
+        label.setText(_translate("Form", "正在验证程序..."))
+        label.setVisible(True)
+        QApplication.processEvents()
+
+        try:
+            actual_md5 = hashlib.md5(exe.read_bytes()).hexdigest()
+        except Exception:
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
+                                _translate("MainWindow", "无法读取验证程序"))
+            return False
+
+        if actual_md5 not in _KNOWN_IMPORT_MD5S:
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
+                                _translate("MainWindow", "未知的验证程序版本"))
+            return False
+
+        label.setText(_translate("Form", "正在验证录像..."))
+        QApplication.processEvents()
+
+        def on_parse_progress(cur, total):
+            progress_bar.setRange(0, total)
+            progress_bar.setValue(cur)
+            label.setText(_translate("Form", "正在解析录像 {cur}/{total}...")
+                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
+            QApplication.processEvents()
+
+        preview = self._validate_with_exe(exe, replay_path,
+                                          progress_callback=on_parse_progress)
+        if preview is None:
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
+                                _translate("MainWindow", "验证失败"))
+            return False
+
+        if not preview["entries"]:
+            QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入"),
+                                    _translate("MainWindow", "没有新的录像需要导入"))
+            return True
+
+        entries = preview["entries"]
+
+        def on_write_progress(cur, total):
+            progress_bar.setRange(0, total)
+            progress_bar.setValue(cur)
+            label.setText(_translate("Form", "正在写入 stats.dat  {cur}/{total}...")
+                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
+            QApplication.processEvents()
+
+        count = self._do_import_replays(preview, progress_callback=on_write_progress)
+
+        label.setText(_translate("Form", "完成！"))
+        progress_bar.setValue(progress_bar.maximum())
+        QApplication.processEvents()
+
+        msg = _translate("MainWindow", "成功导入 {n} 条录像").replace("{n}", str(count))
+        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入成功"), msg)
+        return True
+
+    def _validate_with_exe(self, exe: Path, replay_path: str,
+                           progress_callback: callable = None) -> dict | None:
+        """运行验证程序并解析结果"""
+        try:
+            cmd = [str(exe), "-c", replay_path]
+            result = subprocess.run(cmd, capture_output=True, timeout=120)
+            if result.returncode != 0:
+                return None
+
+            out_path = exe.parent / "_internal" / "out.json"
+            if not out_path.exists():
+                return None
+
+            report = json.loads(out_path.read_bytes())
+            if report.get("error"):
+                return None
+
+            stats_md5s = self._read_stats_dat_short_md5s()
+
+            data = report.get("data", [])
+            total_valid = sum(1 for d in data if d.get("status") == 0)
+            processed = 0
+            entries = []
+            for d in data:
+                if d.get("status") != 0:
+                    continue
+                processed += 1
+                if progress_callback:
+                    progress_callback(processed, total_valid)
+                fp = d["file"]
+                fp_path = Path(fp)
+                if not fp_path.is_absolute():
+                    rp = Path(replay_path)
+                    fp_path = (rp if rp.is_dir() else rp.parent) / fp
+                try:
+                    v = ms.EvfVideo(str(fp_path))
+                    v.parse()
+                    v.analyse()
+
+                    with open(str(fp_path), "rb") as fh:
+                        file_bytes = fh.read()
+                    short_md5 = hashlib.md5(file_bytes).digest()[:8]
+
+                    if short_md5 in stats_md5s:
+                        continue
+
+                    entries.append({
+                        "short_md5": short_md5,
+                        "record": utils.StatsRecord(
+                            game_state=6,
+                            row=v.row,
+                            column=v.column,
+                            mine_num=v.mine_num,
+                            rtime_ms=int(v.rtime * 1000),
+                            left=getattr(v, "left", 0),
+                            right=getattr(v, "right", 0),
+                            double=getattr(v, "double", 0),
+                            rce=getattr(v, "rce", 0),
+                            lce=getattr(v, "lce", 0),
+                            dce=getattr(v, "dce", 0),
+                            bbbv=getattr(v, "bbbv", 0),
+                            bbbv_solved=getattr(v, "bbbv_solved", 0),
+                            zini=getattr(v, "zini", 0),
+                            flag=getattr(v, "flag", 0),
+                            path=getattr(v, "path", 0.0),
+                            start_time=v.start_time,
+                            mode=getattr(v, "mode", 0),
+                            is_official=getattr(v, "is_official", True),
+                            is_fair=getattr(v, "is_fair", True),
+                            op=getattr(v, "op", 0),
+                            isl=getattr(v, "isl", 0),
+                            pluck=getattr(v, "pluck", 0.0),
+                            short_md5=short_md5,
+                            board_bytes=utils.board_list_to_bytes(v.board),
+                        ),
+                    })
+                except Exception:
+                    continue
+
+            return {"entries": entries}
+        except subprocess.TimeoutExpired:
+            return None
+        except Exception:
+            return None
+
+    def _read_stats_dat_short_md5s(self) -> set[bytes]:
+        """读取 stats.dat 中所有记录的 short_md5"""
+        dat_path = self.setting_path / "stats.dat"
+        if not dat_path.exists() or dat_path.stat().st_size == 0:
+            return set()
+        md5s = set()
+        try:
+            with open(dat_path, "rb") as f:
+                f.read(1)
+                while True:
+                    lb = f.read(2)
+                    if not lb or len(lb) < 2:
+                        break
+                    bl = int.from_bytes(lb, "big")
+                    blob = f.read(bl)
+                    if not blob or len(blob) < bl:
+                        break
+                    nonce = blob[:12]
+                    tag = blob[12:28]
+                    ct = blob[28:]
+                    try:
+                        cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+                        pt = cipher.decrypt_and_verify(ct, tag)
+                        md5s.add(utils.StatsRecord.decode(pt).short_md5)
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+        return md5s
+
+    def _do_import_replays(self, preview: dict, progress_callback: callable = None) -> int:
+        """将验证通过的录像写入 stats.dat，返回成功条数"""
+        entries = preview["entries"]
+        count = 0
+        dat_path = self.setting_path / "stats.dat"
+
+        for i, entry in enumerate(entries):
+            if progress_callback:
+                progress_callback(i + 1, len(entries))
+            record = entry["record"]
+            binary_data = record.encode()
+            nonce = get_random_bytes(12)
+            cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+            ciphertext, tag = cipher.encrypt_and_digest(binary_data)
+
+            if (not dat_path.exists()) or dat_path.stat().st_size == 0:
+                with open(dat_path, "wb") as f:
+                    f.write((0).to_bytes(1, byteorder="big"))
+
+            with open(dat_path, "ab") as f:
+                blob = nonce + tag + ciphertext
+                f.write(len(blob).to_bytes(2, byteorder="big", signed=False))
+                f.write(blob)
+
+            count += 1
+
+        return count
+
     def action_OpenPluginDialog(self):
         try:
             bridge = GameServerBridge.instance()
             bridge.send_event(ShowPluginManagerEvent())
         except Exception:
             pass
+
+
+class ImportDialog(Ui_Import):
+    """导入录像对话框：选择验证程序+录像路径，带进度条"""
+
+    def __init__(self, parent=None):
+        self.Dialog = RoundQDialog(parent)
+        self.setupUi(self.Dialog)
+        self.pushButton_browse_exe.clicked.connect(self._browse_exe)
+        self.pushButton_browse_file.clicked.connect(self._browse_replay_file)
+        self.pushButton_browse_folder.clicked.connect(self._browse_replay_folder)
+        self.pushButton_ok.clicked.connect(self._on_ok)
+        self.pushButton_cancel.clicked.connect(self.Dialog.close)
+        self._callback = None
+        self.progressBar.setVisible(False)
+        self.label_progress.setVisible(False)
+
+    def set_import_callback(self, cb):
+        self._callback = cb
+
+    def _browse_exe(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self.Dialog, _translate("Form", "选择验证程序"), "",
+            _translate("Form", "程序 (*.exe);;所有文件 (*)"))
+        if path:
+            self.lineEdit_exe.setText(path)
+
+    def _browse_replay_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self.Dialog, _translate("Form", "选择录像"), "",
+            _translate("Form", "录像文件 (*.evf *.evfs);;所有文件 (*)"))
+        if path:
+            self.lineEdit_replay.setText(path)
+
+    def _browse_replay_folder(self):
+        path = QFileDialog.getExistingDirectory(
+            self.Dialog, _translate("Form", "选择录像文件夹"))
+        if path:
+            self.lineEdit_replay.setText(path)
+
+    def _on_ok(self):
+        exe_path = self.lineEdit_exe.text().strip()
+        replay_path = self.lineEdit_replay.text().strip()
+        if not exe_path or not replay_path:
+            QMessageBox.warning(
+                self.Dialog, _translate("Form", "提示"),
+                _translate("Form", "请选择验证程序和录像路径"))
+            return
+        self.lineEdit_exe.setEnabled(False)
+        self.lineEdit_replay.setEnabled(False)
+        self.pushButton_browse_exe.setEnabled(False)
+        self.pushButton_browse_file.setEnabled(False)
+        self.pushButton_browse_folder.setEnabled(False)
+        self.pushButton_ok.setEnabled(False)
+        self.pushButton_cancel.setEnabled(False)
+        self.progressBar.setVisible(True)
+        self.label_progress.setVisible(True)
+        from PyQt5.QtWidgets import QApplication
+        QApplication.processEvents()
+        self._callback(exe_path, replay_path, self.progressBar, self.label_progress)
+        self.Dialog.close()
+
+    def exec_(self):
+        return self.Dialog.exec_()

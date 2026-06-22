@@ -3,13 +3,13 @@ set LLM_PLUGIN=..\plugins\llm_minesweeper_controller\config.py ..\plugins\llm_mi
 set XIANNI_PLUGIN=..\plugins\XianNiUpgrade\plugin.py ..\plugins\XianNiUpgrade\widgets.py ..\plugins\XianNiUpgrade\models.py
 set PLUGIN_MANAGER=..\plugin_manager\main_window.py ..\plugin_manager\plugin_manager.py
 
-pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts en_US.ts -noobsolete
+pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ui_import.py ../videoControl.py ../utils.py ../mineSweeperGUI.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts en_US.ts -noobsolete
 
-pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts pl_PL.ts -noobsolete
+pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ui_import.py ../videoControl.py ../utils.py ../mineSweeperGUI.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts pl_PL.ts -noobsolete
 
-pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts de_DE.ts -noobsolete
+pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ui_import.py ../videoControl.py ../utils.py ../mineSweeperGUI.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts de_DE.ts -noobsolete
 
-pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ../videoControl.py ../utils.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts ja_JP.ts -noobsolete
+pylupdate5 ui_gameSettings.py ui_main_board.py ui_about.py ui_defined_parameter.py ui_gameSettingShortcuts.py ui_score_board.py ui_record_pop.py ui_advanced.py ui_video_control.py ui_import.py ../videoControl.py ../utils.py ../mineSweeperGUI.py %HISTORY_PLUGIN% %LLM_PLUGIN% %XIANNI_PLUGIN% %PLUGIN_MANAGER% -ts ja_JP.ts -noobsolete
 
 lrelease en_US.ts
 lrelease pl_PL.ts

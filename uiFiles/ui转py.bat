@@ -9,6 +9,8 @@ pyuic5 -o ui_score_board.py ui_score_board.ui
 pyuic5 -o ui_advanced.py ui_advanced.ui
 pyuic5 -o ui_about.py ui_about.ui
 pyuic5 -o ui_record_pop.py ui_record_pop.ui
+pyuic5 -o ui_import.py ui_import.ui
+
 copy /y ui_advanced.py ..\src\ui\ui_advanced.py
 copy /y ui_score_board.py ..\src\ui\ui_score_board.py
 copy /y ui_gameSettings.py ..\src\ui\ui_gameSettings.py
@@ -19,4 +21,6 @@ copy /y ui_gameSettingShortcuts.py ..\src\ui\ui_gameSettingShortcuts.py
 copy /y ui_record_pop.py ..\src\ui\ui_record_pop.py
 copy /y ui_about.py ..\src\ui\ui_about.py
 copy /y ui_video_control.py ..\src\ui\ui_video_control.py
+copy /y ui_import.py ..\src\ui\ui_import.py
+
 pause
