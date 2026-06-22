@@ -574,7 +574,7 @@ class LlmMinesweeperControllerPlugin(BasePlugin[LlmMinesweeperControllerConfig])
     @classmethod
     def plugin_info(cls) -> PluginInfo:
         return PluginInfo(
-            name="智能体反控扫雷",
+            name="LLM反控扫雷",
             version="1.0.0",
             description="使用 LLM 分析并控制扫雷游戏",
             window_mode=WindowMode.TAB,
