@@ -19,7 +19,7 @@ pyinstaller --noconfirm --name metaminsweeper --windowed --distpath %OUT% ^
 
 echo.
 echo [2/3] plugin_manager.exe
-pyinstaller --noconfirm --name plugin_manager --windowed --hidden-import sqlite3 --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --distpath %OUT% src\plugin_manager\_run.py
+pyinstaller --noconfirm --name plugin_manager --windowed --icon src/media/cat.ico --hidden-import sqlite3 --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --distpath %OUT% src\plugin_manager\_run.py
 
 echo.
 echo [3/3] Copy resources to metaminsweeper\

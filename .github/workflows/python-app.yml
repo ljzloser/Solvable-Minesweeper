@@ -73,6 +73,7 @@ jobs:
             --noconfirm `
             --name plugin_manager `
             --windowed `
+            --icon src/media/cat.ico `
             --hidden-import sqlite3 `
             --hidden-import code `
             --hidden-import xmlrpc `
