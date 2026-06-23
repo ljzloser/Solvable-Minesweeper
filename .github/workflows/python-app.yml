@@ -76,6 +76,7 @@ jobs:
             --windowed `
             --icon src/media/cat.ico `
             --add-data "src/plugins;plugins" `
+            --add-data "src/shared_types;shared_types" `
             --hidden-import sqlite3 `
             --hidden-import code `
             --hidden-import xmlrpc `
@@ -85,6 +86,9 @@ jobs:
             --hidden-import socketserver `
             --hidden-import email `
             --hidden-import email.utils `
+            --hidden-import requests `
+            --hidden-import Crypto.Cipher.AES `
+            --hidden-import Crypto.Random `
             --distpath dist\plugin_manager_out `
             src\plugin_manager\_run.py
 
@@ -96,9 +100,9 @@ jobs:
           Copy-Item "src\media" -Destination "$dest\media" -Recurse -Force
           Copy-Item "src\plugin_sdk" -Destination "$dest\plugin_sdk" -Recurse -Force
           Copy-Item "src\plugin_manager" -Destination "$dest\plugin_manager" -Recurse -Force
-          Copy-Item "src\plugins" -Destination "$dest\plugins" -Recurse -Force
           Copy-Item "src\shared_types" -Destination "$dest\shared_types" -Recurse -Force
           Copy-Item "plugin-dev-tutorial.md" -Destination $dest -Force
+          New-Item -ItemType Directory -Force "$dest\user_plugins" | Out-Null
           Remove-Item "$dest\plugin_manager\_run.py" -Force -ErrorAction SilentlyContinue
           Remove-Item "dist\plugin_manager_out" -Recurse -Force -ErrorAction SilentlyContinue
 
