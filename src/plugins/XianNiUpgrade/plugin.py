@@ -144,10 +144,6 @@ class XianNiUpgradePlugin(BasePlugin):
     def on_shutdown(self) -> None:
         self._save_data()
 
-    # ═══════════════════════════════════════════════════════════
-    # 【TODO】每局经验计算公式
-    # ═══════════════════════════════════════════════════════════
-
     def _calc_xp(self, event: GameFinishedEvent) -> int:
         """每局获得的经验值"""
         board = ms.Board(event.board)

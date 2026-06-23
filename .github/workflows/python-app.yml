@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
 
       - name: Generate translation qm files
         run: |
@@ -31,7 +31,7 @@ jobs:
           lrelease src/ui/ja_JP.ts -qm src/ja_JP.qm
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -89,6 +89,7 @@ jobs:
             --hidden-import requests `
             --hidden-import Crypto.Cipher.AES `
             --hidden-import Crypto.Random `
+            --hidden-import ms_toollib `
             --distpath dist\plugin_manager_out `
             src\plugin_manager\_run.py
 
@@ -98,9 +99,6 @@ jobs:
           Copy-Item "dist\plugin_manager_out\plugin_manager\plugin_manager.exe" -Destination $dest -Force
           Copy-Item "dist\plugin_manager_out\plugin_manager\_internal\*" -Destination "$dest\_internal" -Recurse -Force
           Copy-Item "src\media" -Destination "$dest\media" -Recurse -Force
-          Copy-Item "src\plugin_sdk" -Destination "$dest\plugin_sdk" -Recurse -Force
-          Copy-Item "src\plugin_manager" -Destination "$dest\plugin_manager" -Recurse -Force
-          Copy-Item "src\shared_types" -Destination "$dest\shared_types" -Recurse -Force
           Copy-Item "plugin-dev-tutorial.md" -Destination $dest -Force
           New-Item -ItemType Directory -Force "$dest\user_plugins" | Out-Null
           Remove-Item "$dest\plugin_manager\_run.py" -Force -ErrorAction SilentlyContinue
