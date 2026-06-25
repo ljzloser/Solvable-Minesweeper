@@ -172,9 +172,13 @@
 
 ## 下载链接
 
+### 正式版v3.3.1：
+棋盘更新事件（BoardUpdateEvent）现在视为不安全操作，需在高级设置中手动开启方可发送至插件。经验获得公式改进。  
+链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe)
+
 ### 正式版v3.3.0：
 新增插件系统，内置历史记录、LLM反控扫雷、雷修境界三个插件。支持运行时切换界面语言（日文/波兰文/德文/英文）。新增ZiNi指标。新增上个版本录像导入和CSV导出功能。新增高级设置面板。修复了安装过程中选择语言无效、插件相关异常、自定义模式设置窗口雷数上限不自动调整、记录弹窗影响窗口挪动等bug。修复了ce/s不能正常展示。现在默认不启用自动重开。  
-链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)
+链接：无（不安全，已下架）
 
 ### 正式版v3.2.2：
 添加了插件功能。开始支持播放RMV2录像。修复了在局面边框上按下、局面内释放时，处理错误的严重bug。修复了不能在“cell0”上双击的bug。优化了“关于”菜单。补全了计数器中缺失的若干算子、删除了checksum_ok变量。修复了一个evfs安全漏洞。添加了命令行校验录像工具。现在限制光标不能超出边框时，窗口始终置顶。添加了打开录像、设置目录的菜单选项。  

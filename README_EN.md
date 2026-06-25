@@ -192,12 +192,17 @@ Per project rules, donations are distributed among contributors proportionally t
 
 ## Download Links
 
+### v3.3.1
+
+BoardUpdateEvent is now treated as unsafe; sending it to plugins requires explicit opt-in via Advanced Settings. Experience formula improved.
+Links:
+[https://gitee.com/ee55/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe)
+[https://github.com/eee555/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.1/Metasweeper-3.3.1.exe)
+
 ### v3.3.0
 
 Plugin system introduced: built-in History, LLM Controller, and XianNiUpgrade plugins. Runtime language switching (Japanese/Polish/German/English). New ZiNi metric. Replay import from previous versions + CSV export. Advanced settings panel. Bug fixes: installer language selection not applied, plugin-related exceptions, custom mode mine count not auto-adjusting, record dialog interfering with window dragging, ce/s display broken. Auto-restart disabled by default.
-Links:
-[https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)
-[https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)
+(No safe download available; removed)
 
 ### v3.2.2
 
