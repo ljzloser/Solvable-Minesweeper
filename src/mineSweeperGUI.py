@@ -638,6 +638,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def _send_board_update_event(self):
         """发送棋盘更新事件给插件"""
+        if 'board_update' not in self._allowed_controls:
+            return
         try:
             ms_board = self.label.ms_board
             # 将 game_board 转换为列表格式

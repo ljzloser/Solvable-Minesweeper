@@ -7,6 +7,7 @@ from shared_types.commands import COMMAND_TYPES
 _COMMAND_LABELS = {
     "mouse_click": "鼠标点击（MouseClickCommand）",
     "new_game": "重开新局（NewGameCommand）",
+    "board_update": "棋盘更新（BoardUpdateEvent）",
 }
 
 
@@ -47,12 +48,25 @@ class ui_Form(Ui_Form):
         self.game_setting.set_value('DEFAULT/allowed_controls', raw)
 
     def _build_allow_ui(self) -> None:
+        # 命令类
         for cmd_type in COMMAND_TYPES:
             try:
                 tag = _get_tag(cmd_type)
             except (ValueError, TypeError):
                 continue
 
+            label = _COMMAND_LABELS.get(tag, tag)
+            cb = QCheckBox()
+            cb.setChecked(tag in self._allowed_controls)
+            cb.setText(f"允许{label}")
+
+            cb.stateChanged.connect(
+                lambda checked, t=tag: self._on_allow_toggled(t, bool(checked))
+            )
+            self.verticalLayout_auth_items.addWidget(cb)
+
+        # 事件类（与命令同等视为作弊）
+        for tag in ("board_update",):
             label = _COMMAND_LABELS.get(tag, tag)
             cb = QCheckBox()
             cb.setChecked(tag in self._allowed_controls)

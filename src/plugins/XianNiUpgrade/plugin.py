@@ -175,7 +175,7 @@ class XianNiUpgradePlugin(BasePlugin):
         long_side = max(row, column)
         short_side = min(row, column)
         if mine_num / cells <= 0.8 and mode in (0, 4, 7) or mine_num / cells <= 0.3 and mode in (5, 6):
-            exp_b = (k / 5000.0) * (1.3 ** (mine_num / cells * 100.0)) * short_side * long_side ** 1.2
+            exp_b = k * (1.08 ** (mine_num / cells * 341.0)) * short_side ** 1.2 * long_side ** 1.6 / 17411.0
         else:
             exp_b = 0
 
