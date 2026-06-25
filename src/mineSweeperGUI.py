@@ -50,7 +50,7 @@ _translate = QCoreApplication.translate
 
 # 已知的验证程序 MD5（元扫雷 3.2.2）
 _KNOWN_IMPORT_MD5S = {
-    "d5fd61ae1372297aa7008d7b7cd8a13b",
+    "3271d11bab9afc8b0a2b9546e13d46cd",
 }
 
 

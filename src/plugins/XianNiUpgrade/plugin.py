@@ -304,7 +304,7 @@ class XianNiUpgradePlugin(BasePlugin):
             actual_md5 = hashlib.md5(exe.read_bytes()).hexdigest()
 
             match actual_md5:
-                case "d5fd61ae1372297aa7008d7b7cd8a13b":
+                case "3271d11bab9afc8b0a2b9546e13d46cd":
                     return self._validate_metasweeper_3_2_2(exe, replay_path)
                 case _:
                     self.logger.error(f"未知法器 MD5: {actual_md5}")
@@ -362,7 +362,7 @@ class XianNiUpgradePlugin(BasePlugin):
                     self.logger.warning(f"解析录像失败 {fp}: {e}")
 
             return {
-                "md5": "d5fd61ae1372297aa7008d7b7cd8a13b",
+                "md5": "3271d11bab9afc8b0a2b9546e13d46cd",
                 "new_files": new_files,
                 "duplicates": dup_files,
                 "total_new_xp": sum(n["xp"] for n in new_files),

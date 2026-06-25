@@ -1664,7 +1664,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 &lt;p&gt;目前支持的版本：&lt;/p&gt;
 &lt;table&gt;
 &lt;tr&gt;&lt;th&gt;版本&lt;/th&gt;&lt;th&gt;MD5&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;d5fd61ae1372297aa7008d7b7cd8a13b&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;3271d11bab9afc8b0a2b9546e13d46cd&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 
 &lt;h3&gt;五、存档说明&lt;/h3&gt;
@@ -1770,7 +1770,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 &lt;p&gt;目前支持的版本：&lt;/p&gt;
 &lt;table&gt;
 &lt;tr&gt;&lt;th&gt;版本&lt;/th&gt;&lt;th&gt;MD5&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;d5fd61ae1372297aa7008d7b7cd8a13b&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;3271d11bab9afc8b0a2b9546e13d46cd&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 
 &lt;h3&gt;五、存档说明&lt;/h3&gt;

@@ -255,7 +255,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <p>目前支持的版本：</p>
 <table>
 <tr><th>版本</th><th>MD5</th></tr>
-<tr><td>Metasweeper 3.2.2</td><td><code>d5fd61ae1372297aa7008d7b7cd8a13b</code></td></tr>
+<tr><td>Metasweeper 3.2.2</td><td><code>3271d11bab9afc8b0a2b9546e13d46cd</code></td></tr>
 </table>
 
 <h3>五、存档说明</h3>
