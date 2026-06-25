@@ -6,7 +6,7 @@
 ; 程序名称
 #define MyAppName "Metasweeper"
 ; 程序版本
-#define MyAppVersion "3.2.2"
+#define MyAppVersion "3.3.0"
 ; 发行商
 #define MyAppPublisher "eee555"
 ; 官网
@@ -22,7 +22,7 @@
 [Setup]
 ;注意：AppId 的值唯一标识此应用程序。不要在其他应用程序的安装程序中使用相同的 AppId 值。
 ;（要生成新的 GUID，请单击 Tools |在 IDE 中生成 GUID
-AppId={A5BFCE55-30E5-4A1D-8849-E6372D2CF9D4}
+AppId={{A5BFCE55-30E5-4A1D-8849-E6372D2CF9D4}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -41,6 +41,7 @@ ArchitecturesAllowed=x64compatible
 ;注册表的 64 位视图。
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
+DisableDirPage=no
 ;取消注释以下行以在非管理安装模式下运行（仅为当前用户安装）。
 PrivilegesRequired=admin
 OutputBaseFilename=Metasweeper-{#MyAppVersion}
@@ -52,8 +53,14 @@ UninstallDisplayIcon={app}\{#IconPath}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-; 中文语言包，需要下载对应的中文.isl文件放到InnoSetup目录下的languages目录下
 Name: "chinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+
+[CustomMessages]
+english.FileAssocPageTitle=File Association
+english.FileAssocPageDesc=Select file types to associate with %1, then click Next.
+
+chinese.FileAssocPageTitle=文件打开方式
+chinese.FileAssocPageDesc=勾选对应的文件类型，以添加对应文件类型使用%1的打开方式，然后点击"下一步"按钮。
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
@@ -75,7 +82,7 @@ var
     AVFCheckbox, EVFCheckbox, RMVCheckbox, MVFCheckbox, EVFSCheckbox: TNewCheckbox;
 procedure FileAssociationPage;
 begin
-    Page := CreateCustomPage(wpSelectDir, '文件打开方式', '勾选对应的文件类型,以添加对应文件类型使用{#MyAppName}的打开方式，然后点击“下一步”按钮。');
+    Page := CreateCustomPage(wpSelectDir, CustomMessage('FileAssocPageTitle'), FmtMessage(CustomMessage('FileAssocPageDesc'), ['{#MyAppName}']));
 
     AVFCheckbox := TNewCheckbox.Create(Page);
     AVFCheckbox.Top := 0;

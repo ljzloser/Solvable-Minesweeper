@@ -270,7 +270,6 @@ if __name__ == "__main__":
 
 # 最高优先级
 # 计时器快捷键切换
-# 可信的历史记录
 # 选择某些国家报错，布维岛(难复现)
 # OBR修改局面还会报错的情况（不确定，需要跟踪）
 # 筛选局面的条件设置错误时，不能显式报告
@@ -316,7 +315,7 @@ if __name__ == "__main__":
 # 录像静态类：bbbv，op, isl, cell0, cell1, cell2, cell3, cell4, cell5, cell6,
 #           cell7, cell8, zini, hzini
 # 录像动态类（依赖分析）：pluck
-# 其他类：checksum_ok, race_identifier, mode, is_offical, is_fair
+# 其他类：race_identifier, mode, is_offical, is_fair
 
 # 工具箱中局面状态和鼠标状态的定义：
 
