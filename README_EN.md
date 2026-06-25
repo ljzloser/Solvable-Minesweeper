@@ -67,7 +67,7 @@ Meta Minesweeper is not just a game but a full analysis platform.
 Meta Minesweeper is actively developed and typically releases **every 3–12 months**.
 Issues, PRs, stars, and forks are all welcome.
 
-### Reference Links
+## Reference Links
 
 * User Guide: [https://openms.top/#/guide/[80.%E6%95%99%E7%A8%8B.%E8%BD%AF%E4%BB%B6]%E5%85%83%E6%89%AB%E9%9B%B7%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B](https://openms.top/#/guide/[80.%E6%95%99%E7%A8%8B.%E8%BD%AF%E4%BB%B6]%E5%85%83%E6%89%AB%E9%9B%B7%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B)
 * Algorithm Toolbox: [https://github.com/eee555/ms_toollib](https://github.com/eee555/ms_toollib)
@@ -79,7 +79,7 @@ Supported OS: **Windows 10 / Windows 11 only**
 
 ### Option 1: Install via Official Download (Recommended)
 
-Find the latest version in the [download section](#下载链接), unzip it, and run `main.exe` directly (click “Run anyway” if prompted).
+Find the latest version in the [download section](#download-links), unzip it, and run `main.exe` directly (click “Run anyway” if prompted).
 Software installed this way is the **official, fully signed version**, capable of generating valid replay signatures (`metaminesweeper_checksum.pyd` is the small closed-source signing module).
 
 ### Option 2: Install via GitHub Actions (Safest)
@@ -186,10 +186,25 @@ Per project rules, donations are distributed among contributors proportionally t
 
 | Sponsor | Amount |    Date    | Channel | Distribution |
 | :-----: | :----: | :--------: | :-----: | :----------: |
-|  *Song  | ¥72.60 | 2024-04-04 |  WeChat |    Pending   |
+| Unknown Poet | ¥6.00  | 2026-06-16 |  WeChat |    Pending   |
 |  *Chang | ¥55.00 | 2024-07-27 |  Alipay |    Pending   |
+|  *Song  | ¥72.60 | 2024-04-04 |  WeChat |    Pending   |
 
 ## Download Links
+
+### v3.3.0
+
+Plugin system introduced: built-in History, LLM Controller, and XianNiUpgrade plugins. Runtime language switching (Japanese/Polish/German/English). New ZiNi metric. Replay import from previous versions + CSV export. Advanced settings panel. Bug fixes: installer language selection not applied, plugin-related exceptions, custom mode mine count not auto-adjusting, record dialog interfering with window dragging, ce/s display broken. Auto-restart disabled by default.
+Links:
+[https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)
+[https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.0/Metasweeper-3.3.0.exe)
+
+### v3.2.2
+
+Plugin functionality added. RMV2 replay playback supported. Fixed a critical bug where releasing inside the board after pressing on the border caused incorrect handling; fixed double-click on "cell0" not working. Optimized "About" menu. Completed missing counter operators; removed `checksum_ok` variable. Fixed an evfs security vulnerability. Added command-line replay verification tool. Cursor boundary restriction now always keeps window on top. Added menu options to open replay/settings directory.
+Links:
+[https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe)
+[https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe](https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe)
 
 ### v3.2.1
 
