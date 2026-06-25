@@ -170,7 +170,5 @@ src/plugins/*/*.json
 src/plugins/*/*.db
 .vscode/
 data/*
-.iflow/
-.claude/settings.local.json
 src/stats.dat
 src/ms_toollib.pyi

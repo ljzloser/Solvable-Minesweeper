@@ -196,7 +196,8 @@ class HistoryMainWidget(QWidget):
         if filter_dialog.exec_():
             # 保存过滤条件数据
             model = cast(FilterModel, filter_dialog.table.model())
-            self._filter_rows = [model.get_row_data(row) for row in range(model.rowCount())]
+            self._filter_rows = [model.get_row_data(
+                row) for row in range(model.rowCount())]
             self._on_query()
 
     def _show_sort_dialog(self):
@@ -215,7 +216,8 @@ class HistoryMainWidget(QWidget):
         if sort_dialog.exec_():
             # 保存排序条件数据
             model = cast(SortModel, sort_dialog.sort_table.model())
-            self._sort_rows = [model.get_row_data(row) for row in range(model.rowCount())]
+            self._sort_rows = [model.get_row_data(
+                row) for row in range(model.rowCount())]
             self._on_query()
 
     def _show_columns_dialog(self):
@@ -248,9 +250,6 @@ class HistoryMainWidget(QWidget):
 
     def load_data(self):
         if not self._db_path.exists():
-            QMessageBox.warning(
-                self, _translate("Form", "错误"),
-                _translate("Form", "历史记录数据库不存在"))
             return
 
         try:
@@ -362,7 +361,8 @@ class HistoryMainWidget(QWidget):
         right_count = 0
 
         for row, data in enumerate(self._filter_rows):
-            field_value_type = HistoryData.get_field_value(data.get("field") or "")
+            field_value_type = HistoryData.get_field_value(
+                data.get("field") or "")
 
             left_bracket = data.get("left_bracket") or ""
             field = data.get("field") or ""
@@ -389,7 +389,8 @@ class HistoryMainWidget(QWidget):
             if right_count > left_count:
                 QMessageBox.warning(
                     self, _translate("Form", "错误"),
-                    _translate("Form", "第%1行 右括号数量大于左括号数量，请检查").replace("%1", str(row))
+                    _translate("Form", "第%1行 右括号数量大于左括号数量，请检查").replace(
+                        "%1", str(row))
                 )
                 return None
 
@@ -407,7 +408,8 @@ class HistoryMainWidget(QWidget):
                         if not v.replace("-", "").replace(".", "").isdigit():
                             QMessageBox.warning(
                                 self, _translate("Form", "错误"),
-                                _translate("Form", "第%1行 %2 不是数字").replace("%1", str(row)).replace("%2", v)
+                                _translate("Form", "第%1行 %2 不是数字").replace(
+                                    "%1", str(row)).replace("%2", v)
                             )
                             return None
                     value = ",".join(v for v in values)
@@ -436,7 +438,8 @@ class HistoryMainWidget(QWidget):
                             except ValueError as e:
                                 QMessageBox.warning(
                                     self, _translate("Form", "错误"),
-                                    _translate("Form", "第%1行 %2 不是合法的日期时间").replace("%1", str(row)).replace("%2", v)
+                                    _translate("Form", "第%1行 %2 不是合法的日期时间").replace(
+                                        "%1", str(row)).replace("%2", v)
                                 )
                                 return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -455,7 +458,8 @@ class HistoryMainWidget(QWidget):
                         else:
                             QMessageBox.warning(
                                 self, _translate("Form", "错误"),
-                                _translate("Form", "第%1行 %2 不是合法的枚举选项").replace("%1", str(row)).replace("%2", v)
+                                _translate("Form", "第%1行 %2 不是合法的枚举选项").replace(
+                                    "%1", str(row)).replace("%2", v)
                             )
                             return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -479,13 +483,15 @@ class HistoryMainWidget(QWidget):
                         else:
                             QMessageBox.warning(
                                 self, _translate("Form", "错误"),
-                                _translate("Form", "第%1行 %2 不是合法的日期时间").replace("%1", str(row)).replace("%2", value)
+                                _translate("Form", "第%1行 %2 不是合法的日期时间").replace(
+                                    "%1", str(row)).replace("%2", value)
                             )
                             return None
                     except ValueError:
                         QMessageBox.warning(
                             self, _translate("Form", "错误"),
-                            _translate("Form", "第%1行 %2 不是合法的日期时间").replace("%1", str(row)).replace("%2", value)
+                            _translate("Form", "第%1行 %2 不是合法的日期时间").replace(
+                                "%1", str(row)).replace("%2", value)
                         )
                         return None
             elif value and not value.startswith("'"):
@@ -516,7 +522,8 @@ class HistoryMainWidget(QWidget):
             order_text = row_data.get("order") or ""
             if not field:
                 continue
-            order_sql = "ASC" if order_text == _translate("Form", "升序") else "DESC"
+            order_sql = "ASC" if order_text == _translate(
+                "Form", "升序") else "DESC"
             orders.append(f"{field} {order_sql}")
 
         if orders:
@@ -526,7 +533,7 @@ class HistoryMainWidget(QWidget):
     def _save_filter_sort_state(self, filter_str: str = "", order_str: str = "") -> None:
         """发射排序和过滤状态变化信号"""
         self.filter_sort_state_changed.emit(
-            json.dumps(self._filter_rows, ensure_ascii=False), 
+            json.dumps(self._filter_rows, ensure_ascii=False),
             json.dumps(self._sort_rows, ensure_ascii=False)
         )
 
