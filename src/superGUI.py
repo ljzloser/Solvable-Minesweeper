@@ -15,9 +15,9 @@ from typing import List, Tuple
 from shared_types.events import LanguageChangeEvent
 from plugin_sdk import GameServerBridge
 
-version = "元3.3.0"
+version = "元3.3.1"
 # AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
-STATS_DAT_KEY = bytes([2,135,180,102,125,204,245,102,253,59,217,7,114,61,231,62])  # 16字节 AES-128 key
+STATS_DAT_KEY = bytes([173,239,218,129,84,35,95,237,23,47,166,30,121,187,124,187])  # 16字节 AES-128 key
 
 def resource_path(relative_path: str) -> Path:
     """获取资源文件路径（开发环境 + PyInstaller）
