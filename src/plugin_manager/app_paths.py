@@ -48,13 +48,29 @@ def get_executable_dir() -> Path:
     return get_bundle_dir().parent
 
 
+# ── 可写数据目录（由主进程启动时通过 --data-dir 传入） ─
+
+_data_dir_override: str | None = None
+
+
+def set_data_dir_override(path: str) -> None:
+    """由主进程在启动时调用，传入已测过权限的 data 目录"""
+    global _data_dir_override
+    _data_dir_override = path
+
+
 def get_data_dir() -> Path:
     """
-    获取可写的数据目录（用于存放状态文件、日志等持久化数据）
+    获取可写的数据目录
 
-    - 开发模式: <project>/src/data/
-    - 打包模式:   <exe所在目录>/data/
+    - 有 override 时: 主进程传入的路径
+    - 否则默认: <exe所在目录>/data/
     """
+    if _data_dir_override:
+        data_dir = Path(_data_dir_override)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
+
     base = get_executable_dir()
     data_dir = base / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

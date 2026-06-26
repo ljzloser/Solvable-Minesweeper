@@ -172,3 +172,4 @@ src/plugins/*/*.db
 data/*
 src/stats.dat
 src/ms_toollib.pyi
+/src/data

@@ -163,6 +163,8 @@ if __name__ == "__main__":
 
         # ── 启动 ZMQ Server + 插件管理器 ──
 
+        data_dir = str(ui.setting_path / "data")
+
         # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
         if getattr(sys, 'frozen', False):
             base_dir = os.path.dirname(sys.executable)
@@ -174,7 +176,7 @@ if __name__ == "__main__":
                 )
                 plugin_process = None
             else:
-                cmd = [plugin_exe, "--mode", "tray"]
+                cmd = [plugin_exe, "--mode", "tray", "--data-dir", data_dir]
                 cwd = base_dir
                 try:
                     plugin_process = subprocess.Popen(
@@ -187,7 +189,8 @@ if __name__ == "__main__":
                     )
                     plugin_process = None
         else:
-            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray"]
+            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray",
+                   "--data-dir", data_dir]
             cwd = os.path.dirname(os.path.abspath(__file__))
             try:
                 plugin_process = subprocess.Popen(

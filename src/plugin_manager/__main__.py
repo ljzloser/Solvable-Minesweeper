@@ -39,8 +39,16 @@ def main() -> int:
         default=False,
         help="不显示界面（后台模式）",
     )
+    parser.add_argument(
+        "--data-dir",
+        help="可写数据目录（由主进程传入，已通过权限测试）",
+    )
 
     args = parser.parse_args()
+
+    if args.data_dir:
+        from .app_paths import set_data_dir_override
+        set_data_dir_override(args.data_dir)
 
     # 初始化 loguru 日志系统（主日志 + 控制台）
     from .app_paths import get_log_dir

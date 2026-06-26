@@ -46,8 +46,16 @@ def main() -> int:
         default=5678,
         help="debugpy 监听端口 (默认: 5678)",
     )
+    parser.add_argument(
+        "--data-dir",
+        help="可写数据目录（由主进程传入，已通过权限测试）",
+    )
 
     args = parser.parse_args()
+
+    if args.data_dir:
+        from plugin_manager.app_paths import set_data_dir_override
+        set_data_dir_override(args.data_dir)
 
     # 可选：启动 debugpy 等待远程调试附加
     if args.debug:
