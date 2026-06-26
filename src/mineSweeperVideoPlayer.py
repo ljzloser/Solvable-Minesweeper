@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
 from PyQt5.QtGui import QPixmap
-# from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
+
 from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 import  videoControl

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSize, QTimer
 from PyQt5.QtCore import QTranslator
-# from os import environ
+
 from PyQt5.QtWidgets import QApplication
 import configparser
 from PyQt5.QtGui import QPalette, QPixmap, QIcon

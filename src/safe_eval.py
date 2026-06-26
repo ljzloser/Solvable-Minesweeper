@@ -114,7 +114,6 @@ if sys.version_info[0:2] == (3, 11):
     }
 
 elif sys.version_info[0:2] == (3, 10):
-    # Python 3.10.
     opcode_whitelist = {
         '<0>',
         '<8>',
@@ -233,14 +232,12 @@ else:
     raise RuntimeError("Python version not support!")
     
 
-# Convert names to index
 opname_reverse = {name: index for index, name in enumerate(dis.opname)}
 try:
     opcode_whitelist_index = {opname_reverse[name] for name in opcode_whitelist}
 except KeyError:
     opcode_whitelist_index = None
 
-# It's useful to have a full list.
 if opcode_whitelist_index is None:
     raise KeyError(
         "The following keys were not found: {!s}".format(
@@ -248,12 +245,12 @@ if opcode_whitelist_index is None:
     )
 
 
-def raise_if_code_unsafe(code, globals=None, locals=None):
+def raise_if_code_unsafe(code, extra_globals=None, extra_locals=None):
     whitelist = set(builtins_whitelist)
-    if globals:
-        whitelist.update(globals)
-    if locals:
-        whitelist.update(locals)
+    if extra_globals:
+        whitelist.update(extra_globals)
+    if extra_locals:
+        whitelist.update(extra_locals)
 
     bad_ops = []
     for name in code.co_names:
@@ -266,7 +263,6 @@ def raise_if_code_unsafe(code, globals=None, locals=None):
                 ", ".join(repr(name) for name in bad_ops),
                 ", ".join(sorted(whitelist)))
                 )
-    del bad_ops
 
     for instr in dis.get_instructions(code):
         if instr.opcode not in opcode_whitelist_index:
@@ -276,9 +272,8 @@ def raise_if_code_unsafe(code, globals=None, locals=None):
             )
 
 
-def safe_eval(source, globals=None):
-    
-    locals = {
+def safe_eval(source, extra_globals=None):
+    local_vars = {
         "sin": math.sin,
         "tan": math.tan,
         "cos": math.cos,
@@ -287,11 +282,12 @@ def safe_eval(source, globals=None):
 
     code = compile(source, "<safe_eval>", "eval")
 
-    raise_if_code_unsafe(code, globals=globals, locals=locals)
+    raise_if_code_unsafe(code, extra_globals=extra_globals, extra_locals=local_vars)
 
-    ans = eval(code, globals, locals)
-    if globals is not None:
-        globals.pop('__builtins__', None)
+    merged_globals = {}
+    if extra_globals is not None:
+        merged_globals.update(extra_globals)
+    merged_globals.pop('__builtins__', None)
+
+    ans = eval(code, merged_globals, local_vars)
     return ans
-
-
