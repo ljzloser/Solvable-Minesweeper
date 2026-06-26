@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 import gameDefinedParameter
 import  videoControl
 import ms_toollib as ms
+from config.constants import DISPLAY, FACE_SMILE, FACE_CLICK
+from shared_types.enums import MouseState
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 from mainWindowGUI import MainWindow
 from app_logger import logger
@@ -41,7 +43,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             if self.cursor_limit:
                 self.limit_cursor()
             return
-        self.set_face(14)
+        self.set_face(FACE_SMILE)
 
         video_set = None
         try:
@@ -60,7 +62,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                 # video = video_set[0].evf_video
             else:
                 return
-        except:
+        except Exception:
             logger.warning(f"Failed to open video file: {openfile_name}")
             return
         
@@ -97,8 +99,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     # 控制台中，不添加新标签、连接信号。假如关闭就展示
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
     def play_video(self, video, new_tab=False):
-        if self.game_state != 'display':
-            self.game_state = 'display'
+        if self.game_state != DISPLAY:
+            self.game_state = DISPLAY
         self.video_playing = False
         self.timer_video.stop()
         
@@ -208,15 +210,15 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         
         # 回放时修改小黄脸，使用了一个变量做工具箱的补丁
         match self.label.ms_board.mouse_state:
-            case 1 | 7:
-                self.set_face(14)
-            case 2 | 4 | 5 | 6:
-                self.set_face(15)
-            case 3:
-                if self.last_mouse_state_video_playing_step in {5, 6}:
-                    self.set_face(14)
+            case MouseState.UpUp.value | MouseState.DownUpAfterChording.value:
+                self.set_face(FACE_SMILE)
+            case MouseState.UpDown.value | MouseState.DownUp.value | MouseState.Chording.value | MouseState.ChordingNotFlag.value:
+                self.set_face(FACE_CLICK)
+            case MouseState.UpDownNotFlag.value:
+                if self.last_mouse_state_video_playing_step in {MouseState.Chording.value, MouseState.ChordingNotFlag.value}:
+                    self.set_face(FACE_SMILE)
                 else:
-                    self.set_face(15)
+                    self.set_face(FACE_CLICK)
         self.last_mouse_state_video_playing_step = self.label.ms_board.mouse_state
         
         self.score_board_manager.show(self.label.ms_board, index_type=3)

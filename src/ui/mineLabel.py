@@ -2,7 +2,8 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath
 import ms_toollib as ms
 from PyQt5.QtCore import QPoint, Qt
-# from PyQt5.QtSvg import QSvgWidget
+from config.constants import BOARD_READY, BOARD_PLAYING, CELL_UNOPENED
+from shared_types.enums import MouseState
 import utils
 
 
@@ -170,7 +171,7 @@ class mineLabel(QtWidgets.QLabel):
         game_board = self.ms_board.game_board
         mouse_state = self.ms_board.mouse_state
         if self.paint_cursor: # 播放录像
-            game_board_state = 1
+            game_board_state = BOARD_READY
             (x, y) = self.ms_board.x_y
             current_x = y // self.pixSize
             current_y = x // self.pixSize
@@ -186,7 +187,7 @@ class mineLabel(QtWidgets.QLabel):
         column = len(game_board[0])
         for i in range(row):
             for j in range(column):
-                if game_board[i][j] == 10:
+                if game_board[i][j] == CELL_UNOPENED:
                     painter.drawPixmap(j * pix_size, i * pix_size, QPixmap(self.pixmapNum[10]))
                     if self.paintProbability: # 画概率
                         if self.paint_cursor:
@@ -200,14 +201,14 @@ class mineLabel(QtWidgets.QLabel):
 
 
         # 画高亮
-        if (game_board_state == 2 or game_board_state == 1 or game_board_state == 5) and\
+        if (game_board_state == BOARD_PLAYING or game_board_state == BOARD_READY or game_board_state == 5) and\
             current_x < row and current_y < column:
-            if mouse_state == 5 or mouse_state == 6:
+            if mouse_state == MouseState.Chording.value or mouse_state == MouseState.ChordingNotFlag.value:
                 for r in range(max(current_x - 1, 0), min(current_x + 2, row)):
                     for c in range(max(current_y - 1, 0), min(current_y + 2, column)):
-                        if game_board[r][c] == 10:
+                        if game_board[r][c] == CELL_UNOPENED:
                             painter.drawPixmap(c * pix_size, r * pix_size, QPixmap(self.pixmapNum[0]))
-            elif mouse_state == 4 and game_board[current_x][current_y] == 10:
+            elif mouse_state == MouseState.DownUp.value and game_board[current_x][current_y] == CELL_UNOPENED:
                 painter.drawPixmap(current_y * pix_size, current_x * pix_size, QPixmap(self.pixmapNum[0]))
         # 画光标
         if self.paint_cursor:

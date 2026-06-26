@@ -57,7 +57,7 @@ def choose_3BV(board_constraint, attempt_times_limit, params):
             try:
                 expression_flag = safe_eval(
                     board_constraint, extra_globals=constraints)
-            except:
+            except Exception:
                 logger.warning(
                     "board_constraint eval failed",
                     exc_info=True,

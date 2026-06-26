@@ -76,7 +76,7 @@ def cli_check_file(file_path: str) -> int:
                     video = ms.EvfVideo(e)
                     try:
                         video.parse()
-                    except:
+                    except Exception:
                         logger.warning("Failed to parse evf file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
@@ -89,7 +89,7 @@ def cli_check_file(file_path: str) -> int:
                     videos = ms.Evfs(e)
                     try:
                         videos.parse()
-                    except:
+                    except Exception:
                         logger.warning("Failed to parse evfs file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
@@ -221,11 +221,11 @@ if __name__ == "__main__":
 
             # 根据 level 确定参数
             if cmd.level == GameLevel.BEGINNER.value:
-                rows, cols, mines = 8, 8, 10
+                rows, cols, mines = BOARD_BEGINNER
             elif cmd.level == GameLevel.INTERMEDIATE.value:
-                rows, cols, mines = 16, 16, 40
+                rows, cols, mines = BOARD_INTERMEDIATE
             elif cmd.level == GameLevel.EXPERT.value:
-                rows, cols, mines = 16, 30, 99
+                rows, cols, mines = BOARD_EXPERT
             else:
                 # 自定义模式，使用传入的参数
                 rows, cols, mines = cmd.rows, cmd.cols, cmd.mines
@@ -269,8 +269,6 @@ if __name__ == "__main__":
 
         app.aboutToQuit.connect(_cleanup)
         sys.exit(app.exec_())
-    # except:
-    #     pass
 
 # 最高优先级
 # 计时器快捷键切换

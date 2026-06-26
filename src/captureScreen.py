@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QApplication, QDialog
 from PyQt5.QtCore import Qt, qAbs, QRect
 from PyQt5.QtGui import QPen, QPainter, QColor, QGuiApplication
 from struct import Struct
-# import matplotlib.pyplot as plt
 import ms_toollib
 
 class CaptureScreen(QDialog):
@@ -101,7 +100,7 @@ class CaptureScreen(QDialog):
         self.success_flag = True
         try:
             self.board = ms_toollib.obr_board(self.data, self.height, self.width)
-        except:
+        except Exception:
             self.success_flag = False
             
         # print(self.board)

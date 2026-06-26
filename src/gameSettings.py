@@ -6,6 +6,7 @@ from country_name import country_name
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QSortFilterProxyModel
+from config.constants import BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT
 
 
 class ui_Form(Ui_Form):
@@ -140,17 +141,17 @@ class ui_Form(Ui_Form):
         self.game_setting.set_value("DEFAULT/race_identifier", self.race_identifier)
         self.game_setting.set_value("DEFAULT/unique_identifier", self.unique_identifier)
         self.game_setting.set_value("DEFAULT/country", self.country)
-        if (self.row, self.column, self.minenum) == (8, 8, 10):
+        if (self.row, self.column, self.minenum) == BOARD_BEGINNER:
             self.game_setting.set_value("BEGINNER/gamemode", self.gameMode)
             self.game_setting.set_value("BEGINNER/board_constraint", self.board_constraint)
             self.game_setting.set_value("BEGINNER/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("BEGINNER/pixsize", self.pixSize)
-        elif (self.row, self.column, self.minenum) == (16, 16, 40):
+        elif (self.row, self.column, self.minenum) == BOARD_INTERMEDIATE:
             self.game_setting.set_value("INTERMEDIATE/gamemode", self.gameMode)
             self.game_setting.set_value("INTERMEDIATE/board_constraint", self.board_constraint)
             self.game_setting.set_value("INTERMEDIATE/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("INTERMEDIATE/pixsize", self.pixSize)
-        elif (self.row, self.column, self.minenum) == (16, 30, 99):
+        elif (self.row, self.column, self.minenum) == BOARD_EXPERT:
             self.game_setting.set_value("EXPERT/gamemode", self.gameMode)
             self.game_setting.set_value("EXPERT/board_constraint", self.board_constraint)
             self.game_setting.set_value("EXPERT/attempt_times_limit", self.attempt_times_limit)

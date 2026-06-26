@@ -384,14 +384,7 @@ class CheckUpdateGui(QDialog):
         if self.processDialog is not None:
             self.processDialog.close()
             self.processDialog = None
-# if __name__ == '__main__':
-#     import sys
-#     app = QApplication(sys.argv)
-#     data = {
-#         "Github": "https://api.github.com/repos/",
-#         "openms": "https://openms.top/",
-#     }
-#     w = CheckUpdateGui(GitHub(SourceManager(data), "eee555",
+
 #                        "Solvable-Minesweeper", "3.1.9", "(\d+\.\d+\.\d+)"))
 #     w.show()
 #     sys.exit(app.exec_())

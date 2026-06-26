@@ -1,3 +1,22 @@
+"""
+gen_plugin.py - Plugin Generator / 插件生成器
+
+Usage / 用法:
+    python gen_plugin.py <PluginName>
+
+Generates a plugin skeleton under src/plugins/<PluginName>/.
+<PluginName> must be a valid Python class name (PascalCase).
+生成插件骨架到 src/plugins/<PluginName>/，名称须为有效帕斯卡命名类名。
+
+Example / 示例:
+    python gen_plugin.py MyPlugin
+    -> creates / 创建 src/plugins/MyPlugin/MyPlugin.py
+
+The generated plugin imports BasePlugin from plugin_sdk and subscribes
+to common events (GameFinishedEvent, BoardUpdateEvent, etc.).
+生成的插件从 plugin_sdk 导入 BasePlugin，并订阅常见事件。
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -19,31 +38,29 @@ def build_py_file_content(name: str) -> str:
     template = f'''
 import sys
 import os
+from pathlib import Path
 import msgspec
 import zmq
 
-if getattr(sys, "frozen", False):  # 检查是否为pyInstaller生成的EXE
-    application_path = os.path.dirname(sys.executable)
-    sys.path.append(application_path + "/../../")
-    print(application_path + "/../../")
-else:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../")
-from mp_plugins import BasePlugin, BaseConfig
-from mp_plugins.base.config import *
-from mp_plugins.context import AppContext
-from mp_plugins.events import *
+from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import QWidget
 
-class {name}Config(BaseConfig):
-    pass
+from plugin_sdk import (
+    BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
+    OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
+)
+from plugin_sdk.server_bridge import GameServerBridge
+from shared_types.commands import NewGameCommand
+from shared_types.events import (
+    GameFinishedEvent, BoardUpdateEvent,
+    GameStatusChangeEvent, ShowPluginManagerEvent,
+)
 
 
 class {name}(BasePlugin):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._context: AppContext
-        self._config = {name}Config()
+        self._config_widget: QWidget | None = None
 
     def build_plugin_context(self) -> None:
         self._plugin_context.name = "{name}"
@@ -57,29 +74,6 @@ class {name}(BasePlugin):
 
     def shutdown(self) -> None:
         return super().shutdown()
-
-
-
-if __name__ == "__main__":
-    try:
-        import sys
-
-        args = sys.argv[1:]
-        host = args[0]
-        port = int(args[1])
-        plugin = {name}()
-        # 捕获退出信号，优雅关闭
-        import signal
-
-        def signal_handler(sig, frame):
-            plugin.stop()
-            sys.exit(0)
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-        plugin.run(host, port)
-    except Exception:
-        pass
 '''
     return template
 

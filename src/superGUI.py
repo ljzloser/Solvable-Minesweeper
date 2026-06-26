@@ -13,6 +13,12 @@ import os, sys
 from typing import List, Tuple
 
 from shared_types.events import LanguageChangeEvent
+from config.constants import (
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+    FACE_SMILE, FACE_CLICK, FACE_LOST, FACE_WIN, FACE_SMILE_DOWN,
+    LEVEL_NAME_BEGINNER, LEVEL_NAME_INTERMEDIATE, LEVEL_NAME_EXPERT, LEVEL_NAME_CUSTOM,
+)
+from app_logger import logger
 from plugin_sdk import GameServerBridge
 
 version = "元3.3.1"
@@ -251,14 +257,10 @@ class Ui_MainWindow(Ui_MainWindow):
         # self.score_board_manager.ui.QWidget.move(_scoreBoardTop, _scoreBoardLeft)
 
 
-        # self.importLEDPic() # 导入图片
-        # self.label.setPath(r_path)
-
-
         self.label_2.leftRelease.connect(self.gameRestart)
         self.MinenumTimeWigdet.mouseReleaseEvent = self.gameRestart
 
-        self.label_2.setPixmap(self.pixmapNum[14])
+        self.label_2.setPixmap(self.pixmapNum[FACE_SMILE])
         self.label_2.setScaledContents(True)
         pe = QPalette()
         pe.setColor(QPalette.WindowText, Qt.black)  # 设置字体颜色
@@ -312,13 +314,13 @@ class Ui_MainWindow(Ui_MainWindow):
         pixmap16 = QPixmap(self.lostface_path)
         pixmap17 = QPixmap(self.winface_path)
         pixmap18 = QPixmap(self.smilefacedown_path)
-        self.pixmapNumPix = {14: pixmap14, 15: pixmap15, 16: pixmap16, 17: pixmap17, 18: pixmap18}
+        self.pixmapNumPix = {FACE_SMILE: pixmap14, FACE_CLICK: pixmap15, FACE_LOST: pixmap16, FACE_WIN: pixmap17, FACE_SMILE_DOWN: pixmap18}
         pixmap14_ = pixmap14.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap15_ = pixmap15.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap16_ = pixmap16.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap17_ = pixmap17.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap18_ = pixmap18.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
-        self.pixmapNum = {14: pixmap14_, 15: pixmap15_, 16: pixmap16_, 17: pixmap17_, 18: pixmap18_}
+        self.pixmapNum = {FACE_SMILE: pixmap14_, FACE_CLICK: pixmap15_, FACE_LOST: pixmap16_, FACE_WIN: pixmap17_, FACE_SMILE_DOWN: pixmap18_}
         # 以上是读取数字的图片，局面中的数字；以下是上方LED数字的图片
         pixLEDmap0 = QPixmap(self.LED0_path)
         pixLEDmap1 = QPixmap(self.LED1_path)
@@ -526,15 +528,14 @@ class Ui_MainWindow(Ui_MainWindow):
         self.language = self.game_setting.get_or_set_value("DEFAULT/language", "en_US", str)
         self.end_then_flag = self.game_setting.get_or_set_value("DEFAULT/end_then_flag", True, bool)
         self.cursor_limit = self.game_setting.get_or_set_value("DEFAULT/cursor_limit", False, bool)
-        match (self.row, self.column, self.minenum):
-            case (8, 8, 10):
-                level = "BEGINNER"
-            case (16, 16, 40):
-                level = "INTERMEDIATE"
-            case (16, 30, 99):
-                level = "EXPERT"
-            case _:
-                level = "CUSTOM"
+        if (self.row, self.column, self.minenum) == BOARD_BEGINNER:
+            level = LEVEL_NAME_BEGINNER
+        elif (self.row, self.column, self.minenum) == BOARD_INTERMEDIATE:
+            level = LEVEL_NAME_INTERMEDIATE
+        elif (self.row, self.column, self.minenum) == BOARD_EXPERT:
+            level = LEVEL_NAME_EXPERT
+        else:
+            level = LEVEL_NAME_CUSTOM
         self.pixSize = self.game_setting.get_or_set_value(f"{level}/pixsize", 20, int)
         self.label.set_rcp(self.row, self.column, self.pixSize)
         self.gameMode = self.game_setting.get_or_set_value(f"{level}/gamemode", 0, int)
@@ -611,7 +612,8 @@ class Ui_MainWindow(Ui_MainWindow):
                 with open(path, 'a', encoding='utf-8') as f:
                     f.write('')
             return True
-        except:
+        except Exception as e:
+            logger.exception("Failed to write to path: %s", path)
             return False
 
 

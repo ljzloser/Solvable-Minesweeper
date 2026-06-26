@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from ast import List
 import sqlite3
 import subprocess
 import sys

@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtGui
 from pathlib import Path
 import os
 import ms_toollib as ms
+from app_logger import logger
 
 
 class CommentCheckBox(QWidget):
@@ -184,7 +185,8 @@ class VideoSetTabWidget(QWidget):
         target_folder = path.parent / folder_name
         try:
             target_folder.mkdir(parents=True, exist_ok=True)
-        except:
+        except Exception as e:
+            logger.exception("Failed to create directory: %s", target_folder)
             return
         
         # 合理的video.file_name是不带后缀的相对路径evf文件名

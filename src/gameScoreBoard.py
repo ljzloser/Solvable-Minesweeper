@@ -3,6 +3,7 @@ import utils
 from ui.ui_score_board import Ui_Form
 from ui.uiComponents import RoundQWidget
 from safe_eval import safe_eval
+from config.constants import BOARD_READY, BOARD_PLAYING, BOARD_WIN, BOARD_LOSS
 from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QHeaderView, QAbstractItemDelegate
 from PyQt5 import QtCore, QtGui
 
@@ -169,7 +170,7 @@ class gameScoreBoardManager():
                 # print(expression)
                 try:
                     expression_result = safe_eval(expression, self.namespace)
-                except:
+                except Exception:
                     self.score_board_items_type[idx] = 5
                     index_value.append('error')
                 else:
@@ -256,13 +257,12 @@ class gameScoreBoardManager():
         
     def reshow(self, ms_board, index_type = 0):
         if not index_type:
-            if self.ms_board.game_board_state == 1\
-                or self.ms_board.game_board_state == 2\
+            if self.ms_board.game_board_state == BOARD_READY\
+                or self.ms_board.game_board_state == BOARD_PLAYING\
                     or self.ms_board.game_board_state == 5:
                 index_type = 1
-            elif self.ms_board.game_board_state == 3\
-                or self.ms_board.game_board_state == 4:
-                # 3、4为win和loss
+            elif self.ms_board.game_board_state == BOARD_WIN\
+                or self.ms_board.game_board_state == BOARD_LOSS:
                 index_type = 2
             elif self.ms_board.game_board_state == 6:
                 index_type = 3

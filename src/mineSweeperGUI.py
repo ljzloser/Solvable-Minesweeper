@@ -42,6 +42,17 @@ from ui.ui_import import Ui_Form as Ui_Import
 from ui.uiComponents import RoundQDialog
 from app.game_engine import GameEngine
 from app.board_renderer import BoardRenderer
+from config.constants import (
+    READY, PLAYING, JOKING, WIN, FAIL, STUDY, DISPLAY, SHOW_DISPLAY, SHOW,
+    MODE_STANDARD, MODE_WIN7, MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS,
+    MODE_WEAK_NO_GUESS, MODE_QUASI_NO_GUESS, MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE,
+    FACE_SMILE,
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+    IDX_BEGINNER, IDX_INTERMEDIATE, IDX_EXPERT, IDX_CUSTOM,
+    MIN_PIX_SIZE, MAX_PIX_SIZE,
+    GAME_EVENT_STATE_MAP, END_STATE_ORDER,
+    NO_RECORD,
+)
 
 _translate = QCoreApplication.translate
 
@@ -86,9 +97,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.actionzi_ding_yi.triggered.connect(self.action_CEvent)
 
         def save_evf_file_integrated():
-            if self.game_state != "ready" and self.game_state != "playing" and\
-                self.game_state != "show" and self.game_state != "study" and\
-                    self.game_state != "joking":
+            if self.game_state not in (READY, PLAYING, SHOW, STUDY, JOKING):
                 self.dump_evf_file_data()
                 self.save_evf_file()
         self.action_save.triggered.connect(save_evf_file_integrated)
@@ -189,8 +198,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         '''
         修改pixSize后，要调整ui尺寸，导致内部游戏状态变为"ready"
         '''
-        pixSize = max(5, pixSize)
-        pixSize = min(255, pixSize)
+        pixSize = max(MIN_PIX_SIZE, pixSize)
+        pixSize = min(MAX_PIX_SIZE, pixSize)
         pixSize = min(32767//self.column, pixSize)
         pixSize = min(32767//self.row, pixSize)
         if hasattr(self, "_pixSize") and pixSize == self._pixSize:
@@ -199,14 +208,14 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.label.reloadCellPic(pixSize)
 
         board_key = (self.row, self.column, self.minenum)
-        if board_key == (8, 8, 10):
-            idx = 1
-        elif board_key == (16, 16, 40):
-            idx = 2
-        elif board_key == (16, 30, 99):
-            idx = 3
+        if board_key == BOARD_BEGINNER:
+            idx = IDX_BEGINNER
+        elif board_key == BOARD_INTERMEDIATE:
+            idx = IDX_INTERMEDIATE
+        elif board_key == BOARD_EXPERT:
+            idx = IDX_EXPERT
         else:
-            idx = 0
+            idx = IDX_CUSTOM
             for i in range(4, 7):
                 p = self.predefinedBoardPara[i]
                 if board_key == (p.get('row'), p.get('column'), p.get('mine_num')):
@@ -222,7 +231,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         self.reimportLEDPic(pixSize)
         self.label_2.reloadFace(pixSize)
-        self.set_face(14)
+        self.set_face(FACE_SMILE)
         self.showMineNum(self.mineUnFlagedNum)
         self.showTime(0)
         if hasattr(self, "_pixSize") and pixSize < self._pixSize:
@@ -291,22 +300,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self._game_state = game_state
 
         # 发送游戏状态变化事件
-        state_map = {
-            "ready": 1,
-            "playing": 2,
-            "win": 3,
-            "fail": 4,
-            "joking": 2,  # joking 也视为游戏中
-            "jowin": 3,
-            "jofail": 4,
-            "show": 5,
-            "study": 6,
-            "display": 7,
-            "showdisplay": 8,
-        }
         event = GameStatusChangeEvent(
-            last_status=state_map.get(last_state, 0),
-            current_status=state_map.get(game_state, 0),
+            last_status=GAME_EVENT_STATE_MAP.get(last_state, 0),
+            current_status=GAME_EVENT_STATE_MAP.get(game_state, 0),
         )
         GameServerBridge.instance().send_event(event)
         self._send_board_update_event()
@@ -356,8 +352,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 发信号给插件，游戏结束了
         board = self.label.ms_board.board
         event = GameFinishedEvent(
-            game_state = ['ready', 'study', 'show', 'playing', 'joking', 'fail', 
-                          'win', 'jofail', 'jowin', 'display', 'showdisplay'].index(new_game_state),
+            game_state = END_STATE_ORDER.index(new_game_state),
             nf = self.label.ms_board.rce == 0,
             row = self.label.ms_board.row,
             column = self.label.ms_board.column,
