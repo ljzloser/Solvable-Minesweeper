@@ -4,6 +4,7 @@ import logging
 import ms_toollib as ms
 import utils
 import metasweeper_checksum
+from shared_types.enums import MouseState
 from config.constants import (
     READY, PLAYING, WIN, FAIL, DISPLAY, SHOW_DISPLAY, STUDY,
     MODE_STANDARD, MODE_WIN7, MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS,
@@ -105,28 +106,19 @@ class GameEngine:
 
     # ── 局面操作 ──────────────────────────────────────────
 
-    def layMine(self, i: int, j: int) -> None:
-        xx = self.row
-        yy = self.column
-        num = self.minenum
-        gm = self.gameMode
+    _LAY_MINE_DISPATCH = {
+        MODE_CLASSIC_NO_GUESS: utils.laymine_solvable,
+        MODE_STRONG_NO_GUESS: utils.laymine_solvable,
+        MODE_STRONG_GUESSABLE: utils.laymine_solvable,
+        MODE_WIN7: utils.laymine_op,
+    }
 
-        if gm in (MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS, MODE_STRONG_GUESSABLE):
-            Board, _ = utils.laymine_solvable(
-                self.board_constraint,
-                self.attempt_times_limit, (xx, yy, num, i, j))
-        elif gm in (MODE_STANDARD, MODE_WEAK_NO_GUESS, MODE_QUASI_NO_GUESS, MODE_WEAK_GUESSABLE):
-            Board, _ = utils.laymine(
-                self.board_constraint,
-                self.attempt_times_limit, (xx, yy, num, i, j))
-        elif gm == MODE_WIN7:
-            Board, _ = utils.laymine_op(
-                self.board_constraint,
-                self.attempt_times_limit, (xx, yy, num, i, j))
-        else:
-            Board, _ = utils.laymine(
-                self.board_constraint,
-                self.attempt_times_limit, (xx, yy, num, i, j))
+    def layMine(self, i: int, j: int) -> None:
+        laymine_func = self._LAY_MINE_DISPATCH.get(self.gameMode, utils.laymine)
+        Board, _ = laymine_func(
+            self.board_constraint,
+            self.attempt_times_limit,
+            (self.row, self.column, self.minenum, i, j))
 
         if self.ms_board:
             self.ms_board.board = Board
@@ -174,7 +166,7 @@ class GameEngine:
         if not self.cell_is_in_board(i, j):
             return
         mouse_state = self.ms_board.mouse_state
-        if mouse_state not in (5, 6):
+        if mouse_state not in (MouseState.Chording, MouseState.ChordingNotFlag):
             return
         game_board = self.ms_board.game_board
         if game_board[i][j] >= CELL_UNOPENED or game_board[i][j] == 0:

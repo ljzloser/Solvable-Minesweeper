@@ -29,8 +29,6 @@ class CoreBaseVideo(ms.BaseVideo):
             class Inner:
                 def __getitem__(self, inner_key):
                     return 0
-                def __getitem__(self, inner_key):
-                    return 0
             return Inner()
     game_board_poss = AlwaysZero()
 

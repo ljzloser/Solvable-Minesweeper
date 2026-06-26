@@ -5,10 +5,7 @@ import ms_toollib as ms
 from safe_eval import safe_eval
 from app_logger import logger
 
-from config.constants import CELL_UNOPENED, CELL_FLAGGED, CELL_MINE
-
-EnuLimit = 50
-assert EnuLimit >= 50
+from config.constants import CELL_UNOPENED, CELL_FLAGGED, CELL_MINE, ENU_LIMIT as EnuLimit
 
 
 def choose_3BV(board_constraint, attempt_times_limit, params):
@@ -138,14 +135,14 @@ def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
                          poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
     if not isinstance(board, list):
         board = board.into_vec_vec()
-    if all([board[x][y] != CELL_MINE for x, y in poses]):
+    if all(board[x][y] != CELL_MINE for x, y in poses):
         return board, True
     for i in range(len(board)):
         for j in range(len(board[0])):
             if game_board[i][j] == CELL_FLAGGED:
                 game_board[i][j] = CELL_UNOPENED
     game_board = ms.mark_board(game_board, remark=True)
-    if any([game_board[x][y] == CELL_FLAGGED for x, y in poses]):
+    if any(game_board[x][y] == CELL_FLAGGED for x, y in poses):
         return board, False
     poses = list(filter(lambda xy: game_board[xy[0]][xy[1]] == CELL_UNOPENED, poses))
 
