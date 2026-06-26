@@ -110,6 +110,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.japanese_action.triggered.connect(
             lambda: self.trans_language("ja_JP"))
         self.action_Arbiter_CSV.triggered.connect(self._export_arbiter_csv)
+        self.action_meta_bin.triggered.connect(self._export_meta_bin)
         self.action_import.triggered.connect(self._import_replays)
 
         # 查看菜单
@@ -1209,6 +1210,69 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         QMessageBox.information(self.mainWindow, "导出成功",
                                 f"已导出 {record_num} 条记录到\n{save_path}")
+
+    def _export_meta_bin(self):
+        dat_path = self.setting_path / 'stats.dat'
+        if not dat_path.exists() or dat_path.stat().st_size == 0:
+            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
+            return
+
+        safe_name = self.player_identifier.replace(' ', '_')
+        default_name = f"{safe_name}_meta.bin"
+        save_path, _ = QFileDialog.getSaveFileName(
+            self.mainWindow, "导出 meta.bin",
+            str(self.setting_path / default_name),
+            "BIN文件 (*.bin)"
+        )
+        if not save_path:
+            return
+
+        records = []
+        with open(dat_path, 'rb') as f:
+            f.read(1)  # version byte
+            while True:
+                len_bytes = f.read(2)
+                if not len_bytes or len(len_bytes) < 2:
+                    break
+                blob_length = int.from_bytes(len_bytes, 'big')
+                blob = f.read(blob_length)
+                if not blob or len(blob) < blob_length:
+                    break
+
+                nonce = blob[:12]
+                tag = blob[12:28]
+                ciphertext = blob[28:]
+
+                try:
+                    cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+                    records.append(utils.StatsRecord.decode(plaintext))
+                except Exception:
+                    continue
+
+        if not records:
+            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
+            return
+
+        win_records = [r for r in records if r.game_state == 6]
+        if not win_records:
+            QMessageBox.warning(self.mainWindow, "导出失败", "未找到记录")
+            return
+
+        with open(save_path, 'wb') as f:
+            for record in win_records:
+                binary_data = record.encode()
+                nonce = get_random_bytes(12)
+                cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+                ciphertext, tag = cipher.encrypt_and_digest(binary_data)
+                blob = nonce + tag + ciphertext
+                blob_length = len(blob)
+                len_bytes = blob_length.to_bytes(2, byteorder="big", signed=False)
+                f.write(len_bytes)
+                f.write(blob)
+
+        QMessageBox.information(self.mainWindow, "导出成功",
+                                f"已导出 {len(win_records)} 条记录到\n{save_path}")
 
     # 根据条件是否满足，尝试追加evfs文件
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）

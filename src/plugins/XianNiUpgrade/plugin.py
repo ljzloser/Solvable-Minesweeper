@@ -226,9 +226,9 @@ class XianNiUpgradePlugin(BasePlugin):
             elif level == 5:
                 if ioe >= 0.8:
                     if nf:
-                        exp_e = 10000 * ioe ** 50
+                        exp_e = 1200 * ioe ** 50
                     else:
-                        exp_e = 100 * ioe ** 10
+                        exp_e = 1 * ioe ** 20
 
 
         total = int(exp_b + exp_r + exp_t + exp_e)

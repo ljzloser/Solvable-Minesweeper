@@ -681,6 +681,7 @@
       <string>导出</string>
      </property>
      <addaction name="action_Arbiter_CSV"/>
+     <addaction name="action_meta_bin"/>
     </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
@@ -1141,7 +1142,13 @@
   </action>
   <action name="action_Arbiter_CSV">
    <property name="text">
-    <string>Arbiter CSV</string>
+    <string notr="true">Arbiter CSV</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">Arbiter CSV</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">Arbiter CSV</string>
    </property>
    <property name="font">
     <font>
@@ -1181,6 +1188,23 @@
    </property>
    <property name="toolTip">
     <string notr="true">日本語</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_meta_bin">
+   <property name="text">
+    <string notr="true">meta.bin</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">meta.bin</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">meta.bin</string>
    </property>
    <property name="font">
     <font>
