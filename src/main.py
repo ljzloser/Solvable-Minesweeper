@@ -1,6 +1,5 @@
 import time
 from PyQt5 import QtWidgets
-# from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QLocalSocket, QLocalServer
 import sys
@@ -11,9 +10,9 @@ import mainWindowGUI as mainWindowGUI
 import mineSweeperGUI as mineSweeperGUI
 import ms_toollib as ms
 import ctypes
-# from ctypes import wintypes
 from pathlib import Path
 from utils import get_paths, patch_env
+from app_logger import logger
 
 # 插件系统（新）
 from plugin_sdk import GameServerBridge
@@ -78,6 +77,7 @@ def cli_check_file(file_path: str) -> int:
                     try:
                         video.parse()
                     except:
+                        logger.warning("Failed to parse evf file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         checksum = ui.checksum_guard.get_checksum(
@@ -90,6 +90,7 @@ def cli_check_file(file_path: str) -> int:
                     try:
                         videos.parse()
                     except:
+                        logger.warning("Failed to parse evfs file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         if videos.len() <= 0:
@@ -197,7 +198,7 @@ if __name__ == "__main__":
                     cmd, cwd=cwd, env=get_env_for_subprocess(),
                 )
             except Exception as e:
-                print(f"[WARN] Failed to start plugin_manager: {e}")
+                logger.warning(f"Failed to start plugin_manager: {e}")
                 plugin_process = None
 
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
@@ -229,7 +230,7 @@ if __name__ == "__main__":
                 # 自定义模式，使用传入的参数
                 rows, cols, mines = cmd.rows, cmd.cols, cmd.mines
 
-            print(
+            logger.info(
                 f"[NewGameCommand] level={cmd.level}, rows={rows}, cols={cols}, mines={mines}")
             ui.setBoard_and_start(rows, cols, mines)
             return CommandResponse(request_id=cmd.request_id, success=True)
@@ -241,7 +242,7 @@ if __name__ == "__main__":
             if 'mouse_click' not in ui._allowed_controls:
                 return CommandResponse(request_id=cmd.request_id, success=False)
 
-            print(
+            logger.info(
                 f"[MouseClickCommand] row={cmd.row}, col={cmd.col}, button={cmd.button}")
             success = ui.execute_cell_click(cmd.row, cmd.col, cmd.button)
             return CommandResponse(request_id=cmd.request_id, success=success)

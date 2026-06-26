@@ -10,11 +10,10 @@ from typing import List, Tuple, Union
 from dataclasses import dataclass
 # import time
 from safe_eval import safe_eval
-# import configparser
+from app_logger import logger
 from PyQt5 import QtCore
 
 import ms_toollib as ms
-# import math
 from PyQt5.QtCore import QCoreApplication
 
 # 从 shared_types 导入共享枚举
@@ -111,6 +110,10 @@ def choose_3BV(board_constraint, attempt_times_limit, params):
                 expression_flag = safe_eval(
                     board_constraint, globals=constraints)
             except:
+                logger.warning(
+                    "board_constraint eval failed",
+                    exc_info=True,
+                )
                 return (b, success_flag)
             if expression_flag:
                 return (b, success_flag)
@@ -692,40 +695,6 @@ def board_bytes_to_board(rows: int, cols: int, board_bytes: bytes) -> list[list[
 # 局面至少大于4*4
 # 返回0或1
 
-def print2(arr, mode=0):
-    # 调试时便于打印 print2(BoardofGame)
-    if mode == 0:
-        for i in arr:
-            for j in i:
-                print('%2.d' % j, end=', ')
-                print('%2.d' % j, end=', ')
-            print()
-    elif mode == 1:
-        for i in arr:
-            for j in i:
-                print('%2.d' % j.num, end=', ')
-                print('%2.d' % j.num, end=', ')
-            print()
-    elif mode == 2:
-        for i in arr:
-            for j in i:
-                print('%2.d' % j.status, end=', ')
-                print('%2.d' % j.status, end=', ')
-            print()
-
-
-def debug_ms_board(ms_board):
-    for i in range(ms_board.events_len):
-        print(f"{ms_board.events_time(i)}: '{ms_board.events_mouse(i)}', ({ms_board.events_y(i)}, {ms_board.events_x(i)})")
-
-
-# def updata_ini(file_name: str, data):
-#     conf = configparser.ConfigParser()
-#     conf.read(file_name, encoding='utf-8')
-#     for i in data:
-#         conf.set(i[0], i[1], str(i[2]))
-#     conf.write(open(file_name, "w", encoding='utf-8'))
-
 def main():
     # # 测试枚举法判雷速度算例
     # time1 = time.time()
@@ -844,11 +813,9 @@ def main():
     ]
 
     result = board_list_to_bytes(test_board)
-    print(''.join(f'{byte:08b}' for byte in result))  # 输出二进制十六进制，可验证
-    ...
+    logger.info(''.join(f'{byte:08b}' for byte in result))
 
 
 if __name__ == '__main__':
-
     main()
     

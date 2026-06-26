@@ -6,6 +6,7 @@ import superGUI
 from shared_types.events import ButtonClickEvent
 from shared_types.enums import ButtonEventType, MouseState
 from plugin_sdk.server_bridge import GameServerBridge
+from app_logger import logger
 
 # 局面中的鼠标和滚轮事件
 
@@ -22,7 +23,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
             )
             GameServerBridge.instance().send_event(event)
         except Exception:
-            pass
+            logger.warning("Failed to send button event to plugins", exc_info=True)
 
     def _step_and_send(self, mouse_event: str, i: int, j: int):
         old = MouseState(self.label.ms_board.mouse_state)

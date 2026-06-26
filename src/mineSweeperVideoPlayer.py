@@ -8,6 +8,7 @@ import  videoControl
 import ms_toollib as ms
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 from mainWindowGUI import MainWindow
+from app_logger import logger
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):
@@ -60,6 +61,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             else:
                 return
         except:
+            logger.warning(f"Failed to open video file: {openfile_name}")
             return
         
         

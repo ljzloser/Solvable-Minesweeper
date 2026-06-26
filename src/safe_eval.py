@@ -188,50 +188,45 @@ elif sys.version_info[0:2] == (3, 10):
 
 elif sys.version_info[0:2] == (3, 12):
     opcode_whitelist = {
-        '<8>',
-        '<6>',
-        '<10>',
-        '<7>',
-        '<13>',
-        '<14>',
-        '<16>',
-        '<18>',
         "RESUME",
         "CACHE",
         "LOAD_NAME",
-        "CALL",
-        "RETURN_VALUE",
         "LOAD_CONST",
+        "LOAD_FAST",
+        "LOAD_FAST_AND_CLEAR",
         "PUSH_NULL",
-        "UNARY_NEGATIVE",
-        "BINARY_OP",
-        "POP_JUMP_IF_FALSE",
         "POP_TOP",
-        "FORMAT_VALUE",
-        "END_FOR",
-        "BUILD_STRING",
-        "INTERPRETER_EXIT",
-        "UNPACK_SEQUENCE",
-        "COPY",
-        "END_SEND",
+        "RETURN_VALUE",
+        "RETURN_CONST",
+        "CALL",
+        "BINARY_OP",
+        "BINARY_SUBSCR",
         "COMPARE_OP",
-        'BUILD_TUPLE',
-        'BUILD_LIST',
-        'BUILD_SET',
-        'BUILD_MAP',
-        'BUILD_CONST_KEY_MAP',
-        'GET_ITER',
-        'LOAD_FAST_AND_CLEAR',
-        'FOR_ITER',
-        'STORE_FAST',
-        'LIST_APPEND',
-        'NOP',
-        'SWAP',
-        'RERAISE',
-        'UNARY_NOT',
-        'STORE_SLICE',
-        'SET_ADD',
-        'BINARY_SUBSCR',
+        "CONTAINS_OP",
+        "POP_JUMP_IF_FALSE",
+        "POP_JUMP_IF_TRUE",
+        "JUMP_BACKWARD",
+        "GET_ITER",
+        "FOR_ITER",
+        "END_FOR",
+        "COPY",
+        "SWAP",
+        "FORMAT_VALUE",
+        "BUILD_STRING",
+        "BUILD_TUPLE",
+        "BUILD_LIST",
+        "BUILD_SET",
+        "BUILD_MAP",
+        "BUILD_CONST_KEY_MAP",
+        "STORE_FAST",
+        "LIST_APPEND",
+        "LIST_EXTEND",
+        "MAP_ADD",
+        "SET_ADD",
+        "SET_UPDATE",
+        "UNARY_NEGATIVE",
+        "UNARY_NOT",
+        "RERAISE",
         }
     
 else:
@@ -273,23 +268,12 @@ def raise_if_code_unsafe(code, globals=None, locals=None):
                 )
     del bad_ops
 
-    code_bytes = code.co_code
-
-    def code_size(opcode):
-        if opcode >= dis.HAVE_ARGUMENT:
-            return 3
-        else:
-            return 1
-
-    i = 0
-    code_len = len(code_bytes)
-    while i < code_len:
-        opcode = code_bytes[i]
-
-        if opcode not in opcode_whitelist_index:
-            raise RuntimeError("OpCode %r not in white-list %r" % (dis.opname[opcode], opcode))
-
-        i += code_size(opcode)
+    for instr in dis.get_instructions(code):
+        if instr.opcode not in opcode_whitelist_index:
+            raise RuntimeError(
+                "OpCode %r not in white-list %r" %
+                (instr.opname, instr.opcode)
+            )
 
 
 def safe_eval(source, globals=None):
@@ -306,28 +290,8 @@ def safe_eval(source, globals=None):
     raise_if_code_unsafe(code, globals=globals, locals=locals)
 
     ans = eval(code, globals, locals)
-    globals.pop('__builtins__') # 删去副作用
+    if globals is not None:
+        globals.pop('__builtins__', None)
     return ans
-
-if __name__ == "__main__":
-    constraints = {
-        "bbbv": 67,
-        "right": 8888,
-        "right_s": 11.9
-        }
-    a = safe_eval("all([any([min(22+2, 6), 7]), 5, -4])", constraints)
-    a = safe_eval("f'{right}@{right_s:.3f}'", constraints)
-    a = safe_eval("sin(22+2) / cos(-50) - (log(7.21))", constraints)
-    a = safe_eval("bbbv >=4 and right < 5 or right_s == 2.3", constraints)
-    a = safe_eval("[min(22+2, 6), 7][1]", constraints)
-    a = safe_eval("{'a':right_s, 'ee':bbbv/right}['ee']", constraints)
-    a = safe_eval("[i**1.2 for i in [bbbv, right]]", constraints)
-    a = safe_eval("[log(i) * sin(cos(i)) for i in [bbbv, right]][bbbv-67]", constraints)
-    a = safe_eval("{i for i in (5,1,sin(cos(88)))}", constraints)
-    a = safe_eval("f'mode ({bbbv}x{bbbv}/{bbbv})'", constraints)
-    
-    
-    
-    
 
 
