@@ -37,6 +37,7 @@ class IniConfig:
         # QSettings的键名是无序的，无法使用
         # ConfigParser会将%转义，而这里要求%是原义
         self.config = configparser.RawConfigParser()
+        self.config.optionxform = str
         self.config.default_section = ""
         # 如果文件不存在则创建
         if not os.path.exists(file_path):
