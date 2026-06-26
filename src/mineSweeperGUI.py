@@ -1205,6 +1205,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def predefined_Board(self, k):
         # 按快捷键123456时的回调
+        self.game_state = 'ready'
         row = self.predefinedBoardPara[k]['row']
         column = self.predefinedBoardPara[k]['column']
         mine_num = self.predefinedBoardPara[k]['mine_num']
