@@ -145,18 +145,18 @@ class GameEngine:
                 b[i][j] = CELL_MINE
                 self.ms_board.board = b
             elif code == 2:
-                b, _ = utils.enumerateChangeBoard(board, game_board, [(i, j)])
+                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
         elif gm == MODE_QUASI_NO_GUESS:
             code = ms.is_guess_while_needless(game_board, (i, j))
             if code == 2:
-                b, _ = utils.enumerateChangeBoard(board, game_board, [(i, j)])
+                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
         elif gm in (MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE):
             if board[i][j] == CELL_MINE:
-                b, _ = utils.enumerateChangeBoard(board, game_board, [(i, j)])
+                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
 
@@ -213,7 +213,7 @@ class GameEngine:
                     must_guess = False
                     break
             if must_guess:
-                b, _ = utils.enumerateChangeBoard(
+                b, _ = utils.enumerate_change_board(
                     board, self.ms_board.game_board,
                     not_mine_round + is_mine_round)
                 self.ms_board.board = b
@@ -230,12 +230,12 @@ class GameEngine:
                     must_guess = False
                     break
             if must_guess:
-                b, _ = utils.enumerateChangeBoard(
+                b, _ = utils.enumerate_change_board(
                     board, self.ms_board.game_board,
                     not_mine_round + is_mine_round)
                 self.ms_board.board = b
         elif gm in (MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE):
-            b, _ = utils.enumerateChangeBoard(
+            b, _ = utils.enumerate_change_board(
                 board, self.ms_board.game_board,
                 not_mine_round + is_mine_round)
             self.ms_board.board = b

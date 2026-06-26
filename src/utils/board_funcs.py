@@ -130,7 +130,7 @@ def laymine_solvable(board_constraint, attempt_times_limit, params):
     return board
 
 
-def enumerateChangeBoard(board: ms.EvfVideo | List[List[int]],
+def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
                          game_board: List[List[int]],
                          poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
     if not isinstance(board, list):

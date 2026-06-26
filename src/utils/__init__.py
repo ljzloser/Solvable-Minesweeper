@@ -9,7 +9,7 @@ from utils.board_funcs import (
     get_mine_times_limit,
     laymine_solvable_auto,
     laymine_solvable,
-    enumerateChangeBoard,
+    enumerate_change_board,
     board_list_to_bytes,
     board_bytes_to_board,
 )
