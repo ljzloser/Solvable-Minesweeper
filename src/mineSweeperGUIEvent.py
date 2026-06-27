@@ -58,10 +58,9 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                 if self.label.ms_board.mouse_state == MouseState.DownUp.value and\
                         self.label.ms_board.game_board[i // self.pixSize][j // self.pixSize] == CELL_UNOPENED:
                     # 正式埋雷开始
-                    self.layMine(i // self.pixSize, j // self.pixSize)
+                    used_pending = self.layMine(i // self.pixSize, j // self.pixSize)
 
-                    # 只有没有"局面约束"时，录像才可能是"official"的
-                    if self.board_constraint:
+                    if any(used_pending, self.board_constraint):
                         self.game_state = JOKING
                     else:
                         self.game_state = PLAYING

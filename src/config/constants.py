@@ -8,8 +8,8 @@ STUDY = 'study'
 DISPLAY = 'display'
 SHOW_DISPLAY = 'showdisplay'
 SHOW = 'show'
-JO_WIN = 'jowin'
-JO_FAIL = 'jofail'
+JOWIN = 'jowin'
+JOFAIL = 'jofail'
 MODIFY = 'modify'
 
 # ── 游戏模式 ──────────────────────────────────────────────
@@ -93,16 +93,16 @@ GAME_EVENT_STATE_MAP = {
     WIN: 3,
     FAIL: 4,
     JOKING: 2,
-    JO_WIN: 3,
-    JO_FAIL: 4,
+    JOWIN: 3,
+    JOFAIL: 4,
     SHOW: 5,
     STUDY: 6,
     DISPLAY: 7,
     SHOW_DISPLAY: 8,
 }
 
-# ── 游戏结束状态索引 ──────────────────────────────────────
-END_STATE_ORDER = [
+# ── 游戏状态索引 ──────────────────────────────────────
+GAME_STATE_ORDER = [
     READY, STUDY, SHOW, PLAYING, JOKING, FAIL,
-    WIN, JO_FAIL, JO_WIN, DISPLAY, SHOW_DISPLAY,
+    WIN, JOFAIL, JOWIN, DISPLAY, SHOW_DISPLAY,
 ]

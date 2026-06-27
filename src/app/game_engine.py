@@ -36,7 +36,8 @@ class GameEngine:
         self.attempt_times_limit: int = 100000
         self._allowed_controls: set[str] = set()
 
-        # 状态切换时需要在GUI层处理的逻辑
+        self.pending_boards: list[dict] = []
+
         self._state_change_handlers = {
             PLAYING: None,  # 离开playing时的回调
         }
@@ -113,7 +114,13 @@ class GameEngine:
         MODE_WIN7: utils.laymine_op,
     }
 
-    def layMine(self, i: int, j: int) -> None:
+    def layMine(self, i: int, j: int) -> bool:
+        if self.pending_boards:
+            pb = self.pending_boards.pop(0)
+            board = pb.get("board")
+            if board and self.ms_board:
+                self.ms_board.board = board
+            return True
         laymine_func = self._LAY_MINE_DISPATCH.get(self.gameMode, utils.laymine)
         Board, _ = laymine_func(
             self.board_constraint,
@@ -122,6 +129,7 @@ class GameEngine:
 
         if self.ms_board:
             self.ms_board.board = Board
+        return False
 
     def ai(self, i: int, j: int) -> None:
         if not self.ms_board:

@@ -44,13 +44,14 @@ from app.game_engine import GameEngine
 from app.board_renderer import BoardRenderer
 from config.constants import (
     READY, PLAYING, JOKING, WIN, FAIL, STUDY, DISPLAY, SHOW_DISPLAY, SHOW,
+    JOWIN, JOFAIL,
     MODE_STANDARD, MODE_WIN7, MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS,
     MODE_WEAK_NO_GUESS, MODE_QUASI_NO_GUESS, MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE,
     FACE_SMILE,
     BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
     IDX_BEGINNER, IDX_INTERMEDIATE, IDX_EXPERT, IDX_CUSTOM,
     MIN_PIX_SIZE, MAX_PIX_SIZE,
-    GAME_EVENT_STATE_MAP, END_STATE_ORDER,
+    GAME_EVENT_STATE_MAP, GAME_STATE_ORDER,
     NO_RECORD,
 )
 
@@ -141,6 +142,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.frameShortcut7.activated.connect(lambda: self.predefined_Board(6))
         self.frameShortcut8.activated.connect(self.showScores)
         self.frameShortcut9.activated.connect(self.screenShot)
+        self.frameShortcutF3.activated.connect(self.replay_current_board)
         self.shortcut_hidden_score_board.activated.connect(
             self.hidden_score_board)
 
@@ -352,7 +354,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 发信号给插件，游戏结束了
         board = self.label.ms_board.board
         event = GameFinishedEvent(
-            game_state = END_STATE_ORDER.index(new_game_state),
+            game_state = GAME_STATE_ORDER.index(new_game_state),
             nf = self.label.ms_board.rce == 0,
             row = self.label.ms_board.row,
             column = self.label.ms_board.column,
@@ -458,7 +460,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def layMine(self, i, j):
         self._sync_engine()
-        self.engine.layMine(i, j)
+        used_pending = self.engine.layMine(i, j)
+        if used_pending:
+            self.game_state = JOKING
+        return used_pending
 
     def timeCount(self):
         # 10ms时间步进的回调，改计数器、改右上角时间
@@ -618,6 +623,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # self.label.paintProbability = False
         # self.label.paint_cursor = False
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
+
+    def replay_current_board(self):
+        if self.game_state not in (WIN, FAIL, DISPLAY, SHOW_DISPLAY, JOWIN, JOFAIL):
+            return
+        board = [row[:] for row in self.label.ms_board.board]
+        gm = getattr(self.label.ms_board, 'mode', self.gameMode)
+        self.engine.pending_boards.append({
+            "board": board,
+            "game_mode": gm,
+        })
+        self.gameRestart()
 
     # 游戏结束画残局，改状态。前端的游戏结束逻辑
     def gameFinished(self):

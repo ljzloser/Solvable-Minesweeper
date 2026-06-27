@@ -275,6 +275,7 @@ class Ui_MainWindow(Ui_MainWindow):
         self.frameShortcut6 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_5), MainWindow)
         self.frameShortcut7 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_6), MainWindow)
         self.frameShortcut4 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F2), MainWindow)
+        self.frameShortcutF3 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F3), MainWindow)
         self.frameShortcut8 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space), MainWindow)
         self.frameShortcut8.setAutoRepeat(False)
         self.frameShortcut9 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+Space"), MainWindow)
