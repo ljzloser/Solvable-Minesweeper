@@ -178,6 +178,11 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         # 改成录像的国旗
         self.set_country_flag(self.label.ms_board.country)
 
+        # 更新左上角雷数显示
+        self.minenum = video.mine_num
+        self.mineUnFlagedNum = self.minenum
+        self.showMineNum(self.mineUnFlagedNum)
+
         # self.timer_video.start(10)
         self.video_replay()
         
