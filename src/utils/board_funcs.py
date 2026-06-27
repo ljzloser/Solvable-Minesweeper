@@ -196,6 +196,9 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
                               all_solution)
         all_solution = list(all_solution)
         if not all_solution:
+            # https://github.com/eee555/Metasweeper/issues/100
+            # issue提到弱可猜在局面不复杂且概率不为0时失败
+            # 其实是因为求解器考虑到了剩余雷数，找不到“此处不是雷”且总雷数不变的解
             return board, False
     if constraint_mine_num > 0:
         solution = choice(all_solution)
