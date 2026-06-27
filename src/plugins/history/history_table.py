@@ -41,6 +41,8 @@ class HistoryTable(QWidget):
     # 信号：列显示配置变化 (show_fields_json)
     show_fields_changed = pyqtSignal(str)
 
+    NF_COLUMN_WIDTH = 50
+
     HEADERS = [
         "replay_id",
         "game_state",
@@ -99,18 +101,25 @@ class HistoryTable(QWidget):
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.model.modelReset.connect(self._adjust_board_column_width)
-        self._adjust_board_column_width()
+        self.model.modelReset.connect(self._apply_column_widths)
+        self._apply_column_widths()
 
     def load(self, data: list[HistoryData]):
         self.model.update_data(data)
 
-    def _adjust_board_column_width(self):
-        if "board" in self.model._visible_headers:
-            col = self.model._visible_headers.index("board")
+    def _apply_column_widths(self):
+        visible_headers = getattr(self.model, "_visible_headers", [])
+
+        if "board" in visible_headers:
+            col = visible_headers.index("board")
             self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Fixed)
-            width = self.table.fontMetrics().width('\u4e2d' * 30 + '  ')
+            width = self.table.fontMetrics().width('中' * 30 + '  ')
             self.table.setColumnWidth(col, width)
+
+        if "nf" in visible_headers:
+            col = visible_headers.index("nf")
+            self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Fixed)
+            self.table.setColumnWidth(col, self.NF_COLUMN_WIDTH)
 
     def refresh(self):
         parent_widget = self.parent()
