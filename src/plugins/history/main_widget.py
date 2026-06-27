@@ -134,9 +134,6 @@ class HistoryMainWidget(QWidget):
         self.columns_button.setText(_translate("Form", "列设置"))
         self.previous_button.setText(_translate("Form", "上一页"))
         self.next_button.setText(_translate("Form", "下一页"))
-        self.filter_label.setText(_translate("Form", "过滤: 无"))
-        self.sort_label.setText(_translate("Form", "排序: 无"))
-        self.limit_label.setText(_translate("Form", "共0行,0页"))
 
     def set_filter_sort_state(self, filter_json: str, sort_json: str) -> None:
         """设置排序和过滤状态（由插件调用）"""
@@ -250,6 +247,8 @@ class HistoryMainWidget(QWidget):
 
     def load_data(self):
         if not self._db_path.exists():
+            self.page_spin.setMaximum(1)
+            self.limit_label.setText(_translate("Form", "共0行,0页"))
             return
 
         try:

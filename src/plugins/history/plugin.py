@@ -151,6 +151,8 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
     def on_initialized(self) -> None:
         self._init_db()
+        if hasattr(self, '_widget'):
+            self._widget.load_data()
         self.register_service(self, protocol=HistoryService)
         self.logger.info("历史记录插件已初始化，HistoryService 已注册")
 
