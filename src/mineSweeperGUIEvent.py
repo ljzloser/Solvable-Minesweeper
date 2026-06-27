@@ -60,7 +60,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                     # 正式埋雷开始
                     used_pending = self.layMine(i // self.pixSize, j // self.pixSize)
 
-                    if any(used_pending, self.board_constraint):
+                    if any((used_pending, self.board_constraint, self._allowed_controls)):
                         self.game_state = JOKING
                     else:
                         self.game_state = PLAYING

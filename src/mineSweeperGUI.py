@@ -627,7 +627,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
     def replay_current_board(self):
         if self.game_state not in (WIN, FAIL, DISPLAY, SHOW_DISPLAY, JOWIN, JOFAIL):
             return
-        board = [row[:] for row in self.label.ms_board.board]
+        board = self.label.ms_board.board.into_vec_vec() if hasattr(self.label.ms_board.board, 'into_vec_vec') else self.label.ms_board.board
         gm = getattr(self.label.ms_board, 'mode', self.gameMode)
         self.engine.pending_boards.append({
             "board": board,
