@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtGui
 from pathlib import Path
 import os
 import ms_toollib as ms
-from app_logger import logger
+from utils.app_logger import logger
 
 
 class CommentCheckBox(QWidget):

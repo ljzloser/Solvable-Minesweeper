@@ -2,8 +2,8 @@ from random import shuffle, choice
 from typing import List, Tuple
 
 import ms_toollib as ms
-from safe_eval import safe_eval
-from app_logger import logger
+from utils.safe_eval import safe_eval
+from utils.app_logger import logger
 
 from config.constants import CELL_UNOPENED, CELL_FLAGGED, CELL_MINE, ENU_LIMIT as EnuLimit
 

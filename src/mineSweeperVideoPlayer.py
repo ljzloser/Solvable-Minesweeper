@@ -3,14 +3,14 @@ from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
 from PyQt5.QtGui import QPixmap
 
 from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
-import gameDefinedParameter
-import  videoControl
+from dialogs import gameDefinedParameter
+from dialogs import videoControl
 import ms_toollib as ms
 from config.constants import DISPLAY, FACE_SMILE, FACE_CLICK
 from shared_types.enums import MouseState
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 from mainWindowGUI import MainWindow
-from app_logger import logger
+from utils.app_logger import logger
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):

@@ -7,7 +7,7 @@ import configparser
 from PyQt5.QtGui import QPalette, QPixmap, QIcon
 from ui.ui_main_board import Ui_MainWindow
 from pathlib import Path
-from gameScoreBoard import gameScoreBoardManager
+from dialogs.gameScoreBoard import gameScoreBoardManager
 from country_name import country_name
 import os, sys
 from typing import List, Tuple
@@ -18,10 +18,10 @@ from config.constants import (
     FACE_SMILE, FACE_CLICK, FACE_LOST, FACE_WIN, FACE_SMILE_DOWN,
     LEVEL_NAME_BEGINNER, LEVEL_NAME_INTERMEDIATE, LEVEL_NAME_EXPERT, LEVEL_NAME_CUSTOM,
 )
-from app_logger import logger
+from utils.app_logger import logger
 from plugin_sdk import GameServerBridge
 
-version = "元3.3.1"
+version = "元3.3.2"
 # AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
 STATS_DAT_KEY = bytes([173,239,218,129,84,35,95,237,23,47,166,30,121,187,124,187])  # 16字节 AES-128 key
 

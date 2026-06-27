@@ -11,7 +11,7 @@ from config.constants import (
 from shared_types.events import ButtonClickEvent
 from shared_types.enums import ButtonEventType, MouseState
 from plugin_sdk.server_bridge import GameServerBridge
-from app_logger import logger
+from utils.app_logger import logger
 
 # 局面中的鼠标和滚轮事件
 

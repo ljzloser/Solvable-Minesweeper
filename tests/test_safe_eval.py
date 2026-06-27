@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 
 # safe_eval 无需 Qt，可以独立测试
-from safe_eval import safe_eval, raise_if_code_unsafe
+from utils.safe_eval import safe_eval, raise_if_code_unsafe
 
 
 class TestSafeEval:

@@ -4,7 +4,7 @@ from PyQt5.QtGui import QDesktopServices, QFont, QMouseEvent, QPainter, QPixmap,
 from PyQt5.QtWidgets import QWidget, QDialog, QScrollArea, QLabel, QVBoxLayout, QHBoxLayout, QSpacerItem, \
     QSizePolicy, QPushButton, QFrame, QMessageBox, QFormLayout, QProgressDialog, QTextEdit, QComboBox
 
-from githubApi import GitHub, ReleaseInfo, PingThread
+from network.githubApi import GitHub, ReleaseInfo, PingThread
 
 
 class AnimationButton(QPushButton):

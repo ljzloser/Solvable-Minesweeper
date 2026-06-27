@@ -2,7 +2,7 @@
 import utils
 from ui.ui_score_board import Ui_Form
 from ui.uiComponents import RoundQWidget
-from safe_eval import safe_eval
+from utils.safe_eval import safe_eval
 from config.constants import BOARD_READY, BOARD_PLAYING, BOARD_WIN, BOARD_LOSS
 from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QHeaderView, QAbstractItemDelegate
 from PyQt5 import QtCore, QtGui

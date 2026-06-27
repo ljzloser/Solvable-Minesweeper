@@ -4,19 +4,19 @@ from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect, QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 import msgspec
 from textdistance import length
-import gameDefinedParameter
+from dialogs import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
 from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent, CloseEvent, ShowPluginManagerEvent
 import superGUI
-import gameAbout
-import gameSettings
-import gameSettingShortcuts
-import gameAdvancedSettings
+from dialogs import gameAbout
+from dialogs import gameSettings
+from dialogs import gameSettingShortcuts
+from dialogs import gameAdvancedSettings
 import captureScreen
 import mine_num_bar
-import gameRecordPop
-from CheckUpdateGui import CheckUpdateGui
-from githubApi import GitHub, SourceManager
+from dialogs import gameRecordPop
+from dialogs.CheckUpdateGui import CheckUpdateGui
+from network.githubApi import GitHub, SourceManager
 import win32con
 import win32gui
 import utils
