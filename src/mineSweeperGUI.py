@@ -463,6 +463,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         used_pending = self.engine.layMine(i, j)
         if used_pending:
             self.game_state = JOKING
+            self.gameMode = self.engine.gameMode
         return used_pending
 
     def timeCount(self):
@@ -629,6 +630,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             return
         board = self.label.ms_board.board.into_vec_vec() if hasattr(self.label.ms_board.board, 'into_vec_vec') else self.label.ms_board.board
         gm = getattr(self.label.ms_board, 'mode', self.gameMode)
+        self.gameMode = gm
         self.engine.pending_boards.append({
             "board": board,
             "game_mode": gm,

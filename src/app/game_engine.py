@@ -6,7 +6,7 @@ import utils
 import metasweeper_checksum
 from shared_types.enums import MouseState
 from config.constants import (
-    READY, PLAYING, WIN, FAIL, DISPLAY, SHOW_DISPLAY, STUDY,
+    READY, PLAYING, WIN, FAIL, JOWIN, JOFAIL, DISPLAY, SHOW_DISPLAY, STUDY,
     MODE_STANDARD, MODE_WIN7, MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS,
     MODE_WEAK_NO_GUESS, MODE_QUASI_NO_GUESS, MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE,
     MIN_PIX_SIZE, MAX_PIX_SIZE,
@@ -15,7 +15,7 @@ from config.constants import (
     FILENAME_LEVEL_EXPERT, FILENAME_LEVEL_CUSTOM,
     NO_RECORD,
     CELL_UNOPENED, CELL_FLAGGED, CELL_MINE,
-    BOARD_WIN,
+    BOARD_WIN, BOARD_PLAYING, BOARD_PreFlaging, BOARD_Display
 )
 
 
@@ -61,11 +61,8 @@ class GameEngine:
 
     @gameMode.setter
     def gameMode(self, value: int) -> None:
-        if self.ms_board and hasattr(self.ms_board, 'mode'):
-            try:
-                self.ms_board.mode = value
-            except Exception:
-                logging.getLogger(__name__).exception("Failed to set ms_board.mode")
+        if self.ms_board and hasattr(self.ms_board, 'mode') and self.ms_board.game_board_state not in (BOARD_PLAYING, BOARD_PreFlaging, BOARD_Display):
+            self.ms_board.mode = value
         self._game_mode = value
 
     @property
@@ -120,6 +117,8 @@ class GameEngine:
             board = pb.get("board")
             if board and self.ms_board:
                 self.ms_board.board = board
+            gm = pb.get("game_mode", MODE_STANDARD)
+            self.gameMode = gm
             return True
         laymine_func = self._LAY_MINE_DISPATCH.get(self.gameMode, utils.laymine)
         Board, _ = laymine_func(
@@ -284,6 +283,7 @@ class GameEngine:
 
     @staticmethod
     def checksum_module_ok():
+        # return True
         return hashlib.sha256(
             bytes(metasweeper_checksum.get_self_key())
         ).hexdigest() == \

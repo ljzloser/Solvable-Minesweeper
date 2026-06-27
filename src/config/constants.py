@@ -41,6 +41,8 @@ BOARD_READY = 1
 BOARD_PLAYING = 2
 BOARD_WIN = 3
 BOARD_LOSS = 4
+BOARD_PreFlaging = 5
+BOARD_Display = 6
 
 # ── 游戏局面格子编码 ──────────────────────────────────────
 CELL_UNOPENED = 10
