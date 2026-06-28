@@ -446,7 +446,7 @@ class XianNiUpgradePlugin(BasePlugin):
     def _on_game_finished(self, event: GameFinishedEvent):
         # self.logger.info(event.game_state)
         # self.logger.info(event)
-        if event.game_state != 6 or not event.is_official:
+        if event.game_state != 6 or not event.is_fair:
             return
 
         pid = self._get_or_create_pid(event.player_identifier)
