@@ -94,7 +94,7 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                     self.label.update()
                     return
                 elif self.label.ms_board.game_board_state == BOARD_LOSS:
-                    # 点一下不可能踩雷，但为完整性需要这样写
+                    # 点一下可能踩雷（F3重开）
                     self.gameFailed()
                     self.label.update()
                     return

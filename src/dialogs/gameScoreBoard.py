@@ -65,7 +65,7 @@ class gameScoreBoardManager():
     #                 "right_s", "double_s", "path", "flag", "flag_s"]
     # video_static = ["bbbv", "op", "isl", "cell0", "cell1", "cell2", "cell3",
     #                 "cell4", "cell5", "cell6", "cell7", "cell8", "fps"]
-    # video_dynamic = ["etime", "stnb", "rqp", "qg", "ioe", "thrp", "corr", "ce",
+    # video_dynamic = ["etime", "stnb", "rqp", "ioe", "thrp", "corr", "ce",
     #                  "ce_s", "bbbv_solved", "bbbv_s", "op_solved", "isl_solved"]
     game_index = ["race_designator", "mode", "rtime", "left", "right", "double",
                   "cl", "left_s", "right_s", "double_s", "path", "flag", "flag_s"]
@@ -232,6 +232,8 @@ class gameScoreBoardManager():
                 "rce": ms_board.rce,
                 "lce": ms_board.lce,
                 "dce": ms_board.dce,
+                "rqp": ms_board.rqp,
+                "qg": ms_board.qg,
                 "pluck": ms_board.pluck,
                 })
         # if index_type >= 3:
