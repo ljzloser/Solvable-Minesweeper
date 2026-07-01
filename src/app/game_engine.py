@@ -168,12 +168,13 @@ class GameEngine:
             return
 
     def chording_ai(self, i: int, j: int) -> None:
+        print(f"chording_ai called with i={i}, j={j}")
         if not self.ms_board:
             return
         if not self.cell_is_in_board(i, j):
             return
         mouse_state = self.ms_board.mouse_state
-        if mouse_state not in (MouseState.Chording, MouseState.ChordingNotFlag):
+        if mouse_state not in (MouseState.Chording.value, MouseState.ChordingNotFlag.value):
             return
         game_board = self.ms_board.game_board
         if game_board[i][j] >= CELL_UNOPENED or game_board[i][j] == 0:

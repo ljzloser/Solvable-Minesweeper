@@ -98,6 +98,7 @@ class TestEnumerateChangeBoard:
     CELL_UNOPENED=10, CELL_FLAGGED=11, CELL_MINE=-1
     game_board: 10=未开, 11=标雷, 0~8=已开数字
     board: -1=雷, 0~8=数字
+    python -m pytest tests/test_utils.py::TestEnumerateChangeBoard::test_chording -v
     """
 
     def test_no_mine_at_poses_returns_original(self):
@@ -145,17 +146,32 @@ class TestEnumerateChangeBoard:
         assert ok is True
         print("result:", result)
 
-    def test_failure(self):
+    def test_chording(self):
         """填入一组会使 enumerate_change_board 失败 (返回 False) 的参数"""
         board = [
-            # TODO: 填入 board
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 1, 1, 1, 0, 0, 0],
+            [ 0, 0, 1,-1, 1, 0, 0, 0],
+            [ 0, 0, 1, 1, 1, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
         ]
         game_board = [
-            # TODO: 填入 game_board
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 11,  1, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10, 10, 10, 10],
         ]
-        poses = [(0, 0)]
+        poses = [(2, 2), (2, 3), (2, 4), (3, 4), (4, 2), (4, 3), (4, 4)]
         result, ok = enumerate_change_board(board, game_board, poses)
-        assert ok is False
+        print("result:", result)
+        assert ok 
 
 
 class TestEnuLimit:

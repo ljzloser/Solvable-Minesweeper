@@ -129,7 +129,7 @@ def laymine_solvable(board_constraint, attempt_times_limit, params):
         return laymine_solvable_auto(*pp)
     return board
 
-
+# 改局面，使得poses变为不是雷。poses可以包含多个格子，但必须全在同一段上
 def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
                          game_board: List[List[int]],
                          poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
@@ -141,11 +141,15 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
         for j in range(len(board[0])):
             if game_board[i][j] == CELL_FLAGGED:
                 game_board[i][j] = CELL_UNOPENED
-    game_board = ms.mark_board(game_board, remark=True)
+    # 标记明显的是雷和非雷
+    game_board = ms.mark_board(game_board)
+    # poses假如有是雷，直接失败
     if any(game_board[x][y] == CELL_FLAGGED for x, y in poses):
         return board, False
+    # 剔除poses中的数字
     poses = list(filter(lambda xy: game_board[xy[0]][xy[1]] == CELL_UNOPENED, poses))
 
+    # 全1矩阵 
     type_board = [[1 for i in range(len(board[0]))] for j in range(len(board))]
     rand_mine_num = 0
     rand_blank_num = 0
