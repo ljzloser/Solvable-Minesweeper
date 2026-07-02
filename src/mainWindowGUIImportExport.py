@@ -27,9 +27,9 @@ _KNOWN_IMPORT_MD5S = {
 }
 
 # 主进程中导入导出各种格式的逻辑
-class mainWindowGUIExport(MineSweeperVideoPlayer):
+class MainWindowGUIImportExport(MineSweeperVideoPlayer):
     def __init__(self, MainWindow: MainWindow, args):
-        super(MineSweeperVideoPlayer, self).__init__(MainWindow, args)
+        super(MainWindowGUIImportExport, self).__init__(MainWindow, args)
 
         self.action_stats_csv.triggered.connect(lambda: self._export_csv())
         self.action_textstats_csv.triggered.connect(lambda: self._export_csv(True))

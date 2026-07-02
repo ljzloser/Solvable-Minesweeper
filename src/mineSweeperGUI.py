@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metasweeper_checksum
 from mainWindowGUI import MainWindow
-from mainWindowGUIImportExport import mainWindowGUIExport
+from mainWindowGUIImportExport import MainWindowGUIImportExport
 from ui.ui_import import Ui_Form as Ui_Import
 from ui.uiComponents import RoundQDialog
 from app.game_engine import GameEngine
@@ -54,7 +54,7 @@ _translate = QCoreApplication.translate
 
 
 
-class MineSweeperGUI(mainWindowGUIExport):
+class MineSweeperGUI(MainWindowGUIImportExport):
 
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
@@ -1458,9 +1458,9 @@ class MineSweeperGUI(mainWindowGUIExport):
     def closeEvent_(self):
         self.unlimit_cursor()
         self.game_setting.set_value(
-            "DEFAULT/mainWinTop", str(self.mainWindow.y()))
+            "DEFAULT/mainwintop", str(self.mainWindow.y()))
         self.game_setting.set_value(
-            "DEFAULT/mainWinLeft", str(self.mainWindow.x()))
+            "DEFAULT/mainwinleft", str(self.mainWindow.x()))
         self.game_setting.set_value("DEFAULT/row", str(self.row))
         self.game_setting.set_value("DEFAULT/column", str(self.column))
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
