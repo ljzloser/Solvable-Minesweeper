@@ -680,8 +680,10 @@
      <property name="title">
       <string>导出</string>
      </property>
-     <addaction name="action_Arbiter_CSV"/>
-     <addaction name="action_meta_bin"/>
+     <addaction name="action_stats_csv"/>
+     <addaction name="action_textstats_csv"/>
+     <addaction name="action_meta_dat"/>
+     <addaction name="action_meta_all_dat"/>
     </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
@@ -1140,15 +1142,15 @@
     </font>
    </property>
   </action>
-  <action name="action_Arbiter_CSV">
+  <action name="action_stats_csv">
    <property name="text">
-    <string notr="true">Arbiter CSV</string>
+    <string notr="true">stats_csv.csv</string>
    </property>
    <property name="iconText">
-    <string notr="true">Arbiter CSV</string>
+    <string notr="true">stats_csv.csv</string>
    </property>
    <property name="toolTip">
-    <string notr="true">Arbiter CSV</string>
+    <string notr="true">Arbiter stats_csv.csv</string>
    </property>
    <property name="font">
     <font>
@@ -1196,15 +1198,49 @@
     </font>
    </property>
   </action>
-  <action name="action_meta_bin">
+  <action name="action_meta_dat">
    <property name="text">
-    <string notr="true">meta.bin</string>
+    <string notr="true">meta.dat</string>
    </property>
    <property name="iconText">
-    <string notr="true">meta.bin</string>
+    <string notr="true">meta.dat</string>
    </property>
    <property name="toolTip">
-    <string notr="true">meta.bin</string>
+    <string notr="true">meta.dat</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_textstats_csv">
+   <property name="text">
+    <string notr="true">textstats.csv</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">textstats.csv</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">textstats.csv</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_meta_all_dat">
+   <property name="text">
+    <string notr="true">meta.all.dat</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">meta.all.dat</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">meta.all.dat</string>
    </property>
    <property name="font">
     <font>

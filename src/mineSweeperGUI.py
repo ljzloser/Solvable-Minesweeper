@@ -17,15 +17,10 @@ import mine_num_bar
 from dialogs import gameRecordPop
 from dialogs.CheckUpdateGui import CheckUpdateGui
 from network.githubApi import GitHub, SourceManager
-import win32con
-import win32gui
 import utils
 import ms_toollib as ms
 import os
-import ctypes
 import hashlib
-import subprocess
-import json
 import uuid
 from pathlib import Path
 from Crypto.Cipher import AES
@@ -36,8 +31,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metasweeper_checksum
 from mainWindowGUI import MainWindow
-from datetime import datetime
-from mineSweeperVideoPlayer import MineSweeperVideoPlayer
+from mainWindowGUIExport import mainWindowGUIExport
 from ui.ui_import import Ui_Form as Ui_Import
 from ui.uiComponents import RoundQDialog
 from app.game_engine import GameEngine
@@ -57,13 +51,10 @@ from config.constants import (
 
 _translate = QCoreApplication.translate
 
-# 已知的验证程序 MD5（元扫雷 3.2.2）
-_KNOWN_IMPORT_MD5S = {
-    "3271d11bab9afc8b0a2b9546e13d46cd",
-}
 
 
-class MineSweeperGUI(MineSweeperVideoPlayer):
+
+class MineSweeperGUI(mainWindowGUIExport):
 
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
@@ -122,9 +113,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             lambda: self.trans_language("de_DE"))
         self.japanese_action.triggered.connect(
             lambda: self.trans_language("ja_JP"))
-        self.action_Arbiter_CSV.triggered.connect(self._export_arbiter_csv)
-        self.action_meta_bin.triggered.connect(self._export_meta_bin)
-        self.action_import.triggered.connect(self._import_replays)
 
         # 查看菜单
         self.action_open_replay.triggered.connect(
@@ -984,163 +972,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             ui.Dialog.finished.connect(lambda _: setattr(self, '_popup_dialog', None))
 
 
-    def _export_arbiter_csv(self):
-        '''
-        # 导出 Arbiter CSV，只导出胜利、标准、正式、公平、非自定义的记录
-        '''
-        dat_path = self.setting_path / 'stats.dat'
-        if not dat_path.exists() or dat_path.stat().st_size == 0:
-            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
-            return
-
-        safe_name = self.player_identifier.replace(' ', '_')
-        default_name = f"{safe_name}_stats.csv"
-        save_path, _ = QFileDialog.getSaveFileName(
-            self.mainWindow, "导出 Arbiter CSV",
-            str(self.setting_path / default_name),
-            "CSV文件 (*.csv)"
-        )
-        if not save_path:
-            return
-
-        records = []
-        with open(dat_path, 'rb') as f:
-            f.read(1)  # version byte
-            while True:
-                len_bytes = f.read(2)
-                if not len_bytes or len(len_bytes) < 2:
-                    break
-                blob_length = int.from_bytes(len_bytes, 'big')
-                blob = f.read(blob_length)
-                if not blob or len(blob) < blob_length:
-                    break
-
-                nonce = blob[:12]
-                tag = blob[12:28]
-                ciphertext = blob[28:]
-
-                try:
-                    cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-                    records.append(utils.StatsRecord.decode(plaintext))
-                except Exception:
-                    continue
-
-        if not records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
-            return
-
-        headers = [
-            "Day", "Month", "Year", "Hour", "Min", "Sec", "mode", "Time",
-            "BBBV", "BBBVs", "style",
-            "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8",
-            "Lcl", "Rcl", "Dcl", "Leff", "Reff", "Deff",
-            "Openings", "Islands", "Path", "GZiNi", "HZiNi"
-        ]
-
-        with open(save_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(headers)
-            
-            record_num = 0
-            for rec in records:
-                if rec.game_state != 6 or rec.mode != 0:
-                    continue  # 只导出胜利的标准记录
-                if not (rec.is_official and rec.is_fair):
-                    continue  # 只导出正式且公平的记录
-
-                if (rec.row, rec.column, rec.mine_num) == (8, 8, 10):
-                    mode = "BEG"
-                elif (rec.row, rec.column, rec.mine_num) == (16, 16, 40):
-                    mode = "INT"
-                elif (rec.row, rec.column, rec.mine_num) == (16, 30, 99):
-                    mode = "EXP"
-                else:
-                    continue
-
-                dt = datetime.fromtimestamp(rec.start_time / 1_000_000 + rec.rtime_ms / 1000.0)
-
-                style = "NF" if rec.rce == 0 else "Flag"
-                list_board = utils.board_bytes_to_board(rec.row, rec.column, rec.board_bytes)
-                board = ms.Board(list_board)
-
-                writer.writerow([
-                    dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second,
-                    mode, rec.rtime_ms / 1000.0, rec.bbbv, rec.bbbv_solved, style,
-                    board.cell0, board.cell1, board.cell2, board.cell3, board.cell4, 
-                    board.cell5, board.cell6, board.cell7, board.cell8,
-                    rec.left, rec.right, rec.double,
-                    rec.lce, rec.rce, rec.dce,
-                    board.op, board.isl, rec.path, rec.zini, board.hzini,
-                ])
-                record_num += 1
-
-        QMessageBox.information(self.mainWindow, "导出成功",
-                                f"已导出 {record_num} 条记录到\n{save_path}")
-
-    def _export_meta_bin(self):
-        dat_path = self.setting_path / 'stats.dat'
-        if not dat_path.exists() or dat_path.stat().st_size == 0:
-            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
-            return
-
-        safe_name = self.player_identifier.replace(' ', '_')
-        default_name = f"{safe_name}_meta.bin"
-        save_path, _ = QFileDialog.getSaveFileName(
-            self.mainWindow, "导出 meta.bin",
-            str(self.setting_path / default_name),
-            "BIN文件 (*.bin)"
-        )
-        if not save_path:
-            return
-
-        records = []
-        with open(dat_path, 'rb') as f:
-            f.read(1)  # version byte
-            while True:
-                len_bytes = f.read(2)
-                if not len_bytes or len(len_bytes) < 2:
-                    break
-                blob_length = int.from_bytes(len_bytes, 'big')
-                blob = f.read(blob_length)
-                if not blob or len(blob) < blob_length:
-                    break
-
-                nonce = blob[:12]
-                tag = blob[12:28]
-                ciphertext = blob[28:]
-
-                try:
-                    cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-                    records.append(utils.StatsRecord.decode(plaintext))
-                except Exception:
-                    continue
-
-        if not records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
-            return
-
-        win_records = [r for r in records if r.game_state == 6]
-        if not win_records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到记录")
-            return
-
-        with open(save_path, 'wb') as f:
-            for record in win_records:
-                binary_data = record.encode()
-                nonce = get_random_bytes(12)
-                cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-                ciphertext, tag = cipher.encrypt_and_digest(binary_data)
-                blob = nonce + tag + ciphertext
-                blob_length = len(blob)
-                len_bytes = blob_length.to_bytes(2, byteorder="big", signed=False)
-                f.write(len_bytes)
-                f.write(blob)
-
-        QMessageBox.information(self.mainWindow, "导出成功",
-                                f"已导出 {len(win_records)} 条记录到\n{save_path}")
-
     # 根据条件是否满足，尝试追加evfs文件
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）
     # 加入evfs是空的，且当前游戏状态不是"win"，则不追加
@@ -1651,172 +1482,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         event = CloseEvent()
         GameServerBridge.instance().send_event(event)
 
-    # ═══════════════════════════════════════════════════════════
-    # 导入录像（从其他版本导入历史记录到 stats.dat）
-    # ═══════════════════════════════════════════════════════════
-
-    def _import_replays(self):
-        """导入其他版本录像"""
-        dialog = ImportDialog(self.mainWindow)
-        dialog.set_import_callback(self._import_workflow)
-        dialog.exec_()
-
-    def _import_workflow(self, exe_path: str, replay_path: str,
-                         progress_bar, label) -> bool:
-        """完整导入流程（在对话框内执行，带进度条）"""
-        from PyQt5.QtWidgets import QApplication
-
-        exe = Path(exe_path)
-        rp = Path(replay_path)
-        if not exe.exists() or not rp.exists():
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "路径不存在"))
-            return False
-
-        progress_bar.setRange(0, 1)
-        progress_bar.setValue(0)
-        label.setText(_translate("Form", "正在验证程序..."))
-        label.setVisible(True)
-        QApplication.processEvents()
-
-        try:
-            actual_md5 = hashlib.md5(exe.read_bytes()).hexdigest()
-        except Exception:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "无法读取验证程序"))
-            return False
-
-        if actual_md5 not in _KNOWN_IMPORT_MD5S:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "未知的验证程序版本"))
-            return False
-
-        label.setText(_translate("Form", "正在验证录像..."))
-        QApplication.processEvents()
-
-        def on_parse_progress(cur, total):
-            progress_bar.setRange(0, total)
-            progress_bar.setValue(cur)
-            label.setText(_translate("Form", "正在解析录像 {cur}/{total}...")
-                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
-            QApplication.processEvents()
-
-        preview = self._validate_with_exe(exe, replay_path,
-                                          progress_callback=on_parse_progress)
-        if preview is None:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "验证失败"))
-            return False
-
-        if not preview["entries"]:
-            QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入"),
-                                    _translate("MainWindow", "没有新的录像需要导入"))
-            return True
-
-        entries = preview["entries"]
-
-        def on_write_progress(cur, total):
-            progress_bar.setRange(0, total)
-            progress_bar.setValue(cur)
-            label.setText(_translate("Form", "正在写入 stats.dat  {cur}/{total}...")
-                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
-            QApplication.processEvents()
-
-        count = self._do_import_replays(preview, progress_callback=on_write_progress)
-
-        label.setText(_translate("Form", "完成！"))
-        progress_bar.setValue(progress_bar.maximum())
-        QApplication.processEvents()
-
-        msg = _translate("MainWindow", "成功导入 {n} 条录像").replace("{n}", str(count))
-        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入成功"), msg)
-        return True
-
-    def _validate_with_exe(self, exe: Path, replay_path: str,
-                           progress_callback: callable = None) -> dict | None:
-        """运行验证程序并解析结果"""
-        try:
-            cmd = [str(exe), "-c", replay_path]
-            result = subprocess.run(cmd, capture_output=True, timeout=120)
-            if result.returncode != 0:
-                return None
-
-            out_path = exe.parent / "_internal" / "out.json"
-            if not out_path.exists():
-                return None
-
-            report = json.loads(out_path.read_bytes())
-            if report.get("error"):
-                return None
-
-            stats_md5s = self._read_stats_dat_short_md5s()
-
-            data = report.get("data", [])
-            total_valid = sum(1 for d in data if d.get("status") == 0)
-            processed = 0
-            entries = []
-            for d in data:
-                if d.get("status") != 0:
-                    continue
-                processed += 1
-                if progress_callback:
-                    progress_callback(processed, total_valid)
-                fp = d["file"]
-                fp_path = Path(fp)
-                if not fp_path.is_absolute():
-                    rp = Path(replay_path)
-                    fp_path = (rp if rp.is_dir() else rp.parent) / fp
-                try:
-                    v = ms.EvfVideo(str(fp_path))
-                    v.parse()
-                    v.analyse()
-
-                    with open(str(fp_path), "rb") as fh:
-                        file_bytes = fh.read()
-                    short_md5 = hashlib.md5(file_bytes).digest()[:8]
-
-                    if short_md5 in stats_md5s:
-                        continue
-
-                    entries.append({
-                        "short_md5": short_md5,
-                        "record": utils.StatsRecord(
-                            game_state=6,
-                            row=v.row,
-                            column=v.column,
-                            mine_num=v.mine_num,
-                            rtime_ms=int(v.rtime * 1000),
-                            left=getattr(v, "left", 0),
-                            right=getattr(v, "right", 0),
-                            double=getattr(v, "double", 0),
-                            rce=getattr(v, "rce", 0),
-                            lce=getattr(v, "lce", 0),
-                            dce=getattr(v, "dce", 0),
-                            bbbv=getattr(v, "bbbv", 0),
-                            bbbv_solved=getattr(v, "bbbv_solved", 0),
-                            zini=getattr(v, "zini", 0),
-                            flag=getattr(v, "flag", 0),
-                            path=getattr(v, "path", 0.0),
-                            start_time=v.start_time,
-                            mode=getattr(v, "mode", 0),
-                            is_official=getattr(v, "is_official", True),
-                            is_fair=getattr(v, "is_fair", True),
-                            op=getattr(v, "op", 0),
-                            isl=getattr(v, "isl", 0),
-                            pluck=getattr(v, "pluck", 0.0),
-                            short_md5=short_md5,
-                            board_bytes=utils.board_list_to_bytes(v.board),
-                        ),
-                    })
-                except Exception:
-                    continue
-
-            return {"entries": entries}
-        except subprocess.TimeoutExpired:
-            return None
-        except Exception:
-            return None
-
     def _read_stats_dat_short_md5s(self) -> set[bytes]:
         """读取 stats.dat 中所有记录的 short_md5"""
         dat_path = self.setting_path / "stats.dat"
@@ -1847,33 +1512,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             pass
         return md5s
 
-    def _do_import_replays(self, preview: dict, progress_callback: callable = None) -> int:
-        """将验证通过的录像写入 stats.dat，返回成功条数"""
-        entries = preview["entries"]
-        count = 0
-        dat_path = self.setting_path / "stats.dat"
-
-        for i, entry in enumerate(entries):
-            if progress_callback:
-                progress_callback(i + 1, len(entries))
-            record = entry["record"]
-            binary_data = record.encode()
-            nonce = get_random_bytes(12)
-            cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-            ciphertext, tag = cipher.encrypt_and_digest(binary_data)
-
-            if (not dat_path.exists()) or dat_path.stat().st_size == 0:
-                with open(dat_path, "wb") as f:
-                    f.write((0).to_bytes(1, byteorder="big"))
-
-            with open(dat_path, "ab") as f:
-                blob = nonce + tag + ciphertext
-                f.write(len(blob).to_bytes(2, byteorder="big", signed=False))
-                f.write(blob)
-
-            count += 1
-
-        return count
 
     def action_OpenPluginDialog(self):
         try:
@@ -1882,66 +1520,3 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         except Exception:
             pass
 
-
-class ImportDialog(Ui_Import):
-    """导入录像对话框：选择验证程序+录像路径，带进度条"""
-
-    def __init__(self, parent=None):
-        self.Dialog = RoundQDialog(parent)
-        self.setupUi(self.Dialog)
-        self.pushButton_browse_exe.clicked.connect(self._browse_exe)
-        self.pushButton_browse_file.clicked.connect(self._browse_replay_file)
-        self.pushButton_browse_folder.clicked.connect(self._browse_replay_folder)
-        self.pushButton_ok.clicked.connect(self._on_ok)
-        self.pushButton_cancel.clicked.connect(self.Dialog.close)
-        self._callback = None
-        self.progressBar.setVisible(False)
-        self.label_progress.setVisible(False)
-
-    def set_import_callback(self, cb):
-        self._callback = cb
-
-    def _browse_exe(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self.Dialog, _translate("Form", "选择验证程序"), "",
-            _translate("Form", "程序 (*.exe);;所有文件 (*)"))
-        if path:
-            self.lineEdit_exe.setText(path)
-
-    def _browse_replay_file(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self.Dialog, _translate("Form", "选择录像"), "",
-            _translate("Form", "录像文件 (*.evf *.evfs);;所有文件 (*)"))
-        if path:
-            self.lineEdit_replay.setText(path)
-
-    def _browse_replay_folder(self):
-        path = QFileDialog.getExistingDirectory(
-            self.Dialog, _translate("Form", "选择录像文件夹"))
-        if path:
-            self.lineEdit_replay.setText(path)
-
-    def _on_ok(self):
-        exe_path = self.lineEdit_exe.text().strip()
-        replay_path = self.lineEdit_replay.text().strip()
-        if not exe_path or not replay_path:
-            QMessageBox.warning(
-                self.Dialog, _translate("Form", "提示"),
-                _translate("Form", "请选择验证程序和录像路径"))
-            return
-        self.lineEdit_exe.setEnabled(False)
-        self.lineEdit_replay.setEnabled(False)
-        self.pushButton_browse_exe.setEnabled(False)
-        self.pushButton_browse_file.setEnabled(False)
-        self.pushButton_browse_folder.setEnabled(False)
-        self.pushButton_ok.setEnabled(False)
-        self.pushButton_cancel.setEnabled(False)
-        self.progressBar.setVisible(True)
-        self.label_progress.setVisible(True)
-        from PyQt5.QtWidgets import QApplication
-        QApplication.processEvents()
-        self._callback(exe_path, replay_path, self.progressBar, self.label_progress)
-        self.Dialog.close()
-
-    def exec_(self):
-        return self.Dialog.exec_()
