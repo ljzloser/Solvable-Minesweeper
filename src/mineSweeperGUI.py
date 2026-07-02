@@ -1143,6 +1143,7 @@ class MineSweeperGUI(mainWindowGUIExport):
             self.gameStart()
         else:
             self.gameRestart()
+        self.score_board_manager.show(self.label.ms_board, index_type=1)
 
     def action_NEvent(self):
         # 游戏设置

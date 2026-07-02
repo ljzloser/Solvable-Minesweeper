@@ -11,7 +11,6 @@ import mineSweeperGUI as mineSweeperGUI
 import ms_toollib as ms
 import ctypes
 from pathlib import Path
-from utils import get_paths, patch_env
 from utils.app_logger import logger
 
 # 插件系统（新）

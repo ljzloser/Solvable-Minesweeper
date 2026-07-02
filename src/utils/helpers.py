@@ -3,34 +3,12 @@ import sys
 
 from PyQt5.QtCore import QCoreApplication
 
-
-_translate = QCoreApplication.translate
-
-
-def get_paths():
-    if getattr(sys, "frozen", False):
-        dir = os.path.dirname(sys.executable)
-    else:
-        dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.dirname(dir)
-
-
-def patch_env():
-    env = os.environ.copy()
-    if getattr(sys, "frozen", False):
-        root = getattr(sys, "_MEIPASS", None)
-    else:
-        root = get_paths()
-    env["PYTHONPATH"] = root
-    return env
-
-
 def trans_expression(expression: str):
     expression = expression.lower().strip()[:10000]
     expression = expression.replace("3bv", "bbbv")
     expression = expression.replace("opening", "op")
     expression = expression.replace("click", "cl")
-    expression = expression.replace("\"", "'")
+    # expression = expression.replace("\"", "'")
     expression = expression.replace("island", "isl")
     expression = expression.replace("chording", "double")
     expression = expression.replace("solved_bbbv", "bbbv_solved")
