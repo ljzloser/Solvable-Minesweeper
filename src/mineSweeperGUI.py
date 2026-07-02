@@ -236,6 +236,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.set_face(FACE_SMILE)
         self.showMineNum(self.mineUnFlagedNum)
         self.showTime(0)
+        if hasattr(self, "score_board_manager"):
+            self.score_board_manager.ui.apply_scale(pixSize)
+            if self.score_board_manager.ms_board is not None:
+                self.score_board_manager.reshow(self.score_board_manager.ms_board)
         if hasattr(self, "_pixSize") and pixSize < self._pixSize:
             self._pixSize = pixSize
             self.minimumWindow()

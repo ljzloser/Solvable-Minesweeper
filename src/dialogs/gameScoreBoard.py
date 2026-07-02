@@ -4,7 +4,8 @@ from ui.ui_score_board import Ui_Form
 from ui.uiComponents import RoundQWidget
 from utils.safe_eval import safe_eval
 from config.constants import BOARD_READY, BOARD_PLAYING, BOARD_WIN, BOARD_LOSS
-from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QHeaderView, QAbstractItemDelegate
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QAbstractItemDelegate
 from PyQt5 import QtCore, QtGui
 
 class ui_Form(Ui_Form):
@@ -12,19 +13,72 @@ class ui_Form(Ui_Form):
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # doubleClick = QtCore.pyqtSignal (int, int)
     # leftClick = QtCore.pyqtSignal (int, int)
+    # 设计基准：主界面 pixSize = 16 时，计时器各尺寸（80,150,25...）为基准值
+    BASE_PIX = 26
+    
     def __init__(self, r_path, pix_size, parent):
-        self.pix_size = pix_size
         self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
         
-        self.tableWidget.setColumnWidth(0, 80)
-        self.tableWidget.setColumnWidth(1, 150)
-        self.tableWidget.verticalHeader().setDefaultSectionSize(25)
-        self.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
-        
         self.QWidget.setWindowIcon (QtGui.QIcon (str(r_path.with_name('media').joinpath('cat.ico'))))
+        self.apply_scale(pix_size)
+    
+    def apply_scale(self, pix_size):
+        self.pix_size = pix_size
+        # 最小缩放：最小号基准字号(12) 不小于 10px
+        scale = max(pix_size / self.BASE_PIX, 10 / 12)
         
-        # self.setParameter ()
+        col0 = max(1, int(80 * scale))
+        col1 = max(1, int(150 * scale))
+        row_h = max(1, int(25 * scale))
+        fs_label = max(1, int(12 * scale))
+        fs_table = max(1, int(15 * scale))
+        btn_h = max(1, int(15 * scale))
+        label_h = max(1, int(27 * scale))
+        
+        self.tableWidget.setColumnWidth(0, col0)
+        self.tableWidget.setColumnWidth(1, col1)
+        vh = self.tableWidget.verticalHeader()
+        vh.setDefaultSectionSize(row_h)
+        vh.show()
+        for r in range(self.tableWidget.rowCount()):
+            vh.resizeSection(r, row_h)
+        vh.hide()
+        
+        font = self.label_counter.font()
+        font.setPointSize(fs_label)
+        self.label_counter.setFont(font)
+        self.label_counter.setMinimumHeight(label_h)
+        self.label_counter.setMaximumHeight(label_h)
+        
+        self.tableWidget.setStyleSheet(f"font-size: {fs_table}px;")
+        
+        self.pushButton_add.setMinimumHeight(btn_h)
+        self.pushButton_add.setMaximumHeight(btn_h)
+        
+        self._fix_widget_size()
+    
+    def _fix_widget_size(self):
+        self.QWidget.setMinimumSize(0, 0)
+        self.QWidget.setMaximumSize(99999, 99999)
+        self.QWidget.layout().setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        m = self.QWidget.layout().contentsMargins()
+        sp = self.QWidget.layout().spacing() or 0
+        fw = self.tableWidget.frameWidth()
+        n_rows = self.tableWidget.rowCount()
+        col0 = self.tableWidget.columnWidth(0)
+        col1 = self.tableWidget.columnWidth(1)
+        row_h = self.tableWidget.verticalHeader().defaultSectionSize()
+        table_w = col0 + col1 + 2 * fw
+        table_h = n_rows * row_h + 2 * fw
+        self.tableWidget.setFixedSize(table_w, table_h)
+        total_w = m.left() + table_w + m.right()
+        total_h = (m.top()
+                   + self.label_counter.minimumHeight() + sp
+                   + table_h + sp
+                   + self.pushButton_add.minimumHeight()
+                   + m.bottom())
+        self.QWidget.setFixedSize(total_w, total_h)
     
     def show(self, index_value_list: list[str]):
         # 更新数值,指标数量不变
@@ -34,13 +88,8 @@ class ui_Form(Ui_Form):
         
     def reshow(self, index_name_list: list[str], index_value_list: list[str]):
         # 更新数值、指标。指标数量可能变
-        table_height = len(index_name_list)*24
         self.tableWidget.setRowCount(len(index_name_list))
-        # self.tableWidget.setMinimumWidth(232)
-        # self.tableWidget.setMaximumWidth(232)
-        self.tableWidget.setMaximumHeight(table_height + len(index_name_list) + 2)
-        self.tableWidget.setMinimumHeight(table_height + len(index_name_list) + 2)
-        
+        self._fix_widget_size()
         for idx, i in enumerate(index_name_list):
             self.tableWidget.setItem(idx, 0, QTableWidgetItem(i))
         self.show(index_value_list)
