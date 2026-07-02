@@ -124,8 +124,19 @@ class TestEnumerateChangeBoard:
         ]
         poses = [(7, 1)]
         result, ok = enumerate_change_board(board, game_board, poses)
+        print("result:", result)
         assert ok
-        assert result is board
+        board_after = [
+            [ 2,-1, 4,-1, 2, 0, 0, 0],
+            [ 2,-1, 4,-1, 2, 0, 0, 0],
+            [ 1, 1, 2, 1, 1, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 1, 1, 2, 1, 1, 0, 0, 0],
+            [ 2,-1, 4,-1, 2, 0, 0, 0],
+            [-1, 3,-1,-1, 2, 0, 0, 0],
+        ]
+        assert result == board_after
 
     # python -m pytest tests/test_utils.py::TestEnumerateChangeBoard::test_success -sv
     def test_success(self):

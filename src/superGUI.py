@@ -336,16 +336,16 @@ class Ui_MainWindow(Ui_MainWindow):
         self.pixmapLEDNumPix = {0: pixLEDmap0, 1: pixLEDmap1, 2: pixLEDmap2, 3: pixLEDmap3,
                         4: pixLEDmap4, 5: pixLEDmap5, 6: pixLEDmap6, 7: pixLEDmap7,
                         8: pixLEDmap8, 9: pixLEDmap9}
-        pixLEDmap0_ = pixLEDmap0.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap1_ = pixLEDmap1.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap2_ = pixLEDmap2.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap3_ = pixLEDmap3.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap4_ = pixLEDmap4.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap5_ = pixLEDmap5.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap6_ = pixLEDmap6.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap7_ = pixLEDmap7.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap8_ = pixLEDmap8.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap9_ = pixLEDmap9.copy().scaled(pixSize, int(pixSize * 1.75))
+        pixLEDmap0_ = pixLEDmap0.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap1_ = pixLEDmap1.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap2_ = pixLEDmap2.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap3_ = pixLEDmap3.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap4_ = pixLEDmap4.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap5_ = pixLEDmap5.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap6_ = pixLEDmap6.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap7_ = pixLEDmap7.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap8_ = pixLEDmap8.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap9_ = pixLEDmap9.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
         self.pixmapLEDNum = {0: pixLEDmap0_, 1: pixLEDmap1_, 2: pixLEDmap2_, 3: pixLEDmap3_,
                         4: pixLEDmap4_, 5: pixLEDmap5_, 6: pixLEDmap6_, 7: pixLEDmap7_,
                         8: pixLEDmap8_, 9: pixLEDmap9_}
@@ -355,7 +355,7 @@ class Ui_MainWindow(Ui_MainWindow):
         if hasattr(self, "pixmapNumPix"):
             self.pixmapNum = {key:value.copy().scaled(int(pixSize * 1.5), int(pixSize * 1.5)) 
                               for key,value in self.pixmapNumPix.items()}
-            self.pixmapLEDNum = {key:value.copy().scaled(pixSize, int(pixSize * 1.75)) 
+            self.pixmapLEDNum = {key:value.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5)) 
                                  for key,value in self.pixmapLEDNumPix.items()}
         else:
             self.importLEDPic(pixSize)
