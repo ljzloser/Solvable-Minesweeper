@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metasweeper_checksum
 from mainWindowGUI import MainWindow
-from mainWindowGUIExport import mainWindowGUIExport
+from mainWindowGUIImportExport import mainWindowGUIExport
 from ui.ui_import import Ui_Form as Ui_Import
 from ui.uiComponents import RoundQDialog
 from app.game_engine import GameEngine

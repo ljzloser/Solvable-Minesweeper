@@ -685,6 +685,13 @@
      <addaction name="action_meta_dat"/>
      <addaction name="action_meta_all_dat"/>
     </widget>
+    <widget class="QMenu" name="menu_6">
+     <property name="title">
+      <string>导入</string>
+     </property>
+     <addaction name="action_import_3_2_2"/>
+     <addaction name="action_import_dat"/>
+    </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
     <addaction name="actionnew_game"/>
@@ -697,7 +704,7 @@
     <addaction name="action_save"/>
     <addaction name="action_replay"/>
     <addaction name="separator"/>
-    <addaction name="action_import"/>
+    <addaction name="menu_6"/>
     <addaction name="menu_5"/>
     <addaction name="separator"/>
     <addaction name="actiontui_chu"/>
@@ -1170,17 +1177,6 @@
     </font>
    </property>
   </action>
-  <action name="action_import">
-   <property name="text">
-    <string>导入</string>
-   </property>
-   <property name="font">
-    <font>
-     <family>微软雅黑</family>
-     <pointsize>12</pointsize>
-    </font>
-   </property>
-  </action>
   <action name="japanese_action">
    <property name="text">
     <string notr="true">日本語</string>
@@ -1241,6 +1237,40 @@
    </property>
    <property name="toolTip">
     <string notr="true">meta.all.dat</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_import_3_2_2">
+   <property name="text">
+    <string notr="true">3.2.2 evf</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">3.2.2 evf</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">3.2.2 evf</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="action_import_dat">
+   <property name="text">
+    <string notr="true">stats.dat</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">stats.dat</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">stats.dat</string>
    </property>
    <property name="font">
     <font>

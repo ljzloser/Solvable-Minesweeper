@@ -20,6 +20,9 @@ from plugin_manager.app_paths import get_env_for_subprocess
 from shared_types.commands import NewGameCommand, MouseClickCommand
 from shared_types.enums import GameLevel
 import subprocess
+from config.constants import (
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+)
 
 os.environ["QT_FONT_DPI"] = "96"
 
