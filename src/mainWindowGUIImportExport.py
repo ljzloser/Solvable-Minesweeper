@@ -35,7 +35,8 @@ class mainWindowGUIExport(MineSweeperVideoPlayer):
         self.action_textstats_csv.triggered.connect(lambda: self._export_csv(True))
         self.action_meta_dat.triggered.connect(lambda: self._export_meta_dat())
         self.action_meta_all_dat.triggered.connect(lambda: self._export_meta_dat(True))
-        self.action_import.triggered.connect(self._import_replays)
+        self.action_import_3_2_2.triggered.connect(self._import_replays)
+        self.action_import_dat.triggered.connect(self._import_stat_dat)
 
     # ═══════════════════════════════════════════════════════════
     # 导入录像（从其他版本导入历史记录到 stats.dat）
@@ -231,6 +232,118 @@ class mainWindowGUIExport(MineSweeperVideoPlayer):
 
         return count
 
+
+
+    # ═══════════════════════════════════════════════════════════
+    # 导入 stats.dat（从旧版本导入记录合并到当前 stats.dat）
+    # ═══════════════════════════════════════════════════════════
+
+    def _import_stat_dat(self):
+        """导入旧版 stats.dat 并合并到当前"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self.mainWindow, "选择旧版 stats.dat",
+            str(self.setting_path),
+            "DAT文件 (stats.dat *.dat);;所有文件 (*)"
+        )
+        if not file_path:
+            return
+
+        old_path = Path(file_path)
+        if old_path == self.setting_path / "stats.dat":
+            QMessageBox.warning(self.mainWindow, "导入失败", "不能导入当前正在使用的 stats.dat")
+            return
+
+        records = self._read_dat_records(old_path)
+        if records is None:
+            return
+
+        if not records:
+            QMessageBox.information(self.mainWindow, "导入", "旧版 stats.dat 中没有有效记录")
+            return
+
+        existing_md5s = self._read_stats_dat_short_md5s()
+        new_records = [r for r in records if r.short_md5 not in existing_md5s]
+
+        if not new_records:
+            QMessageBox.information(self.mainWindow, "导入",
+                                    f"共 {len(records)} 条记录，全部与当前重复")
+            return
+
+        count = self._do_import_entries(new_records)
+
+        QMessageBox.information(self.mainWindow, "导入成功",
+                                f"成功导入 {count} 条记录"
+                                + (f"，跳过 {len(records) - len(new_records)} 条重复"
+                                   if len(records) != len(new_records) else ""))
+
+    def _read_dat_records(self, path: Path) -> list | None:
+        """读取 stats.dat 所有记录，根据版本号派发；返回 None 表示版本不支持"""
+        if not path.exists() or path.stat().st_size == 0:
+            return []
+
+        try:
+            with open(path, "rb") as f:
+                version = f.read(1)
+            if not version:
+                return []
+            version = version[0]
+        except Exception:
+            return None
+
+        if version == 0:
+            return self._read_dat_records_v0(path, superGUI.STATS_DAT_KEY)
+        else:
+            QMessageBox.warning(self.mainWindow, "导入失败",
+                                f"不支持的 stats.dat 版本 (v{version})，请升级程序")
+            return None
+
+    def _read_dat_records_v0(self, path: Path, key) -> list:
+        """读取 v0 格式 stats.dat"""
+        records = []
+        with open(path, "rb") as f:
+            f.read(1)
+            while True:
+                len_bytes = f.read(2)
+                if not len_bytes or len(len_bytes) < 2:
+                    break
+                blob_length = int.from_bytes(len_bytes, 'big')
+                blob = f.read(blob_length)
+                if not blob or len(blob) < blob_length:
+                    break
+
+                nonce = blob[:12]
+                tag = blob[12:28]
+                ciphertext = blob[28:]
+
+                try:
+                    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+                    records.append(utils.StatsRecord.decode(plaintext))
+                except Exception:
+                    continue
+        return records
+
+    def _do_import_entries(self, records: list) -> int:
+        """将记录列表写入当前 stats.dat，返回成功条数"""
+        dat_path = self.setting_path / "stats.dat"
+        count = 0
+        for rec in records:
+            binary_data = rec.encode()
+            nonce = get_random_bytes(12)
+            cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
+            ciphertext, tag = cipher.encrypt_and_digest(binary_data)
+
+            if (not dat_path.exists()) or dat_path.stat().st_size == 0:
+                with open(dat_path, "wb") as f:
+                    f.write((0).to_bytes(1, byteorder="big"))
+
+            with open(dat_path, "ab") as f:
+                blob = nonce + tag + ciphertext
+                f.write(len(blob).to_bytes(2, byteorder="big", signed=False))
+                f.write(blob)
+
+            count += 1
+        return count
 
 
     def _export_csv(self, all=False):
