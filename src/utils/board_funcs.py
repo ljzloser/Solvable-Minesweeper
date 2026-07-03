@@ -1,5 +1,6 @@
-from random import shuffle, choice
+from random import shuffle, choice, sample, random
 from typing import List, Tuple
+import math
 
 import ms_toollib as ms
 from utils.safe_eval import safe_eval
@@ -129,177 +130,211 @@ def laymine_solvable(board_constraint, attempt_times_limit, params):
         return laymine_solvable_auto(*pp)
     return board
 
+def _unique_block_vars(matrix_x_block: List[List[tuple[int, int]]]) -> List[tuple[int, int]]:
+    seen = set()
+    unique_vars: List[tuple[int, int]] = []
+    for eq_vars in matrix_x_block:
+        for coord in eq_vars:
+            if coord not in seen:
+                seen.add(coord)
+                unique_vars.append(coord)
+    return unique_vars
+
+
+def _group_solutions_by_mine_count(solutions: List[List[int]]) -> dict[int, List[List[int]]]:
+    grouped: dict[int, List[List[int]]] = {}
+    for sol in solutions:
+        count = sol.count(1)
+        grouped.setdefault(count, []).append(sol)
+    return grouped
+
+
+def _weighted_choice(items: List[int], weights: List[int]) -> int:
+    total = sum(weights)
+    if total <= 0:
+        raise ValueError("no positive weights")
+    threshold = random() * total
+    cumulative = 0.0
+    for item, weight in zip(items, weights):
+        cumulative += weight
+        if threshold < cumulative:
+            return item
+    return items[-1]
+
+
 def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
-                         game_board: List[List[int]],
-                         poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
+                           game_board: List[List[int]],
+                           poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
     """重排雷局，使指定格子(poses)都变成安全格。
 
-    算法概要：
-    1. 用 mark_board 从已开数字推导出所有必然的雷和非雷（标记为 11/12）。
-    2. 排除已被判为雷的 pose（直接失败）；已判为空的 pose 无需处理。
-    3. 将剩余未开格划分为两类：
-       - 约束区：受周边已开数字约束，必须求解线性方程组（AX=B, x∈{0,1}）。
-       - 随机区：自由布雷区域，用于补偿约束区的雷数变化。
-    4. 当一个约束块过大（≥EnuLimit）时，枚举不可行，直接失败。
-    5. 枚举约束方程的全部 0/1 解，过滤条件：
-       a) 总雷数在允许范围内（原雷数 ± 随机区的吸收/释放能力）。
-       b) 所有 pose 对应的变量必须为 0（安全）。
-    6. 无可行解时返回 False；有解时随机选一个写入，并重算全盘数字。
-
-    Args:
-        board: 原始雷局（二维列表）或 EvfVideo 对象
-        game_board: 玩家当前看到的局面（10=未开, 11=标雷, 0~8=已开数字）
-        poses: 需要变为安全的格子坐标列表
-
-    Returns:
-        (new_board, success) — success=True 时 new_board 是重排后的雷局；
-        success=False 时保留原 board。
+    该实现基于约束块枚举和无约束区补偿，保证从所有满足的雷局中均等概率随机选择。
     """
-    # ── 前置处理 ────────────────────────────────────────
-
-    # 如果传入的是 EvfVideo 等对象，转为二维列表
     if not isinstance(board, list):
         board = board.into_vec_vec()
 
-    # 所有 pose 在原始雷局中均非雷 → 无需重排
-    if all(board[x][y] != CELL_MINE for x, y in poses):
-        return board, True
+    # 记录原始雷数，用于保持全局总雷数不变
+    total_mine_count = sum(1 for row in board for cell in row if cell == CELL_MINE)
 
-    # ── 清理用户标记 → 从数字约束重新推导 ────────────────
+    # 复制 game_board，清除玩家标旗，仅保留已开数字
+    game_board_copy = [list(row) for row in game_board]
+    for i in range(len(game_board_copy)):
+        for j in range(len(game_board_copy[0])):
+            if game_board_copy[i][j] == CELL_FLAGGED:
+                game_board_copy[i][j] = CELL_UNOPENED
+    game_board_copy = ms.mark_board(game_board_copy)
 
-    # 清空玩家手动标旗，让求解器只依据已开数字推导约束
-    for i in range(len(board)):
-        for j in range(len(board[0])):
-            if game_board[i][j] == CELL_FLAGGED:
-                game_board[i][j] = CELL_UNOPENED
-    game_board = ms.mark_board(game_board)
-
-    # 若重新标记后任一个 pose 被判定必为雷 → 无法在维持
-    # 已揭示数字的前提下把它变安全，直接失败
-    if any(game_board[x][y] == CELL_FLAGGED for x, y in poses):
+    # 若某个 pose 被推断必为雷，则无法满足条件
+    if any(game_board_copy[x][y] == CELL_FLAGGED for x, y in poses):
         return board, False
 
-    # 已打开的 pose 无需参与排雷，仅保留 UNOPENED 的 pose
-    poses = list(filter(lambda xy: game_board[xy[0]][xy[1]] == CELL_UNOPENED, poses))
+    # 只保留还未打开的 pose，已打开或已知安全的 pose 已经满足要求
+    poses = [pos for pos in poses if game_board_copy[pos[0]][pos[1]] == CELL_UNOPENED]
+    if not poses:
+        return board, True
 
-    # ── 分类未开格：约束区域 vs 自由随机区域 ─────────────
+    matrix_ases, matrix_xses, matrix_bses = ms.refresh_matrixses(game_board_copy)
 
-    # type_board 标记所有未开格的角色：
-    #   2 = 属于包含 pose 的约束块（受周边数字约束）
-    #   0 = 属于其他约束块（不受当前 pose 影响）
-    #   1 = 不属于任何约束块，可在随机区自由布雷
-    type_board = [[1 for i in range(len(board[0]))] for j in range(len(board))]
-    rand_mine_num = 0      # 随机格中的雷数
-    rand_blank_num = 0     # 随机格中的空数
-    constraint_mine_num = 0   # 约束块中的雷数
-    constraint_blank_num = 0  # 约束块中的空数
+    # 约束块求解结果
+    block_solution_groups: List[tuple[List[tuple[int, int]], dict[int, List[List[int]]]]] = []
+    all_block_vars: set[tuple[int, int]] = set()
+    fixed_mine_positions: set[tuple[int, int]] = set()
 
-    # refresh_matrixses 将 game_board 分解为约束方程组：
-    #   matrix_a(idb,idl) — 系数矩阵 (AX = B)
-    #   matrix_x(idb,idl) — 变量列表（约束块内的未开格坐标）
-    #   matrix_b(idb,idl) — 常数矩阵
-    # block = 一组独立连通的约束， line = 一个约束等式
-    matrix_ases, matrix_xses, matrix_bses = ms.refresh_matrixses(game_board)
-    for idb, block in enumerate(matrix_xses):
-        for idl, line in enumerate(block):
-            if poses[0] in line:
-                # ── 找到包含第一个 pose 的约束行 ──
-                if len(line) >= EnuLimit:
-                    # 约束规模过大，枚举不可行
-                    return board, False
-                matrix_a = matrix_ases[idb][idl]
-                matrix_x = matrix_xses[idb][idl]
-                matrix_b = matrix_bses[idb][idl]
-                # 统计约束块当前已有的雷数和空数
-                constraint_mine_num = [board[x][y]
-                                       for x, y in matrix_x].count(CELL_MINE)
-                constraint_blank_num = len(matrix_x) - constraint_mine_num
-                for (i, j) in line:
-                    type_board[i][j] = 2
-            else:
-                # 其他约束行标记为 0，不参与本 pose 的求解
-                for (i, j) in line:
-                    type_board[i][j] = 0
+    # 统计推导出的必然雷
+    for i in range(len(game_board_copy)):
+        for j in range(len(game_board_copy[0])):
+            if game_board_copy[i][j] == CELL_FLAGGED:
+                fixed_mine_positions.add((i, j))
 
-    # 扫描全盘，统计随机格（type_board == 1 && 未开/未知安全）中
-    # 原始有多少雷和空（值 12 是 mark_board 判定的「已知安全」格）
-    for idr, row in enumerate(board):
-        for idc, cell in enumerate(row):
-            if game_board[idr][idc] in (CELL_UNOPENED, 12) and type_board[idr][idc] == 1:
-                if board[idr][idc] == CELL_MINE:
-                    rand_mine_num += 1
-                else:
-                    rand_blank_num += 1
+    # 逐个约束块求解
+    for block_index, block_xs in enumerate(matrix_xses):
+        for eq_index, matrix_x in enumerate(block_xs):
+            if not matrix_x:
+                continue
+            if len(matrix_x) > EnuLimit:
+                return board, False
 
-    # ── 分支 1：约束块中原来一颗雷都没有 ─────────────────
+            matrix_a = matrix_ases[block_index][eq_index]
+            matrix_b = matrix_bses[block_index][eq_index]
+            block_vars = _unique_block_vars([matrix_x])
+            all_block_vars.update(block_vars)
 
-    if constraint_mine_num == 0:
-        # 约束块全空 → 只需确保 pose 为空，然后把多余的雷
-        # 移到随机格中（从随机空位扣一个来抵雷）
-        if rand_blank_num >= 1:
-            rand_blank_num -= 1
-            (p, q) = poses[0]
-            board[p][q] = 0
-            type_board[p][q] = 0
-        else:
-            # 随机区全是雷，没有空位来吸收这颗额外的雷
+            try:
+                solutions = ms.cal_all_solution(matrix_a, matrix_b)
+            except Exception:
+                return board, False
+            if not isinstance(solutions, list):
+                solutions = list(solutions)
+
+            pose_indices = [idx for idx, coord in enumerate(block_vars) if coord in poses]
+            if pose_indices:
+                filtered = []
+                for sol in solutions:
+                    if all(sol[idx] == 0 for idx in pose_indices):
+                        filtered.append(sol)
+                solutions = filtered
+
+            if not solutions:
+                return board, False
+
+            block_groups = _group_solutions_by_mine_count(solutions)
+            block_solution_groups.append((block_vars, block_groups))
+
+    free_positions: List[tuple[int, int]] = []
+    for i in range(len(game_board_copy)):
+        for j in range(len(game_board_copy[0])):
+            if game_board_copy[i][j] == CELL_UNOPENED and (i, j) not in all_block_vars:
+                free_positions.append((i, j))
+
+    total_mine_remaining = total_mine_count - len(fixed_mine_positions)
+    if total_mine_remaining < 0:
+        return board, False
+
+    # 计算各个约束块按雷数的解数量
+    block_count_maps: List[dict[int, int]] = []
+    for _, groups in block_solution_groups:
+        block_count_maps.append({mine_count: len(sols) for mine_count, sols in groups.items()})
+
+    # dp_forward[m] = 组合前缀的解数量
+    dp_forward: dict[int, int] = {0: 1}
+    for count_map in block_count_maps:
+        next_dp: dict[int, int] = {}
+        for prefix_mine, prefix_count in dp_forward.items():
+            for mine_count, sol_count in count_map.items():
+                next_dp[prefix_mine + mine_count] = next_dp.get(prefix_mine + mine_count, 0) + prefix_count * sol_count
+        dp_forward = next_dp
+
+    # 统计每种约束块总雷数对应的总完整解权重
+    total_weights: dict[int, int] = {}
+    free_size = len(free_positions)
+    for block_mine_sum, combo_count in dp_forward.items():
+        free_mine_count = total_mine_remaining - block_mine_sum
+        if 0 <= free_mine_count <= free_size:
+            total_weights[block_mine_sum] = combo_count * math.comb(free_size, free_mine_count)
+
+    if not total_weights:
+        return board, False
+
+    chosen_blocks_mines = _weighted_choice(list(total_weights.keys()), list(total_weights.values()))
+    chosen_free_mines = total_mine_remaining - chosen_blocks_mines
+
+    # 反向 dp 用于逐块采样
+    suffix_dp: List[dict[int, int]] = [{0: 1}]
+    for count_map in reversed(block_count_maps):
+        current: dict[int, int] = {}
+        for mine_count, sol_count in count_map.items():
+            for suffix_mines, suffix_weight in suffix_dp[0].items():
+                current[mine_count + suffix_mines] = current.get(mine_count + suffix_mines, 0) + sol_count * suffix_weight
+        suffix_dp.insert(0, current)
+
+    chosen_block_solutions: List[tuple[List[tuple[int, int]], List[int]]] = []
+    remaining_mines = chosen_blocks_mines
+    for block_index, (block_vars, groups) in enumerate(block_solution_groups):
+        next_suffix = suffix_dp[block_index + 1]
+        candidates: List[int] = []
+        weights: List[int] = []
+        for mine_count, sols in groups.items():
+            tail = remaining_mines - mine_count
+            if tail < 0:
+                continue
+            suffix_weight = next_suffix.get(tail)
+            if suffix_weight is None:
+                continue
+            candidates.append(mine_count)
+            weights.append(len(sols) * suffix_weight)
+        if not candidates:
             return board, False
+        chosen_mine_count = _weighted_choice(candidates, weights)
+        chosen_solution = choice(groups[chosen_mine_count])
+        chosen_block_solutions.append((block_vars, chosen_solution))
+        remaining_mines -= chosen_mine_count
 
-    # ── 分支 2：约束块中有雷 → 用枚举法找可行解 ───────────
+    if remaining_mines != 0:
+        return board, False
 
-    else:
-        # 可行解的总雷数范围：
-        #   下限 = 约束块原雷数 − 随机区空位数（最多能把这么多雷换到随机区）
-        #   上限 = 约束块原雷数 + 随机区雷数（最多能把这么多空变成雷）
-        # 再减去 pose 数量（它们必须空，消耗空位）
-        constraint_mine_num_max = min(constraint_mine_num + constraint_blank_num - len(poses),
-                                      constraint_mine_num + rand_mine_num)
-        constraint_mine_num_min = max(constraint_mine_num - rand_blank_num, 0)
+    if len(free_positions) < chosen_free_mines or chosen_free_mines < 0:
+        return board, False
 
-        # 枚举约束方程 AX = B 的全部 0/1 解（1=雷, 0=空）
-        all_solution = ms.cal_all_solution(matrix_a, matrix_b)
+    free_mine_positions: set[tuple[int, int]] = set()
+    if chosen_free_mines:
+        free_mine_positions = set(sample(free_positions, chosen_free_mines))
 
-        # 过滤条件：
-        #   1) 总雷数在 [min, max] 范围内
-        #   2) 所有 pose 对应的变量不能是 1（必须空）
-        idposes = [matrix_x.index(pos) for pos in poses]
-        all_solution = filter(lambda x: constraint_mine_num_min <= x.count(1) <=
-                              constraint_mine_num_max and
-                              all([x[idpos] != 1 for idpos in idposes]),
-                              all_solution)
-        all_solution = list(all_solution)
-        if not all_solution:
-            return board, False
-
-    # ── 写入结果 ────────────────────────────────────────
-
-    if constraint_mine_num > 0:
-        # 从可行解中随机选一个，更新约束块的雷局
-        solution = choice(all_solution)
-        for idx, (x, y) in enumerate(matrix_x):
-            board[x][y] = -solution[idx]
-        # 约束块雷数变化量 delta 由随机区补偿，保持总雷数不变
-        constraint_mine_num_new = solution.count(1)
-        delta = constraint_mine_num_new - constraint_mine_num
-        rand_mine_num = rand_mine_num - delta
-        rand_blank_num = rand_blank_num + delta
-
-    # 在随机区均匀散布雷和空（保持总数不变）
-    rand_board = rand_mine_num * [CELL_MINE] + rand_blank_num * [0]
-    shuffle(rand_board)
-    k = 0
+    # 生成最终雷局并重算数字格
+    result_board = [[0] * len(board[0]) for _ in range(len(board))]
     for i in range(len(board)):
         for j in range(len(board[0])):
-            if game_board[i][j] in (CELL_UNOPENED, 12) and type_board[i][j] == 1:
-                board[i][j] = rand_board[k]
-                k += 1
-            # 清零所有数字格，后面统一重算
-            if board[i][j] >= 0:
-                board[i][j] = 0
+            if game_board_copy[i][j] == CELL_FLAGGED:
+                result_board[i][j] = CELL_MINE
 
-    # 根据最终雷位重算所有数字
-    board = ms.cal_board_numbers(board)
-    return board, True
+    for block_vars, solution in chosen_block_solutions:
+        for is_mine, coord in zip(solution, block_vars):
+            if is_mine:
+                result_board[coord[0]][coord[1]] = CELL_MINE
+
+    for coord in free_mine_positions:
+        result_board[coord[0]][coord[1]] = CELL_MINE
+
+    result_board = ms.cal_board_numbers(result_board)
+    return result_board, True
 
 def board_list_to_bytes(board: List[List[int]]) -> bytes:
     if not board:
