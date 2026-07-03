@@ -12,6 +12,9 @@ def trans_expression(expression: str):
     expression = expression.replace("island", "isl")
     expression = expression.replace("chording", "double")
     expression = expression.replace("solved_bbbv", "bbbv_solved")
+    expression = expression.replace("mine_num", "minenum")
+    expression = expression.replace("width", "column")
+    expression = expression.replace("height", "row")
     return expression
 
 

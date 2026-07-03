@@ -66,6 +66,7 @@ jobs:
             --add-data "src/de_DE.qm;." `
             --add-data "src/pl_PL.qm;." `
             --add-data "src/ja_JP.qm;." `
+            --runtime-hook hook-debugpy-pyinstaller.py `
             src/main.py
 
       - name: Package plugin_manager with PyInstaller
@@ -90,6 +91,7 @@ jobs:
             --hidden-import Crypto.Cipher.AES `
             --hidden-import Crypto.Random `
             --hidden-import ms_toollib `
+            --runtime-hook hook-debugpy-pyinstaller.py `
             --distpath dist\plugin_manager_out `
             src\plugin_manager\_run.py
 
