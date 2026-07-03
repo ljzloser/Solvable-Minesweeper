@@ -93,6 +93,10 @@ class ui_Form(Ui_Form):
 
     def setParameter(self) -> None:
         self.checkBox_filter_forever.setChecked(self.filter_forever)
+        copy_format = self.game_setting.value('DEFAULT/copy_format', 1, int)
+        copy_render = self.game_setting.value('DEFAULT/copy_render', 'ascii', str)
+        self.comboBox_copy_format.setCurrentIndex(copy_format)
+        self.comboBox_copy_render.setCurrentText(copy_render)
 
     def _on_accept(self) -> None:
         self.alter = True
@@ -100,6 +104,11 @@ class ui_Form(Ui_Form):
         self.filter_forever = self.checkBox_filter_forever.isChecked()
         self.game_setting.set_value("DEFAULT/filter_forever", self.filter_forever)
         self._save_allowed_controls()
+
+        copy_format = self.comboBox_copy_format.currentIndex()
+        copy_render = self.comboBox_copy_render.currentText()
+        self.game_setting.set_value("DEFAULT/copy_format", copy_format)
+        self.game_setting.set_value("DEFAULT/copy_render", copy_render)
 
         self.game_setting.sync()
         self.Dialog.close()

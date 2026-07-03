@@ -282,6 +282,14 @@ class Ui_MainWindow(Ui_MainWindow):
         self.shortcut_hidden_score_board = QtWidgets.QShortcut(
             QtGui.QKeySequence(QtCore.Qt.Key_Slash), MainWindow) # /键隐藏计数器
 
+        self.shortcut_copy_board = QtWidgets.QShortcut(
+            QtGui.QKeySequence("Ctrl+C"), MainWindow)
+        self.shortcut_copy_board.activated.connect(lambda: self.copy_board())
+
+        self.shortcut_paste_board = QtWidgets.QShortcut(
+            QtGui.QKeySequence("Ctrl+V"), MainWindow)
+        self.shortcut_paste_board.activated.connect(lambda: self.paste_board())
+
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.minimumWindow()

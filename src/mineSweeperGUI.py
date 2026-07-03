@@ -12,6 +12,8 @@ from dialogs import gameAbout
 from dialogs import gameSettings
 from dialogs import gameSettingShortcuts
 from dialogs import gameAdvancedSettings
+from utils.board_format import (copy_board_to_clipboard,
+                                board_string_to_game_board)
 import captureScreen
 import mine_num_bar
 from dialogs import gameRecordPop
@@ -27,7 +29,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import csv
 from datetime import datetime
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metasweeper_checksum
 from mainWindowGUI import MainWindow
@@ -1482,6 +1484,40 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         self.record_setting.sync()
         event = CloseEvent()
         GameServerBridge.instance().send_event(event)
+
+    def copy_board(self):
+        if self.game_state in ("playing", "ready"):
+            return
+        try:
+            board = self.label.ms_board.board
+            if isinstance(board, ms.SafeBoard):
+                board = board.into_vec_vec()
+            game_board = self.label.ms_board.game_board
+        except AttributeError:
+            return
+        if not board:
+            return
+        copy_format = self.game_setting.value("DEFAULT/copy_format", 1, int)
+        copy_render = self.game_setting.value("DEFAULT/copy_render", "ascii", str)
+        copy_board_to_clipboard(
+            board, game_board,
+            self.row, self.column, self.minenum,
+            self.gameMode, copy_format, copy_render,
+        )
+
+    def paste_board(self):
+        if self.game_state != "study":
+            return
+        text = QApplication.clipboard().text()
+        if not text:
+            return
+        game_board, source = board_string_to_game_board(text)
+        if not game_board:
+            return
+        if len(game_board) != self.row or len(game_board[0]) != self.column:
+            return
+        self.label.ms_board.game_board = game_board
+        self.render_poss_on_board()
 
     def _read_stats_dat_short_md5s(self) -> set[bytes]:
         """读取 stats.dat 中所有记录的 short_md5"""
