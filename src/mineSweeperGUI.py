@@ -162,6 +162,8 @@ class MineSweeperGUI(MainWindowGUIImportExport):
             "row": self.row,
             "column": self.column,
             "minenum": self.minenum,
+            "max_block_len": 0,
+            "max_solutions": 0,
         })
         self.score_board_manager.reshow(self.label.ms_board, index_type=1)
         self.score_board_manager.visible()
@@ -490,6 +492,10 @@ class MineSweeperGUI(MainWindowGUIImportExport):
     def ai(self, i, j):
         self._sync_engine()
         self.engine.ai(i, j)
+        self.score_board_manager.with_namespace({
+            "max_block_len": self.engine._max_block_len,
+            "max_solutions": self.engine._max_solutions,
+        })
 
     def chording_ai(self, i, j):
         self._sync_engine()

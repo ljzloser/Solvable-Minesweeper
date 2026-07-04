@@ -35,6 +35,8 @@ class GameEngine:
         self.board_constraint: str = ""
         self.attempt_times_limit: int = 100000
         self._allowed_controls: set[str] = set()
+        self._max_block_len: int = 0
+        self._max_solutions: int = 0
 
         self.pending_boards: list[dict] = []
 
@@ -152,18 +154,18 @@ class GameEngine:
                 b[i][j] = CELL_MINE
                 self.ms_board.board = b
             elif code == 2:
-                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
+                b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
         elif gm == MODE_QUASI_NO_GUESS:
             code = ms.is_guess_while_needless(game_board, (i, j))
             if code == 2:
-                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
+                b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
         elif gm in (MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE):
             if board[i][j] == CELL_MINE:
-                b, _ = utils.enumerate_change_board(board, game_board, [(i, j)])
+                b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(board, game_board, [(i, j)])
                 self.ms_board.board = b
             return
 
@@ -221,7 +223,7 @@ class GameEngine:
                     must_guess = False
                     break
             if must_guess:
-                b, _ = utils.enumerate_change_board(
+                b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(
                     board, self.ms_board.game_board,
                     not_mine_round + is_mine_round)
                 self.ms_board.board = b
@@ -238,12 +240,12 @@ class GameEngine:
                     must_guess = False
                     break
             if must_guess:
-                b, _ = utils.enumerate_change_board(
+                b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(
                     board, self.ms_board.game_board,
                     not_mine_round + is_mine_round)
                 self.ms_board.board = b
         elif gm in (MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE):
-            b, _ = utils.enumerate_change_board(
+            b, _, self._max_block_len, self._max_solutions = utils.enumerate_change_board(
                 board, self.ms_board.game_board,
                 not_mine_round + is_mine_round)
             self.ms_board.board = b

@@ -123,7 +123,7 @@ class TestEnumerateChangeBoard:
             [10,10,10,10,10, 0, 0, 0],
         ]
         poses = [(7, 1)]
-        result, ok = enumerate_change_board(board, game_board, poses)
+        result, ok, _, _ = enumerate_change_board(board, game_board, poses)
         print("result:", result)
         assert ok
         board_after = [
@@ -169,7 +169,7 @@ class TestEnumerateChangeBoard:
                       [0, 1, 1, 2, 2, 11, 11, 11, 11, 11, 11, 11, 4, 2, 1, 2, 5, 11, 5, 3, 11, 2, 2, 3, 11, 3, 1, 2, 2, 2], 
                       [0, 1, 11, 2, 11, 3, 3, 3,3, 3, 3, 2, 1, 0, 0, 1, 11, 11, 3, 11, 3, 11, 2, 11, 2, 1, 0, 0, 0, 0]]
         poses = [(14, 27)]
-        result, ok = enumerate_change_board(board, game_board, poses)
+        result, ok, _, _ = enumerate_change_board(board, game_board, poses)
         assert ok
         print("result:", result)
 
@@ -196,7 +196,7 @@ class TestEnumerateChangeBoard:
             [10, 10, 10, 10, 10, 10, 10, 10],
         ]
         poses = [(2, 2), (2, 3), (2, 4), (3, 4), (4, 2), (4, 3), (4, 4)]
-        result, ok = enumerate_change_board(board, game_board, poses)
+        result, ok, _, _ = enumerate_change_board(board, game_board, poses)
         print("result:", result)
         assert ok 
 

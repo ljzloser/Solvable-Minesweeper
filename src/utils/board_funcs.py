@@ -164,7 +164,7 @@ def _weighted_choice(items: List[int], weights: List[int]) -> int:
 
 def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
                            game_board: List[List[int]],
-                           poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool]:
+                           poses: List[Tuple[int, int]]) -> Tuple[List[List[int]], bool, int, int]:
     """重排雷局，使指定格子(poses)都变成安全格。
 
     该实现基于约束块枚举和无约束区补偿，保证从所有满足的雷局中均等概率随机选择。
@@ -174,6 +174,8 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
 
     # 记录原始雷数，用于保持全局总雷数不变
     total_mine_count = sum(1 for row in board for cell in row if cell == CELL_MINE)
+    max_block_len = 0
+    max_solutions = 0
 
     # 复制 game_board，清除玩家标旗，仅保留已开数字
     game_board_copy = [list(row) for row in game_board]
@@ -185,14 +187,18 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
 
     # 若某个 pose 被推断必为雷，则无法满足条件
     if any(game_board_copy[x][y] == CELL_FLAGGED for x, y in poses):
-        return board, False
+        return board, False, 0, 0
 
     # 只保留还未打开的 pose，已打开或已知安全的 pose 已经满足要求
     poses = [pos for pos in poses if game_board_copy[pos[0]][pos[1]] == CELL_UNOPENED]
     if not poses:
-        return board, True
+        return board, True, max_block_len, max_solutions
 
     matrix_ases, matrix_xses, matrix_bses = ms.refresh_matrixses(game_board_copy)
+
+    for block_xs in matrix_xses:
+        block_vars = _unique_block_vars(block_xs)
+        max_block_len = max(max_block_len, len(block_vars))
 
     # 约束块求解结果
     block_solution_groups: List[tuple[List[tuple[int, int]], dict[int, List[List[int]]]]] = []
@@ -211,7 +217,7 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
             if not matrix_x:
                 continue
             if len(matrix_x) > EnuLimit:
-                return board, False
+                return board, False, max_block_len, max_solutions
 
             matrix_a = matrix_ases[block_index][eq_index]
             matrix_b = matrix_bses[block_index][eq_index]
@@ -220,8 +226,9 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
 
             try:
                 solutions = ms.cal_all_solution(matrix_a, matrix_b)
+                max_solutions = max(max_solutions, len(solutions))
             except Exception:
-                return board, False
+                return board, False, max_block_len, max_solutions
             if not isinstance(solutions, list):
                 solutions = list(solutions)
 
@@ -234,7 +241,7 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
                 solutions = filtered
 
             if not solutions:
-                return board, False
+                return board, False, max_block_len, max_solutions
 
             block_groups = _group_solutions_by_mine_count(solutions)
             block_solution_groups.append((block_vars, block_groups))
@@ -248,7 +255,7 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
 
     total_mine_remaining = total_mine_count - len(fixed_mine_positions)
     if total_mine_remaining < 0:
-        return board, False
+        return board, False, max_block_len, max_solutions
 
     # 计算各个约束块按雷数的解数量
     block_count_maps: List[dict[int, int]] = []
@@ -273,7 +280,7 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
             total_weights[block_mine_sum] = combo_count * math.comb(free_size, free_mine_count)
 
     if not total_weights:
-        return board, False
+        return board, False, max_block_len, max_solutions
 
     chosen_blocks_mines = _weighted_choice(list(total_weights.keys()), list(total_weights.values()))
     chosen_free_mines = total_mine_remaining - chosen_blocks_mines
@@ -303,17 +310,17 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
             candidates.append(mine_count)
             weights.append(len(sols) * suffix_weight)
         if not candidates:
-            return board, False
+            return board, False, max_block_len, max_solutions
         chosen_mine_count = _weighted_choice(candidates, weights)
         chosen_solution = choice(groups[chosen_mine_count])
         chosen_block_solutions.append((block_vars, chosen_solution))
         remaining_mines -= chosen_mine_count
 
     if remaining_mines != 0:
-        return board, False
+        return board, False, max_block_len, max_solutions
 
     if len(free_positions) < chosen_free_mines or chosen_free_mines < 0:
-        return board, False
+        return board, False, max_block_len, max_solutions
 
     free_mine_positions: set[tuple[int, int]] = set()
     if chosen_free_mines:
@@ -335,7 +342,7 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
         result_board[coord[0]][coord[1]] = CELL_MINE
 
     result_board = ms.cal_board_numbers(result_board)
-    return result_board, True
+    return result_board, True, max_block_len, max_solutions
 
 def board_list_to_bytes(board: List[List[int]]) -> bytes:
     if not board:
