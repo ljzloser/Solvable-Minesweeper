@@ -3,6 +3,7 @@ import tempfile
 import os
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl, QMimeData
+import ms_toollib as ms
 
 
 CELL_MINE = -1
@@ -87,6 +88,7 @@ def board_to_board_string(
     cols: int,
     mines: int,
     game_mode: int,
+    author: str = "",
     render: str = "ascii",
 ) -> str:
     use_emoji = render == "emoji"
@@ -95,6 +97,8 @@ def board_to_board_string(
     lines.append("# MINESWEEPER-BOARD v0.1")
     lines.append(f"# Render: {render}")
     lines.append("")
+    if author:
+        lines.append(f"author: {author}")
     lines.append(f"rows: {rows}")
     lines.append(f"columns: {cols}")
     lines.append(f"mines: {mines}")
@@ -133,6 +137,7 @@ def copy_board_to_clipboard(
     mines: int,
     game_mode: int,
     copy_format: int,
+    author: str = "",
     render: str = "ascii",
 ) -> None:
     if copy_format == 0:
@@ -141,16 +146,18 @@ def copy_board_to_clipboard(
 
     elif copy_format == 1:
         text = board_to_board_string(
-            real_board, game_board, rows, cols, mines, game_mode, render
+            real_board, game_board, rows, cols, mines, game_mode, author, render
         )
         QApplication.clipboard().setText(text)
 
     else:
         text = board_to_board_string(
-            real_board, game_board, rows, cols, mines, game_mode, render
+            real_board, game_board, rows, cols, mines, game_mode, author, render
         )
-        fd, path = tempfile.mkstemp(suffix=".board", prefix="board_")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+        wrapper = ms.Board(real_board)
+        name = f"{rows}x{cols}_{mines}_{wrapper.bbbv}_{wrapper.op}_{wrapper.isl}.board"
+        path = os.path.join(tempfile.gettempdir(), name)
+        with open(path, "w", encoding="utf-8") as f:
             f.write(text)
         url = QUrl.fromLocalFile(path)
         mime = QMimeData()
@@ -161,10 +168,10 @@ def copy_board_to_clipboard(
 
 _EMOJI_TO_ASCII = {
     "\u2b1c": "U",
-    "\ud83d\udea9": "F",
+    "\U0001f6a9": "F",
     "\u2753": "?",
-    "\ud83d\udca5": "X",
-    "\ud83d\udca3": "@",
+    "\U0001f4a5": "X",
+    "\U0001f4a3": "@",
     "\u274c": "#",
 }
 _EMOJI_DIGIT_SUFFIX = "\ufe0f\u20e3"
@@ -296,3 +303,113 @@ def board_string_to_game_board(text: str) -> Tuple[List[List[int]], str]:
 
     game_board = [parse_fn(line) for line in board_rows]
     return game_board, source
+
+
+_VIEW_CHARS_ASCII = set("UF*?X@#012345678")
+
+
+def _is_raw_view_ascii_line(line: str) -> bool:
+    return all(ch in _VIEW_CHARS_ASCII for ch in line)
+
+
+def _is_raw_view_emoji_line(line: str) -> bool:
+    if any(ch in _EMOJI_TO_ASCII for ch in line):
+        return True
+    if _EMOJI_DIGIT_SUFFIX in line:
+        return True
+    return False
+
+
+def _try_parse_raw_view(text: str) -> Tuple[List[List[int]], int, str]:
+    lines = [l.rstrip("\r") for l in text.splitlines() if l.strip()]
+    if len(lines) < 2:
+        return [], -1, ""
+
+    is_emoji = _is_raw_view_emoji_line(lines[0])
+    if is_emoji:
+        if not all(_is_raw_view_emoji_line(l) for l in lines):
+            return [], -1, ""
+        parse_fn = _parse_view_line_emoji
+        game_board = [parse_fn(l) for l in lines]
+        # Count bomba and unmarked mines as mines in emoji mode
+        mine_count = sum(
+            1 for row in game_board for cell in row if cell in (-1, CELL_STEPPED_MINE, CELL_UNMARKED_MINE)
+        )
+    else:
+        if not all(_is_raw_view_ascii_line(l) for l in lines):
+            return [], -1, ""
+        width = len(lines[0])
+        if any(len(l) != width for l in lines):
+            return [], -1, ""
+        parse_fn = _parse_view_line_ascii
+        game_board = [parse_fn(l) for l in lines]
+        # Count * (mine) and @ (unmarked mine) as mines in ascii mode
+        mine_count = sum(
+            1 for row in game_board for cell in row if cell in (-1, CELL_STEPPED_MINE, CELL_UNMARKED_MINE)
+        )
+
+    width = len(game_board[0])
+    if any(len(r) != width for r in game_board):
+        return [], -1, ""
+    return game_board, mine_count, "raw_view"
+
+
+def _try_parse_raw_real(text: str) -> Tuple[List[List[int]], int, str]:
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if len(lines) < 2:
+        return [], -1, ""
+    rows = []
+    mine_count = 0
+    for line in lines:
+        tokens = [t.strip() for t in line.replace(",", " ").split()]
+        if not tokens:
+            return [], -1, ""
+        try:
+            int_row = [int(t) for t in tokens]
+            mine_count += sum(1 for v in int_row if v in (-1, 9))
+            rows.append(int_row)
+        except ValueError:
+            return [], -1, ""
+    width = len(rows[0])
+    if any(len(r) != width for r in rows):
+        return [], -1, ""
+    game_board = [[10 if cell in (-1, 9) else cell for cell in row] for row in rows]
+    return game_board, mine_count, "raw_real"
+
+
+def parse_board_text(text: str) -> Tuple[List[List[int]], int, str]:
+    """Parse clipboard text as .board format or real board array.
+    Returns (board, mines, source) where source is "view", "real", "array",
+    "raw_view", "raw_real", or "".
+    mines is -1 if unknown.
+    """
+    board, source = board_string_to_game_board(text)
+    if board:
+        parsed = parse_board_string(text)
+        mines = parsed.get("mines", -1)
+        if mines is None:
+            mines = -1
+        return board, mines, source
+
+    try:
+        import json
+        data = json.loads(text)
+        if isinstance(data, list) and all(isinstance(row, list) for row in data):
+            mine_count = sum(1 for row in data for cell in row if cell in (-1, 9))
+            game_board = [
+                [10 if cell in (-1, 9) else int(cell) for cell in row]
+                for row in data
+            ]
+            return game_board, mine_count, "array"
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+
+    board, mines, source = _try_parse_raw_view(text)
+    if board:
+        return board, mines, source
+
+    board, mines, source = _try_parse_raw_real(text)
+    if board:
+        return board, mines, source
+
+    return [], -1, ""

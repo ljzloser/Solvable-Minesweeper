@@ -13,7 +13,7 @@ from dialogs import gameSettings
 from dialogs import gameSettingShortcuts
 from dialogs import gameAdvancedSettings
 from utils.board_format import (copy_board_to_clipboard,
-                                board_string_to_game_board)
+                                parse_board_text)
 import captureScreen
 import mine_num_bar
 from dialogs import gameRecordPop
@@ -1502,22 +1502,80 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         copy_board_to_clipboard(
             board, game_board,
             self.row, self.column, self.minenum,
-            self.gameMode, copy_format, copy_render,
+            self.gameMode, copy_format,
+            author=self.player_identifier, render=copy_render,
         )
 
     def paste_board(self):
-        if self.game_state != "study":
+        if self.game_state not in (
+            "study", "ready", "fail", "win",
+            "jofail", "jowin", "display", "showdisplay",
+        ):
             return
+
         text = QApplication.clipboard().text()
-        if not text:
-            return
-        game_board, source = board_string_to_game_board(text)
+        game_board = mines = None
+
+        if text:
+            game_board, mines, source = parse_board_text(text)
+
         if not game_board:
+            mime = QApplication.clipboard().mimeData()
+            if mime.hasUrls():
+                for url in mime.urls():
+                    if url.isLocalFile() and url.toLocalFile().endswith(".board"):
+                        try:
+                            with open(url.toLocalFile(), "r", encoding="utf-8") as f:
+                                game_board, mines, source = parse_board_text(f.read())
+                            if game_board:
+                                break
+                        except OSError:
+                            continue
+
+        if not game_board:
+            QMessageBox.warning(self.mainWindow, "粘贴失败", "剪贴板内容无法识别为扫雷局面")
             return
-        if len(game_board) != self.row or len(game_board[0]) != self.column:
-            return
+
+        rows, cols = len(game_board), len(game_board[0])
+        if mines <= 0:
+            mines = max(1, rows * cols // 6)
+        self.set_board_params(rows, cols, mines)
+        self.label.paintProbability = True
+        self.label.set_rcp(rows, cols, self.pixSize)
+        self.label.ms_board.reset(rows, cols, self.pixSize)
+
+        if self.game_state == "display" or self.game_state == "showdisplay":
+            self.video_playing = False
+            self.timer_video.stop()
+
+        self.timer_10ms.stop()
+        self.score_board_manager.invisible()
+
+        try:
+            self.num_bar_ui.QWidget.close()
+        except AttributeError:
+            pass
+        self.mineNumShow = mines if mines > 0 else max(1, rows * cols // 6)
+        self.num_bar_ui = mine_num_bar.ui_Form(
+            (self.mineNumShow, self.mineNumShow, self.mineNumShow),
+            self.pixSize * rows, self.mainWindow,
+        )
+        self.num_bar_ui.QWidget.barSetMineNum.connect(self.showMineNum)
+        self.num_bar_ui.QWidget.barSetMineNumCalPoss.connect(
+            self.render_poss_on_board)
+        self.num_bar_ui.setSignal()
+        QTimer.singleShot(1, self.num_bar_ui.QWidget.show)
+
+        self.game_state = "study"
+        self.set_face(14)
+
+        game_board = [[cell if 0 <= cell <= 8 else 10 for cell in row] for row in game_board]
         self.label.ms_board.game_board = game_board
+        self.label.ms_board.mouse_state = 1
+        self.label.ms_board.game_board_state = 1
+        self.showMineNum(self.mineNumShow)
         self.render_poss_on_board()
+        self.minimumWindow()
 
     def _read_stats_dat_short_md5s(self) -> set[bytes]:
         """读取 stats.dat 中所有记录的 short_md5"""
