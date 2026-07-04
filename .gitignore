@@ -160,6 +160,7 @@ toollib/frame.csv
 *.rmv
 *.rar
 *.ini
+!pytest.ini
 *.autosave
 *.qm
 *.evf

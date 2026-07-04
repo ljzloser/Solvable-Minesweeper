@@ -1,4 +1,4 @@
-from random import shuffle, choice, sample, random
+from random import shuffle, choice, sample, random, randint
 from typing import List, Tuple
 import math
 
@@ -153,8 +153,8 @@ def _weighted_choice(items: List[int], weights: List[int]) -> int:
     total = sum(weights)
     if total <= 0:
         raise ValueError("no positive weights")
-    threshold = random() * total
-    cumulative = 0.0
+    threshold = randint(0, total - 1)
+    cumulative = 0
     for item, weight in zip(items, weights):
         cumulative += weight
         if threshold < cumulative:
