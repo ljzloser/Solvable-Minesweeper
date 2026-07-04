@@ -240,9 +240,10 @@ def enumerate_change_board(board: ms.EvfVideo | List[List[int]],
             block_solution_groups.append((block_vars, block_groups))
 
     free_positions: List[tuple[int, int]] = []
+    pose_set = set(poses)
     for i in range(len(game_board_copy)):
         for j in range(len(game_board_copy[0])):
-            if game_board_copy[i][j] == CELL_UNOPENED and (i, j) not in all_block_vars:
+            if game_board_copy[i][j] == CELL_UNOPENED and (i, j) not in all_block_vars and (i, j) not in pose_set:
                 free_positions.append((i, j))
 
     total_mine_remaining = total_mine_count - len(fixed_mine_positions)
