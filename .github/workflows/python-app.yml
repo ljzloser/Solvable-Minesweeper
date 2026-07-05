@@ -2,15 +2,8 @@ name: Build metasweeper
 
 on:
   push:
-    branches:
-      - main
-      - master
     tags:
       - '*'
-  pull_request:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
 jobs:
@@ -50,6 +43,12 @@ jobs:
           cd ..
           move package_tool\metasweeper_checksum.pyd src\metasweeper_checksum.pyd
           del src\metasweeper_checksum.py
+
+      - name: Generate random icon
+        run: |
+          cd package_tool
+          python -u randomize_cat_icon.py
+          copy /Y cat.ico ..\src\media\cat.ico
 
       - name: Package main app with PyInstaller
         run: |

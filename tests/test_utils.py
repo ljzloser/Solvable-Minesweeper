@@ -138,6 +138,33 @@ class TestEnumerateChangeBoard:
         ]
         assert result == board_after
 
+
+
+    def test_2(self):
+        board = [[1, -1, 2, 2, 3, 4, -1, 3],
+                [3, 3, 4, -1, -1, -1, -1, -1],
+                [-1, -1, 6, -1, 6, -1, 7, -1],
+                [-1, -1, -1, -1, 5, 4, -1, -1],
+                [-1, -1, -1, 5, -1, -1, 6, -1],
+                [-1, -1, 6, 5, -1, 5, -1, -1],
+                [-1, -1, -1, -1, 4, 6, -1, -1],
+                [2, 4, -1, 4, -1, -1, -1, -1]]
+        game_board = [[1, 11, 2, 2, 3, 4, 11, 10],
+                      [3, 3, 4, 11, 11, 11, 11, 10],
+                      [11, 11, 6, 11, 6, 11, 10, 10], 
+                      [10, 11, 11, 11, 5, 11, 10, 10], 
+                      [10, 10, 10, 5, 10, 11, 10, 10], 
+                      [10, 10, 10, 10, 10, 10, 10, 10], 
+                      [10, 10, 10, 10, 10, 10, 10, 10], 
+                      [10, 10, 10, 10, 10, 10, 10, 10]]
+        
+        poses = [(4, 4)]
+        result, ok, _, _ = enumerate_change_board(board, game_board, poses)
+        print("result:", result)
+        assert not ok
+
+
+
     # python -m pytest tests/test_utils.py::TestEnumerateChangeBoard::test_success -sv
     def test_success(self):
         """填入一组能走通 enumerate_change_board 的参数"""

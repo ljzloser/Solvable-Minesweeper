@@ -10,8 +10,9 @@ PyQt5-stubs>=5.15.6.0
 requests>=2.33.1
 textdistance
 pycryptodome>=3.20.0
+PyMCUlib>=1.0.3
 
-# 开发/测试依赖
+# 开发/测试/打包依赖
 pytest>=7.4.0
 pytest-qt>=4.2.0
 mypy>=1.8.0
