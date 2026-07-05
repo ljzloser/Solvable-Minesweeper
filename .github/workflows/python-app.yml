@@ -65,7 +65,7 @@ jobs:
             --add-data "src/de_DE.qm;." `
             --add-data "src/pl_PL.qm;." `
             --add-data "src/ja_JP.qm;." `
-            --runtime-hook hook-debugpy-pyinstaller.py `
+            --runtime-hook package_tool/hook-debugpy-pyinstaller.py `
             src/main.py
 
       - name: Package plugin_manager with PyInstaller
@@ -90,7 +90,7 @@ jobs:
             --hidden-import Crypto.Cipher.AES `
             --hidden-import Crypto.Random `
             --hidden-import ms_toollib `
-            --runtime-hook hook-debugpy-pyinstaller.py `
+            --runtime-hook package_tool/hook-debugpy-pyinstaller.py `
             --distpath dist\plugin_manager_out `
             src\plugin_manager\_run.py
 
@@ -117,6 +117,54 @@ jobs:
                   shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
                   print(f'Copied {pkg}')
           "
+
+      - name: Strip unnecessary Qt binaries
+        shell: powershell
+        run: |
+          $qt = "dist\metasweeper\_internal\PyQt5\Qt5"
+
+          # 1) 删除不用的 Qt 模块 DLL (~8.6 MB)
+          $unusedDlls = @(
+            "Qt5Quick.dll", "Qt5Qml.dll", "Qt5QmlModels.dll",
+            "Qt5DBus.dll", "Qt5Svg.dll"
+          )
+          foreach ($dll in $unusedDlls) {
+            $path = "$qt\bin\$dll"
+            if (Test-Path $path) { Remove-Item $path -Force; Write-Output "Removed $dll" }
+          }
+
+          # 2) 删除软件 OpenGL 回退 (~20 MB)
+          $swgl = "$qt\bin\opengl32sw.dll"
+          if (Test-Path $swgl) { Remove-Item $swgl -Force; Write-Output "Removed opengl32sw.dll" }
+
+          # 3) 删除不必要的 Qt 平台插件 (~1.5 MB)
+          $unusedPlugins = @("qminimal.dll", "qoffscreen.dll", "qwebgl.dll")
+          $pluginDir = "$qt\plugins\platforms"
+          foreach ($dll in $unusedPlugins) {
+            $path = "$pluginDir\$dll"
+            if (Test-Path $path) { Remove-Item $path -Force; Write-Output "Removed $dll" }
+          }
+
+          # 4) 保留 qtbase_*.qm（Qt 内建对话框翻译），删除其他模块的无用翻译 (~4 MB)
+          $transDir = "$qt\translations"
+          if (Test-Path $transDir) {
+            Get-ChildItem "$transDir\*.qm" | Where-Object {
+              -not $_.BaseName.StartsWith("qtbase_")
+            } | Remove-Item -Force
+            $remaining = (Get-ChildItem "$transDir\*.qm" | Measure-Object).Count
+            Write-Output "Trimmed Qt translations (kept $remaining qtbase_*.qm files)"
+          }
+
+          # 5) 删除 Qt 捆绑的旧版 OpenSSL (~3.7 MB)，让 pycryptodome 的 libcrypto-3 处理
+          $oldSsl = @("libcrypto-1_1-x64.dll", "libssl-1_1-x64.dll")
+          foreach ($dll in $oldSsl) {
+            $path = "$qt\bin\$dll"
+            if (Test-Path $path) { Remove-Item $path -Force; Write-Output "Removed $dll" }
+          }
+
+          # 报告最终大小
+          $total = (Get-ChildItem -Recurse "dist\metasweeper" -File | Measure-Object -Property Length -Sum).Sum
+          Write-Output "Final metasweeper dist size: $('{0:N2}' -f ($total/1MB)) MB"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
