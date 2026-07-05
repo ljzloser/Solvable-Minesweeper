@@ -1,14 +1,49 @@
-from ui.uiComponents import RoundQWidget
-from ui.ui_video_control import Ui_Form
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
-    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox
+import os
+import re
+from pathlib import Path
+
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
-from pathlib import Path
-import os
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
+    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox
+
 import ms_toollib as ms
+from ui.uiComponents import RoundQWidget
+from ui.ui_video_control import Ui_Form
 from utils.app_logger import logger
+
+_translate = QtCore.QCoreApplication.translate
+
+# ── 评论翻译 ──────────────────────────────────────────────
+# severity + key → 可翻译模板
+_COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
+    ("error", "high_risk_guess"):        "Dangerous guess (correct probability {0})",
+    ("feature", "hard_judgment"):        "Hard judgment ({0})",
+    ("warning", "needless_guess"):       "Needless guess while judgment available",
+    ("error", "mouse_trace_too_curved"): "Too curved mouse trace ({0}%)",
+    ("warning", "mouse_trace_curved"):   "Curved mouse trace ({0}%)",
+    ("suspect", "mouse_trace_straight"): "Suspiciously straight mouse trace",
+    ("warning", "vision_transfer"):      "Vision transfer while judgment available",
+    ("feature", "fl_local"):             "Textbook FL local ({0} steps)",
+}
+
+def _translate_comments(comments: str) -> list[tuple[str, str]]:
+    if not comments:
+        return []
+    result: list[tuple[str, str]] = []
+    for seg in comments.split(";"):
+        seg = seg.strip()
+        if not seg:
+            continue
+        m = re.match(r"^(\w+):(\w+):(.+)$", seg)
+        if m:
+            severity, key, params = m.group(1), m.group(2), m.group(3).strip()
+            template = _COMMENT_TEMPLATES.get((severity, key))
+            if template:
+                text = _translate("VideoControl", template).format(params)
+                result.append((severity, text))
+    return result
 
 
 class CommentCheckBox(QWidget):
@@ -440,10 +475,9 @@ class ui_Form(QWidget, Ui_Form):
         comments = []
         for event in video.events:
             t = event.time
-            comment = event.comments
-            if comment:
-                comments.append((t, [i.split(': ')
-                                for i in comment.split(';')[:-1]]))
+            parsed = _translate_comments(event.comments)
+            if parsed:
+                comments.append((t, parsed))
                 
         
         self.tab_id += 1
@@ -456,10 +490,10 @@ class ui_Form(QWidget, Ui_Form):
             c1 = CommentLabel(tab.scrollAreaWidgetContents, comment[0])
             c1.setGeometry(QtCore.QRect(0, 42 * comment_row, 68, 42))
             c1.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
-            for list_ in comment[1]:
-                c2 = CommentLabel(tab.scrollAreaWidgetContents, list_[0])
+            for severity, text in comment[1]:
+                c2 = CommentLabel(tab.scrollAreaWidgetContents, severity)
                 c2.setGeometry(QtCore.QRect(68, 42 * comment_row, 90, 42))
-                c3 = CommentLabel(tab.scrollAreaWidgetContents, list_[1])
+                c3 = CommentLabel(tab.scrollAreaWidgetContents, text)
                 c3.setGeometry(QtCore.QRect(158, 42 * comment_row, 300, 42))
                 c3.setWordWrap(True)
                 comment_row += 1
