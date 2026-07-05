@@ -156,30 +156,6 @@ class ui_Form(Ui_Form):
             self.game_setting.set_value("EXPERT/board_constraint", self.board_constraint)
             self.game_setting.set_value("EXPERT/attempt_times_limit", self.attempt_times_limit)
             self.game_setting.set_value("EXPERT/pixsize", self.pixSize)
-        elif (self.row, self.column, self.minenum) ==\
-            (self.game_setting.value("CUSTOM_PRESET_4/row", None, int),
-             self.game_setting.value("CUSTOM_PRESET_4/column", None, int),
-             self.game_setting.value("CUSTOM_PRESET_4/mine_num", None, int)):
-            self.game_setting.set_value("CUSTOM_PRESET_4/gamemode", self.gameMode)
-            self.game_setting.set_value("CUSTOM_PRESET_4/board_constraint", self.board_constraint)
-            self.game_setting.set_value("CUSTOM_PRESET_4/attempt_times_limit", self.attempt_times_limit)
-            self.game_setting.set_value("CUSTOM_PRESET_4/pixsize", self.pixSize)
-        elif (self.row, self.column, self.minenum) ==\
-            (self.game_setting.value("CUSTOM_PRESET_5/row", None, int),
-             self.game_setting.value("CUSTOM_PRESET_5/column", None, int),
-             self.game_setting.value("CUSTOM_PRESET_5/mine_num", None, int)):
-            self.game_setting.set_value("CUSTOM_PRESET_5/gamemode", self.gameMode)
-            self.game_setting.set_value("CUSTOM_PRESET_5/board_constraint", self.board_constraint)
-            self.game_setting.set_value("CUSTOM_PRESET_5/attempt_times_limit", self.attempt_times_limit)
-            self.game_setting.set_value("CUSTOM_PRESET_5/pixsize", self.pixSize)
-        elif (self.row, self.column, self.minenum) ==\
-            (self.game_setting.value("CUSTOM_PRESET_6/row", None, int),
-             self.game_setting.value("CUSTOM_PRESET_6/column", None, int),
-             self.game_setting.value("CUSTOM_PRESET_6/mine_num", None, int)):
-            self.game_setting.set_value("CUSTOM_PRESET_6/gamemode", self.gameMode)
-            self.game_setting.set_value("CUSTOM_PRESET_6/board_constraint", self.board_constraint)
-            self.game_setting.set_value("CUSTOM_PRESET_6/attempt_times_limit", self.attempt_times_limit)
-            self.game_setting.set_value("CUSTOM_PRESET_6/pixsize", self.pixSize)
         else:
             self.game_setting.set_value("CUSTOM/gamemode", self.gameMode)
             self.game_setting.set_value("CUSTOM/board_constraint", self.board_constraint)

@@ -1180,14 +1180,13 @@ class MineSweeperGUI(MainWindowGUIImportExport):
             self.attempt_times_limit = ui.attempt_times_limit
 
             board_key = (self.row, self.column, self.minenum)
-            if board_key == (8, 8, 10):
-                idx = 1
-            elif board_key == (16, 16, 40):
-                idx = 2
-            elif board_key == (16, 30, 99):
-                idx = 3
-            else:
-                idx = 0
+            idx = IDX_CUSTOM
+            if board_key == BOARD_BEGINNER:
+                idx = IDX_BEGINNER
+            elif board_key == BOARD_INTERMEDIATE:
+                idx = IDX_INTERMEDIATE
+            elif board_key == BOARD_EXPERT:
+                idx = IDX_EXPERT
             self.predefinedBoardPara[idx]['attempt_times_limit'] = self.attempt_times_limit
             self.predefinedBoardPara[idx]['board_constraint'] = self.board_constraint
             self.predefinedBoardPara[idx]['gamemode'] = ui.gameMode
@@ -1472,11 +1471,11 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
 
         board_key = (self.row, self.column, self.minenum)
-        if board_key == (8, 8, 10):
+        if board_key == BOARD_BEGINNER:
             section = "BEGINNER"
-        elif board_key == (16, 16, 40):
+        elif board_key == BOARD_INTERMEDIATE:
             section = "INTERMEDIATE"
-        elif board_key == (16, 30, 99):
+        elif board_key == BOARD_EXPERT:
             section = "EXPERT"
         else:
             section = "CUSTOM"
