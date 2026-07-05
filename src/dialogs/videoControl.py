@@ -455,7 +455,7 @@ class ui_Form(QWidget, Ui_Form):
         m = r_path.with_name('media').as_posix()
         self.pushButton_replay.setStyleSheet(self.pushButton_replay.styleSheet().replace("url(media/", f"url({m}/"))
         self.pushButton_play.setStyleSheet(self.pushButton_play.styleSheet().replace("url(media/", f"url({m}/"))
-        self.label_2.setStyleSheet(self.label_2.styleSheet().replace("url(media/", f"url({m}/"))
+        # self.label_2.setStyleSheet(self.label_2.styleSheet().replace("url(media/", f"url({m}/"))
         self.label_speed.setStyleSheet(self.label_speed.styleSheet().replace("url(media/", f"url({m}/"))
 
         self.QWidget.closeEvent_.connect(self.close)

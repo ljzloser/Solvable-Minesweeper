@@ -225,7 +225,7 @@ class SpeedLabel(QtWidgets.QLabel):
             if self.speed_gear_id < 0:
                 self.speed_gear_id = 0
         text = self.speed_gear[self.speed_gear_id]
-        self.setText(text)
+        self.setText(text + "×")
         self.wEvent.emit(float(text))
 
 
