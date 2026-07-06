@@ -153,8 +153,6 @@ gameSetting.ini
 /src/replay/
 src/picture.png
 src/media/cat.ico
-src/params.onnx
-toollib/frame.csv
 /uiFiles/media/
 
 *.avf
