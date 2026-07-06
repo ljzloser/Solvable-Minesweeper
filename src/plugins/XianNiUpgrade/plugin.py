@@ -135,6 +135,7 @@ class XianNiUpgradePlugin(BasePlugin):
         assets_path = Path(__file__).parent
         self._ui.set_image_dir(assets_path)
         self._ui.set_absorb_callbacks(self.validate_replays, self.absorb_replays)
+        self._ui.set_save_callbacks(self.validate_save, self.absorb_save)
         return self._ui
 
     def on_initialized(self) -> None:
@@ -408,6 +409,114 @@ class XianNiUpgradePlugin(BasePlugin):
 
         if len(self._history) > 1000:
             self._history = self._history[-1000:]
+
+        self._save_data()
+        self._push_ui_update()
+        return gained_total
+
+    # ═══════════════════════════════════════════════════════════
+    # 导入道行存档（3.3.1+ 版本之间跨版本累计）
+    # ═══════════════════════════════════════════════════════════
+
+    def validate_save(self, dir_path: str) -> dict | None:
+        """递归搜索 player_data.dat，解析并去重后返回预览"""
+        files = list(Path(dir_path).rglob("player_data.dat"))
+        if not files:
+            return None
+
+        parsed = []
+        for fp in files:
+            try:
+                raw = _decrypt(fp.read_bytes())
+                data = json.loads(raw)
+                if "identifiers" in data and "players" in data:
+                    parsed.append(data)
+            except Exception:
+                continue
+
+        if not parsed:
+            return None
+
+        # 跨文件去重：同一 identifier 取最高经验
+        merged: dict[str, int] = {}
+        for data in parsed:
+            for identifier, player in zip(data["identifiers"], data["players"]):
+                xp = player["xp"]
+                if identifier not in merged or xp > merged[identifier]:
+                    merged[identifier] = xp
+
+        return {
+            "files": parsed,
+            "preview": {
+                "players": [{"identifier": k, "xp": v} for k, v in merged.items()],
+                "total_xp": sum(merged.values()),
+                "total_players": len(merged),
+            },
+        }
+
+    def absorb_save(self, preview: dict) -> int:
+        """合并预览中的存档数据到当前玩家"""
+        # 第一步：跨文件去重，每个 identifier 取最高经验
+        merged: dict[str, int] = {}
+        for data in preview["files"]:
+            for identifier, player in zip(data["identifiers"], data["players"]):
+                xp = player["xp"]
+                if identifier not in merged or xp > merged[identifier]:
+                    merged[identifier] = xp
+
+        gained_total = 0
+
+        # 第二步：合并玩家经验
+        for identifier, import_xp in merged.items():
+            pid = self._get_or_create_pid(identifier)
+            player = self._players[pid]
+            if import_xp > player["xp"]:
+                added = import_xp - player["xp"]
+                player["xp"] = import_xp
+                gained_total += added
+
+            while player["level"] < 100:
+                need = _total_xp(player["level"] + 1)
+                if player["xp"] < need:
+                    break
+                player["level"] += 1
+
+            top = _total_xp(100)
+            if player["xp"] > top:
+                player["xp"] = top
+
+        # 第三步：合并修行日志（按新 pid + 时间去重）
+        existing_keys = set((h["pid"], h["time"]) for h in self._history)
+        old_idents = []
+        old_histories = []
+        for data in preview["files"]:
+            old_idents.append(data.get("identifiers", []))
+            old_histories.append(data.get("history", []))
+
+        for idents, history in zip(old_idents, old_histories):
+            for h in history:
+                old_pid = h.get("pid", 0)
+                identifier = idents[old_pid] if 0 <= old_pid < len(idents) else None
+                if identifier is None:
+                    continue
+                try:
+                    new_pid = self._identifiers.index(identifier)
+                except ValueError:
+                    continue
+                key = (new_pid, h["time"])
+                if key not in existing_keys:
+                    entry = dict(h)
+                    entry["pid"] = new_pid
+                    self._history.append(entry)
+                    existing_keys.add(key)
+
+        if len(self._history) > 1000:
+            self._history.sort(key=lambda x: x["time"])
+            self._history = self._history[-1000:]
+
+        # 第四步：合并已导入录像集
+        for data in preview["files"]:
+            self._imported.update(tuple(v) for v in data.get("imported_videos", []))
 
         self._save_data()
         self._push_ui_update()
