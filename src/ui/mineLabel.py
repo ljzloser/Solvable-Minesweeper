@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath, QColor, QPen
+from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath, QColor, QPen, QFont
 import ms_toollib as ms
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QPoint, Qt, QRect
 from config.constants import BOARD_READY, BOARD_PLAYING, CELL_UNOPENED
 from shared_types.enums import MouseState
 import utils
@@ -40,6 +40,11 @@ class mineLabel(QtWidgets.QLabel):
         self.path_trace_right_clicks = set()
         self.path_trace_double_clicks = set()
         self.current_trace_event_id = 0
+        self.show_opening = False
+        self.opening_nums = []
+        self.opening_ops = []
+        self.opening_ops2 = []
+        self.opening_count = 0
 
     def setPath(self, r_path):
         # 告诉局面控件，相对路径
@@ -170,6 +175,143 @@ class mineLabel(QtWidgets.QLabel):
             self.mousewheelEvent.emit(angle_y, yy // self.pixSize, xx // self.pixSize)
 
 
+    def compute_openings(self):
+        gb = self.ms_board.game_board
+        row = len(gb)
+        col = len(gb[0])
+        nums = [[-1] * col for _ in range(row)]
+        ops = [[0] * col for _ in range(row)]
+        ops2 = [[0] * col for _ in range(row)]
+        for i in range(row):
+            for j in range(col):
+                val = gb[i][j]
+                if 0 <= val <= 8:
+                    nums[i][j] = val
+        opening_count = 0
+        for i in range(row):
+            for j in range(col):
+                if nums[i][j] != 0 or ops[i][j] != 0:
+                    continue
+                opening_count += 1
+                stack = [(i, j)]
+                while stack:
+                    ci, cj = stack.pop()
+                    if not (0 <= ci < row and 0 <= cj < col) or nums[ci][cj] == -1:
+                        continue
+                    if ops[ci][cj] == opening_count or ops2[ci][cj] == opening_count:
+                        continue
+                    if nums[ci][cj] == 0:
+                        ops[ci][cj] = opening_count
+                        for di in (-1, 0, 1):
+                            for dj in (-1, 0, 1):
+                                if di != 0 or dj != 0:
+                                    ni, nj = ci + di, cj + dj
+                                    if 0 <= ni < row and 0 <= nj < col:
+                                        if nums[ni][nj] == 0 and ops[ni][nj] == 0:
+                                            stack.append((ni, nj))
+                                        elif nums[ni][nj] > 0:
+                                            if ops[ni][nj] == 0:
+                                                ops[ni][nj] = opening_count
+                                            elif ops[ni][nj] != opening_count and ops2[ni][nj] == 0:
+                                                ops2[ni][nj] = opening_count
+                    elif nums[ci][cj] > 0:
+                        if ops[ci][cj] == 0:
+                            ops[ci][cj] = opening_count
+                        elif ops[ci][cj] != opening_count and ops2[ci][cj] == 0:
+                            ops2[ci][cj] = opening_count
+        self.opening_nums = nums
+        self.opening_ops = ops
+        self.opening_ops2 = ops2
+        self.opening_count = opening_count
+
+    def draw_openings(self, painter):
+        pix_size = self.pixSize
+        row = len(self.opening_ops)
+        col = len(self.opening_ops[0])
+        nums = self.opening_nums
+        ops = self.opening_ops
+        ops2 = self.opening_ops2
+
+        def same_opening(i1, j1, i2, j2):
+            if not (0 <= i2 < row and 0 <= j2 < col):
+                return False
+            if ops[i2][j2] == 0 and ops2[i2][j2] == 0:
+                return False
+            return (ops[i1][j1] == ops[i2][j2] or
+                    ops[i1][j1] == ops2[i2][j2] or
+                    ops2[i1][j1] == ops[i2][j2] or
+                    ops2[i1][j1] == ops2[i2][j2])
+
+        def is_zero_same(i1, j1, i2, j2):
+            if not (0 <= i2 < row and 0 <= j2 < col):
+                return False
+            return nums[i2][j2] == 0 and same_opening(i1, j1, i2, j2)
+
+        def is_nonzero_same(i1, j1, i2, j2):
+            if not (0 <= i2 < row and 0 <= j2 < col):
+                return False
+            return nums[i2][j2] > 0 and same_opening(i1, j1, i2, j2)
+
+        # 画黄色连线（将op边界格子的中心点连起来）
+        pen = QPen(QColor("#ffff00"), 3)
+        painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
+
+        for i in range(row):
+            for j in range(col):
+                if ops[i][j] <= 0 or nums[i][j] <= 0:
+                    continue
+
+                nonzero_down = is_nonzero_same(i, j, i + 1, j)
+                nonzero_right = is_nonzero_same(i, j, i, j + 1)
+
+                if nonzero_down:
+                    if (is_zero_same(i, j, i, j - 1) or
+                        is_zero_same(i, j, i, j + 1) or
+                        is_zero_same(i, j, i + 1, j - 1) or
+                        is_zero_same(i, j, i + 1, j + 1)):
+                        cx = int((j + 0.5) * pix_size)
+                        cy1 = 0 if i == 0 else int((i + 0.5) * pix_size)
+                        cy2 = int((i + 2.0) * pix_size) if i == row - 2 else int((i + 1.5) * pix_size)
+                        painter.drawLine(cx, cy1, cx, cy2)
+
+                if nonzero_right:
+                    if (is_zero_same(i, j, i - 1, j) or
+                        is_zero_same(i, j, i + 1, j) or
+                        is_zero_same(i, j, i - 1, j + 1) or
+                        is_zero_same(i, j, i + 1, j + 1)):
+                        cy = int((i + 0.5) * pix_size)
+                        cx1 = 0 if j == 0 else int((j + 0.5) * pix_size)
+                        cx2 = int((j + 2.0) * pix_size) if j == col - 2 else int((j + 1.5) * pix_size)
+                        painter.drawLine(cx1, cy, cx2, cy)
+
+        # 画黄色编号
+        if self.opening_count > 0:
+            pts = [[] for _ in range(self.opening_count)]
+            for i in range(row):
+                for j in range(col):
+                    k = ops[i][j]
+                    if nums[i][j] == 0 and k > 0 and k <= self.opening_count:
+                        pts[k - 1].append((i, j))
+
+            font = painter.font()
+            font.setPixelSize(max(8, int(pix_size * 0.7)))
+            painter.setFont(font)
+            painter.setPen(QColor("#ffff00"))
+
+            for k in range(self.opening_count):
+                p = pts[k]
+                if not p:
+                    continue
+                xs = sorted(set(x for x, _ in p))
+                mx = xs[len(xs) // 2]
+                ys = sorted([y for x, y in p if x == mx])
+                my = ys[len(ys) // 2]
+                cx = my * pix_size
+                cy = mx * pix_size
+                painter.drawText(QRect(cx, cy, pix_size, pix_size),
+                                 Qt.AlignCenter, str(k + 1))
+
     def paintEvent(self, event):
         super().paintEvent(event)
         pix_size = self.pixSize
@@ -205,6 +347,11 @@ class mineLabel(QtWidgets.QLabel):
                 else:
                     painter.drawPixmap(j * pix_size, i * pix_size, QPixmap(self.pixmapNum[game_board[i][j]]))
 
+
+        # 画 openings 黄色边框和编号
+        if self.show_opening:
+            self.compute_openings()
+            self.draw_openings(painter)
 
         # 画高亮
         if (game_board_state == BOARD_PLAYING or game_board_state == BOARD_READY or game_board_state == 5) and\

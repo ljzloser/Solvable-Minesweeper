@@ -204,4 +204,6 @@ class Ui_Form(object):
         self.pushButton_replay.setToolTip(_translate("Form", "重播"))
         self.pushButton_play.setToolTip(_translate("Form", "播放/暂停"))
         self.label_speed.setToolTip(_translate("Form", "滑动滚轮修改播放速度"))
+        self.pushButton_path.setToolTip(_translate("Form", "显示鼠标轨迹"))
+        self.pushButton_op.setToolTip(_translate("Form", "显示空"))
 from ui.uiComponents import SpeedLabel

@@ -258,6 +258,9 @@ color: #50A6EA;}</string>
           <height>40</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>显示鼠标轨迹</string>
+        </property>
         <property name="styleSheet">
          <string notr="true">QPushButton {
     background-color: rgba(0,0,0,0);
@@ -286,6 +289,9 @@ color: #50A6EA;}</string>
           <width>40</width>
           <height>40</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>显示空</string>
         </property>
         <property name="styleSheet">
          <string notr="true">QPushButton {

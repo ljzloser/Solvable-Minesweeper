@@ -284,6 +284,11 @@ class MineSweeperGUI(MainWindowGUIImportExport):
                         self.ui_video_control.pushButton_path.blockSignals(True)
                         self.ui_video_control.pushButton_path.setChecked(False)
                         self.ui_video_control.pushButton_path.blockSignals(False)
+                    self.label.show_opening = False
+                    if hasattr(self, 'ui_video_control'):
+                        self.ui_video_control.pushButton_op.blockSignals(True)
+                        self.ui_video_control.pushButton_op.setChecked(False)
+                        self.ui_video_control.pushButton_op.blockSignals(False)
                     self.set_country_flag()
                     self.score_board_manager.with_namespace({
                         "is_official": "--",

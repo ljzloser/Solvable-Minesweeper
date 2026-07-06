@@ -27,6 +27,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
         self.ui_video_control.tabWidget.tabBar().tabBarClicked.connect(self.on_tab_clicked)
         self.ui_video_control.pushButton_path.clicked[bool].connect(self.toggle_path_trace)
+        self.ui_video_control.pushButton_op.clicked[bool].connect(self.toggle_op)
         self.show_path_trace = False
         self.mouse_trace_points = []
         self.path_trace_left_clicks = set()
@@ -254,6 +255,10 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             self.label.current_trace_event_id = self.label.ms_board.current_event_id
         else:
             self.label.path_trace_points = []
+        self.label.update()
+
+    def toggle_op(self, checked):
+        self.label.show_opening = checked
         self.label.update()
 
     def video_playing_step(self):
