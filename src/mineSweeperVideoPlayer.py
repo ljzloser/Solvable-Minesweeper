@@ -32,6 +32,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.path_trace_left_clicks = set()
         self.path_trace_right_clicks = set()
         self.path_trace_double_clicks = set()
+        self.original_pix_size = 0
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
     
@@ -190,9 +191,11 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.showMineNum(self.mineUnFlagedNum)
 
         self.cache_mouse_trace(video)
-        if self.show_path_trace:
+        if self.show_path_trace and self.original_pix_size:
+            scale = self.label.pixSize / self.original_pix_size
             self.label.path_trace_enabled = True
-            self.label.path_trace_points = self.mouse_trace_points
+            self.label.path_trace_points = [
+                (int(x * scale), int(y * scale)) for (x, y) in self.mouse_trace_points]
             self.label.path_trace_left_clicks = self.path_trace_left_clicks
             self.label.path_trace_right_clicks = self.path_trace_right_clicks
             self.label.path_trace_double_clicks = self.path_trace_double_clicks
@@ -224,6 +227,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.path_trace_left_clicks.clear()
         self.path_trace_right_clicks.clear()
         self.path_trace_double_clicks.clear()
+        self.original_pix_size = video.pix_size
         last_pos = (0, 0)
         for i, rec in enumerate(video.events):
             if rec.event.is_mouse:
@@ -240,8 +244,10 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def toggle_path_trace(self, checked):
         self.show_path_trace = checked
         self.label.path_trace_enabled = checked
-        if checked and self.mouse_trace_points:
-            self.label.path_trace_points = self.mouse_trace_points
+        if checked and self.mouse_trace_points and self.original_pix_size:
+            scale = self.label.pixSize / self.original_pix_size
+            self.label.path_trace_points = [
+                (int(x * scale), int(y * scale)) for (x, y) in self.mouse_trace_points]
             self.label.path_trace_left_clicks = self.path_trace_left_clicks
             self.label.path_trace_right_clicks = self.path_trace_right_clicks
             self.label.path_trace_double_clicks = self.path_trace_double_clicks

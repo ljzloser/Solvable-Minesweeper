@@ -277,6 +277,13 @@ class MineSweeperGUI(MainWindowGUIImportExport):
                     self.ui_video_control.QWidget.close()
                     self.label.paint_cursor = False
                     self.label.paintProbability = False
+                    self.label.path_trace_enabled = False
+                    self.label.path_trace_points = []
+                    if hasattr(self, 'show_path_trace'):
+                        self.show_path_trace = False
+                        self.ui_video_control.pushButton_path.blockSignals(True)
+                        self.ui_video_control.pushButton_path.setChecked(False)
+                        self.ui_video_control.pushButton_path.blockSignals(False)
                     self.set_country_flag()
                     self.score_board_manager.with_namespace({
                         "is_official": "--",
