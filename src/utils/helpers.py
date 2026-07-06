@@ -21,7 +21,7 @@ def trans_expression(expression: str):
 def trans_game_mode(mode: int) -> str:
     _translate = QCoreApplication.translate
     if mode == 0:
-        return _translate("Form", "\u6807\u51c6")
+        return _translate("Form", "标准")
     elif mode == 1:
         return 'upk'
     elif mode == 2:
@@ -31,14 +31,14 @@ def trans_game_mode(mode: int) -> str:
     elif mode == 4:
         return 'win7'
     elif mode == 5:
-        return _translate("Form", '\u7ecf\u5178\u65e0\u731c')
+        return _translate("Form", "经典无猜")
     elif mode == 6:
-        return _translate("Form", '\u5f3a\u65e0\u731c')
+        return _translate("Form", "强无猜")
     elif mode == 7:
-        return _translate("Form", '\u5f31\u65e0\u731c')
+        return _translate("Form", "弱无猜")
     elif mode == 8:
-        return _translate("Form", '\u51c6\u65e0\u731c')
+        return _translate("Form", "准无猜")
     elif mode == 9:
-        return _translate("Form", '\u5f3a\u53ef\u731c')
+        return _translate("Form", "强可猜")
     elif mode == 10:
-        return _translate("Form", '\u5f31\u53ef\u731c')
+        return _translate("Form", "弱可猜")

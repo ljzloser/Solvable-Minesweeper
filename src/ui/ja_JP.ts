@@ -99,42 +99,42 @@
         <translation>ゲームモード：</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="541" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="301" />
         <source>标准</source>
         <translation>標準</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="542" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="302" />
         <source>Win7</source>
         <translation>Win7</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="543" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="304" />
         <source>强无猜</source>
         <translation>強ノー推測</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="544" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="305" />
         <source>弱无猜</source>
         <translation>弱ノー推測</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="545" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="303" />
         <source>经典无猜</source>
         <translation>クラシックノー推測</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="546" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="306" />
         <source>准无猜</source>
         <translation>準ノー推測</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="547" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="307" />
         <source>强可猜</source>
         <translation>強推測可</translation>
     </message>
     <message>
-        <location filename="ui_gameSettingShortcuts.py" line="548" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="308" />
         <source>弱可猜</source>
         <translation>弱推測可</translation>
     </message>
@@ -219,17 +219,17 @@
         <translation>試行回数：</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="355" />
+        <location filename="../dialogs/gameScores.py" line="121" />
         <source>确定</source>
         <translation>確定</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="356" />
+        <location filename="ui_import.py" line="178" />
         <source>Return</source>
         <translation>Return</translation>
     </message>
     <message>
-        <location filename="ui_import.py" line="179" />
+        <location filename="../plugins/XianNiUpgrade/widgets.py" line="113" />
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
@@ -414,7 +414,7 @@
         <translation>RQP記録！</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="349" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="297" />
         <source>初级</source>
         <translation>初級</translation>
     </message>
@@ -424,12 +424,12 @@
         <translation>自己ベスト！</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="351" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="298" />
         <source>中级</source>
         <translation>中級</translation>
     </message>
     <message>
-        <location filename="ui_record_pop.py" line="353" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="299" />
         <source>高级</source>
         <translation>上級</translation>
     </message>
@@ -479,34 +479,9 @@
         <translation>ホイールで速度変更</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="515" />
-        <source>录像</source>
-        <translation>録画</translation>
-    </message>
-    <message>
         <location filename="../plugins/History/columns_dialog.py" line="69" />
         <source>全选</source>
         <translation>すべて選択</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="212" />
-        <source>导出选中的录像</source>
-        <translation>選択リプレイをエクスポート</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="338" />
-        <source>时间</source>
-        <translation>時間</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="346" />
-        <source>事件</source>
-        <translation>イベント</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="354" />
-        <source>标签</source>
-        <translation>タグ</translation>
     </message>
     <message>
         <location filename="../plugins/History/plugin.py" line="30" />
@@ -524,7 +499,7 @@
         <translation>1ページの件数</translation>
     </message>
     <message>
-        <location filename="../plugins/History/plugin.py" line="85" />
+        <location filename="../plugins/History/main_widget.py" line="130" />
         <source>历史记录</source>
         <translation>履歴</translation>
     </message>
@@ -564,14 +539,9 @@
         <translation>次へ</translation>
     </message>
     <message>
-        <location filename="../plugins/History/main_widget.py" line="507" />
+        <location filename="../plugins/History/filter_dialog.py" line="365" />
         <source>错误</source>
         <translation>エラー</translation>
-    </message>
-    <message>
-        <location filename="../plugins/History/main_widget.py" line="251" />
-        <source>历史记录数据库不存在</source>
-        <translation type="obsolete">履歴DBが存在しません</translation>
     </message>
     <message>
         <location filename="../plugins/History/main_widget.py" line="272" />
@@ -609,7 +579,7 @@
         <translation>%1行目 %2 は無効な選択肢です</translation>
     </message>
     <message>
-        <location filename="../plugins/History/main_widget.py" line="507" />
+        <location filename="../plugins/History/filter_dialog.py" line="365" />
         <source>左括号数量和右括号数量不匹配，请检查</source>
         <translation>括弧の数が一致しません</translation>
     </message>
@@ -1232,32 +1202,32 @@ li { margin: 6px 0; }
         <translation>盤面更新受信</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="77" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="741" />
         <source>准备</source>
         <translation>準備</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="83" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="742" />
         <source>游戏中</source>
         <translation>ゲーム中</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="89" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="743" />
         <source>胜利</source>
         <translation>勝利</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="87" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="744" />
         <source>失败</source>
         <translation>敗北</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="81" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="745" />
         <source>显示概率</source>
         <translation>確率表示</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="79" />
+        <location filename="../plugins/llm_minesweeper_controller/plugin.py" line="746" />
         <source>研究模式</source>
         <translation>研究モード</translation>
     </message>
@@ -1525,7 +1495,7 @@ li { margin: 6px 0; }
         <translation>検証法器を選択…</translation>
     </message>
     <message>
-        <location filename="ui_import.py" line="172" />
+        <location filename="../plugins/XianNiUpgrade/widgets.py" line="100" />
         <source>浏览</source>
         <translation>参照</translation>
     </message>
@@ -1545,7 +1515,7 @@ li { margin: 6px 0; }
         <translation>霊符フォルダ:</translation>
     </message>
     <message>
-        <location filename="ui_import.py" line="177" />
+        <location filename="../plugins/XianNiUpgrade/widgets.py" line="111" />
         <source>确认</source>
         <translation>確認</translation>
     </message>
@@ -1570,222 +1540,7 @@ li { margin: 6px 0; }
         <translation>天地の法則</translation>
     </message>
     <message>
-        <location filename="../plugins/XianNiUpgrade/widgets.py" line="157" />
-        <source>&lt;style&gt;
-h2 { color: #6A1B9A; border-bottom: 2px solid #CE93D8; padding-bottom: 4px; }
-h3 { color: #8E24AA; margin-top: 16px; }
-b { color: #4A148C; }
-code { background: #F3E5F5; padding: 1px 4px; border-radius: 2px; }
-ul { margin: 4px 0; }
-li { margin: 2px 0; }
-table { border-collapse: collapse; margin: 8px 0; }
-td, th { border: 1px solid #E1BEE7; padding: 4px 10px; text-align: center; }
-th { background: #F3E5F5; color: #6A1B9A; }
-&lt;/style&gt;
-
-&lt;div style="color:#4A148C; font-style:italic; font-size:14px; line-height:1.8; padding:12px 16px; border-radius:6px; margin-bottom:16px;"&gt;
-&lt;p style="margin:8px 0;"&gt;顺则凡，逆则仙，只在心中一念间。&lt;br&gt;
-吾辈修士，逆天而行，与天争命。&lt;/p&gt;
-&lt;p style="margin:8px 0;"&gt;扫雷一途，亦如修道——&lt;br&gt;
-步步惊心，一念生，一念死；&lt;br&gt;
-勘破迷障，洞悉本源，方得超脱。&lt;/p&gt;
-&lt;p style="margin:8px 0;"&gt;今有《仙逆》之法则，立此天地道统：&lt;br&gt;
-胜则增道行，积修为，破境界，证长生；&lt;br&gt;
-败则归凡尘，从头越，砺道心。&lt;/p&gt;
-&lt;p style="margin:8px 0; text-align:right;"&gt;—— 道不可须臾离也&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;h2&gt;📜 天地法则 · 修仙要义&lt;/h2&gt;
-
-&lt;h3&gt;一、道行修为&lt;/h3&gt;
-&lt;p&gt;每局&lt;b&gt;扫雷胜利&lt;/b&gt;（游戏状态转为胜利）后获得道行经验。经验累计提升境界等级，共&lt;b&gt;100级&lt;/b&gt;：&lt;/p&gt;
-&lt;table&gt;
-&lt;tr&gt;&lt;th&gt;等级&lt;/th&gt;&lt;th&gt;境界名称&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.0&lt;/td&gt;&lt;td&gt;凡人&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.1-15&lt;/td&gt;&lt;td&gt;凝气一层 ~ 凝气十五层&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.16-19&lt;/td&gt;&lt;td&gt;筑基初期 ~ 筑基大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.20-23&lt;/td&gt;&lt;td&gt;结丹初期 ~ 结丹大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.24-27&lt;/td&gt;&lt;td&gt;元婴初期 ~ 元婴大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.28-31&lt;/td&gt;&lt;td&gt;化神初期 ~ 化神大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.32-35&lt;/td&gt;&lt;td&gt;婴变初期 ~ 婴变大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.36-39&lt;/td&gt;&lt;td&gt;问鼎初期 ~ 问鼎大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.40-41&lt;/td&gt;&lt;td&gt;阴虚 ~ 阳实&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.42-45&lt;/td&gt;&lt;td&gt;窥涅初期 ~ 窥涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.46-49&lt;/td&gt;&lt;td&gt;净涅初期 ~ 净涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.50-53&lt;/td&gt;&lt;td&gt;碎涅初期 ~ 碎涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.54-58&lt;/td&gt;&lt;td&gt;天人一衰 ~ 天人五衰&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.59-62&lt;/td&gt;&lt;td&gt;空涅初期 ~ 空涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.63-66&lt;/td&gt;&lt;td&gt;空灵初期 ~ 空灵大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.67-79&lt;/td&gt;&lt;td&gt;空玄初期 ~ 空玄九劫&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.80-83&lt;/td&gt;&lt;td&gt;空劫初期 ~ 空劫大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.84-88&lt;/td&gt;&lt;td&gt;大尊 ~ 大天尊&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.89-100&lt;/td&gt;&lt;td&gt;踏天一桥 ~ 煌天境&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-
-&lt;h3&gt;二、经验计算公式&lt;/h3&gt;
-
-&lt;p&gt;&lt;b&gt;基础经验&lt;/b&gt;（所有模式/难度均有效）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;若雷密度 ≤ 80％：&lt;br&gt;
-  &lt;code&gt;基础 = (k / 5000) × 1.3^(雷数/格数 × 100) × min(行,列) × max(行,列)^1.2&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;若雷密度 &amp;gt; 80％：基础 = 0&lt;/li&gt;
-&lt;li&gt;k 为模式系数：标准=1、Win7=0.8、经典无猜=0.2、强无猜=0.25、弱无猜=2，其他=0（无经验）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;稀有局面经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;统计 3BV、Op、Isl、Cell6、Cell7、Cell8 六个指标在分布中的罕见程度&lt;/li&gt;
-&lt;li&gt;对每个指标，取 &lt;code&gt;p = min(P(X≤v), P(X≥v))&lt;/code&gt;（双向累积概率），&lt;br&gt;
-  累加 &lt;code&gt;(0.5 / p)^1.2&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;高级：&lt;code&gt;稀有经验 = 累加值&lt;/code&gt;；中级：&lt;code&gt;累加值 / 8&lt;/code&gt;；初级：&lt;code&gt;累加值 / 100&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;竞速经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;初级：&lt;code&gt;(1/100) × (10/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;中级：&lt;code&gt;(1/8) × (60/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;高级：&lt;code&gt;(240/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;效率经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;效率指标 &lt;code&gt;IOE = 3BV / (lefts + rights + chordings)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;初级：IOE ≥ 0.95 时 &lt;code&gt;IOE^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;中级：IOE ≥ 0.9 时 &lt;code&gt;10 × IOE^4&lt;/code&gt;（标雷）/ &lt;code&gt;20 × IOE^5&lt;/code&gt;（盲扫）&lt;/li&gt;
-&lt;li&gt;高级：IOE ≥ 0.8 时 &lt;code&gt;100 × IOE^10&lt;/code&gt;（标雷）/ &lt;code&gt;10000 × IOE^50&lt;/code&gt;（盲扫）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;总经验&lt;/b&gt; = 基础 + 稀有 + 竞速 + 效率，上限 99999/局。&lt;/p&gt;
-
-&lt;h3&gt;三、多修分身&lt;/h3&gt;
-&lt;p&gt;插件支持&lt;b&gt;多玩家标识&lt;/b&gt;。每局游戏会根据主标识独立计算等级和道行。修改标识将自动切换对应玩家各自的修行数据。&lt;/p&gt;
-
-&lt;h3&gt;四、吸收灵气&lt;/h3&gt;
-&lt;p&gt;可通过导入其他扫雷版本的录像获得经验：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;点击「吸收灵气」按钮&lt;/li&gt;
-&lt;li&gt;选择对应版本的 &lt;b&gt;exe 校验程序&lt;/b&gt;（如 metasweeper.exe）&lt;/li&gt;
-&lt;li&gt;选择 &lt;b&gt;录像目录&lt;/b&gt;（replay 文件夹）&lt;/li&gt;
-&lt;li&gt;插件自动校验 exe MD5 → 运行 exe 生成报告 → 解析有效录像 → 去重后加经验&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;目前支持的版本：&lt;/p&gt;
-&lt;table&gt;
-&lt;tr&gt;&lt;th&gt;版本&lt;/th&gt;&lt;th&gt;MD5&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;3271d11bab9afc8b0a2b9546e13d46cd&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-
-&lt;h3&gt;五、存档说明&lt;/h3&gt;
-&lt;p&gt;存档文件 &lt;code&gt;player_data.dat&lt;/code&gt; 保存在插件数据目录，包含多玩家信息、修行日志和已导入录像记录（最多保存 1000 条）。不可轻易删除，否则只能在下个版本中用“吸收灵气”重新导入录像。&lt;/p&gt;
-</source>
-        <translation type="obsolete">&lt;style&gt;
-h2 { color: #6A1B9A; border-bottom: 2px solid #CE93D8; padding-bottom: 4px; }
-h3 { color: #8E24AA; margin-top: 16px; }
-b { color: #4A148C; }
-code { background: #F3E5F5; padding: 1px 4px; border-radius: 2px; }
-ul { margin: 4px 0; }
-li { margin: 2px 0; }
-table { border-collapse: collapse; margin: 8px 0; }
-td, th { border: 1px solid #E1BEE7; padding: 4px 10px; text-align: center; }
-th { background: #F3E5F5; color: #6A1B9A; }
-&lt;/style&gt;
-
-&lt;div style="color:#4A148C; font-style:italic; font-size:14px; line-height:1.8; padding:12px 16px; border-radius:6px; margin-bottom:16px;"&gt;
-&lt;p style="margin:8px 0;"&gt;顺则凡，逆则仙，只在心中一念间。&lt;br&gt;
-吾辈修士，逆天而行，与天争命。&lt;/p&gt;
-&lt;p style="margin:8px 0;"&gt;扫雷一途，亦如修道——&lt;br&gt;
-步步惊心，一念生，一念死；&lt;br&gt;
-勘破迷障，洞悉本源，方得超脱。&lt;/p&gt;
-&lt;p style="margin:8px 0;"&gt;今有《仙逆》之法则，立此天地道统：&lt;br&gt;
-胜则增道行，积修为，破境界，证长生；&lt;br&gt;
-败则归凡尘，从头越，砺道心。&lt;/p&gt;
-&lt;p style="margin:8px 0; text-align:right;"&gt;—— 道不可须臾离也&lt;/p&gt;
-&lt;/div&gt;
-
-&lt;h2&gt;📜 天地法则 · 修仙要义&lt;/h2&gt;
-
-&lt;h3&gt;一、道行修为&lt;/h3&gt;
-&lt;p&gt;每局&lt;b&gt;扫雷胜利&lt;/b&gt;（游戏状态转为胜利）后获得道行经验。经验累计提升境界等级，共&lt;b&gt;100级&lt;/b&gt;：&lt;/p&gt;
-&lt;table&gt;
-&lt;tr&gt;&lt;th&gt;等级&lt;/th&gt;&lt;th&gt;境界名称&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.0&lt;/td&gt;&lt;td&gt;凡人&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.1-15&lt;/td&gt;&lt;td&gt;凝气一层 ~ 凝气十五层&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.16-19&lt;/td&gt;&lt;td&gt;筑基初期 ~ 筑基大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.20-23&lt;/td&gt;&lt;td&gt;结丹初期 ~ 结丹大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.24-27&lt;/td&gt;&lt;td&gt;元婴初期 ~ 元婴大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.28-31&lt;/td&gt;&lt;td&gt;化神初期 ~ 化神大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.32-35&lt;/td&gt;&lt;td&gt;婴变初期 ~ 婴变大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.36-39&lt;/td&gt;&lt;td&gt;问鼎初期 ~ 问鼎大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.40-41&lt;/td&gt;&lt;td&gt;阴虚 ~ 阳实&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.42-45&lt;/td&gt;&lt;td&gt;窥涅初期 ~ 窥涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.46-49&lt;/td&gt;&lt;td&gt;净涅初期 ~ 净涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.50-53&lt;/td&gt;&lt;td&gt;碎涅初期 ~ 碎涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.54-58&lt;/td&gt;&lt;td&gt;天人一衰 ~ 天人五衰&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.59-62&lt;/td&gt;&lt;td&gt;空涅初期 ~ 空涅大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.63-66&lt;/td&gt;&lt;td&gt;空灵初期 ~ 空灵大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.67-79&lt;/td&gt;&lt;td&gt;空玄初期 ~ 空玄九劫&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.80-83&lt;/td&gt;&lt;td&gt;空劫初期 ~ 空劫大圆满&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.84-88&lt;/td&gt;&lt;td&gt;大尊 ~ 大天尊&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lv.89-100&lt;/td&gt;&lt;td&gt;踏天一桥 ~ 煌天境&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-
-&lt;h3&gt;二、经验计算公式&lt;/h3&gt;
-
-&lt;p&gt;&lt;b&gt;基础经验&lt;/b&gt;（所有模式/难度均有效）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;若雷密度 ≤ 80％：&lt;br&gt;
-  &lt;code&gt;基础 = (k / 5000) × 1.3^(雷数/格数 × 100) × min(行,列) × max(行,列)^1.2&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;若雷密度 &amp;gt; 80％：基础 = 0&lt;/li&gt;
-&lt;li&gt;k 为模式系数：标准=1、Win7=0.8、经典无猜=0.2、强无猜=0.25、弱无猜=2，其他=0（无经验）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;稀有局面经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;统计 3BV、Op、Isl、Cell6、Cell7、Cell8 六个指标在分布中的罕见程度&lt;/li&gt;
-&lt;li&gt;对每个指标，取 &lt;code&gt;p = min(P(X≤v), P(X≥v))&lt;/code&gt;（双向累积概率），&lt;br&gt;
-  累加 &lt;code&gt;(0.5 / p)^1.2&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;高级：&lt;code&gt;稀有经验 = 累加值&lt;/code&gt;；中级：&lt;code&gt;累加值 / 8&lt;/code&gt;；初级：&lt;code&gt;累加值 / 100&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;竞速经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;初级：&lt;code&gt;(1/100) × (10/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;中级：&lt;code&gt;(1/8) × (60/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;高级：&lt;code&gt;(240/rtime)^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;效率经验&lt;/b&gt;（仅标准模式·标准难度）：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;效率指标 &lt;code&gt;IOE = 3BV / (lefts + rights + chordings)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;初级：IOE ≥ 0.95 时 &lt;code&gt;IOE^3.5&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;中级：IOE ≥ 0.9 时 &lt;code&gt;10 × IOE^4&lt;/code&gt;（标雷）/ &lt;code&gt;20 × IOE^5&lt;/code&gt;（盲扫）&lt;/li&gt;
-&lt;li&gt;高级：IOE ≥ 0.8 时 &lt;code&gt;100 × IOE^10&lt;/code&gt;（标雷）/ &lt;code&gt;10000 × IOE^50&lt;/code&gt;（盲扫）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;b&gt;总经验&lt;/b&gt; = 基础 + 稀有 + 竞速 + 效率，上限 99999/局。&lt;/p&gt;
-
-&lt;h3&gt;三、多修分身&lt;/h3&gt;
-&lt;p&gt;插件支持&lt;b&gt;多玩家标识&lt;/b&gt;。每局游戏会根据主标识独立计算等级和道行。修改标识将自动切换对应玩家各自的修行数据。&lt;/p&gt;
-
-&lt;h3&gt;四、吸收灵气&lt;/h3&gt;
-&lt;p&gt;可通过导入其他扫雷版本的录像获得经验：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;点击「吸收灵气」按钮&lt;/li&gt;
-&lt;li&gt;选择对应版本的 &lt;b&gt;exe 校验程序&lt;/b&gt;（如 metasweeper.exe）&lt;/li&gt;
-&lt;li&gt;选择 &lt;b&gt;录像目录&lt;/b&gt;（replay 文件夹）&lt;/li&gt;
-&lt;li&gt;插件自动校验 exe MD5 → 运行 exe 生成报告 → 解析有效录像 → 去重后加经验&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;目前支持的版本：&lt;/p&gt;
-&lt;table&gt;
-&lt;tr&gt;&lt;th&gt;版本&lt;/th&gt;&lt;th&gt;MD5&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Metasweeper 3.2.2&lt;/td&gt;&lt;td&gt;&lt;code&gt;3271d11bab9afc8b0a2b9546e13d46cd&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-
-&lt;h3&gt;五、存档说明&lt;/h3&gt;
-&lt;p&gt;存档文件 &lt;code&gt;player_data.dat&lt;/code&gt; 保存在插件数据目录，包含多玩家信息、修行日志和已导入录像记录（最多保存 1000 条）。不可轻易删除，否则只能在下个版本中用“吸收灵气”重新导入录像。&lt;/p&gt;
-</translation>
-    </message>
-    <message>
-        <location filename="../plugins/XianNiUpgrade/widgets.py" line="289" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="196" />
         <source>凡人</source>
         <translation>凡人</translation>
     </message>
@@ -2401,49 +2156,9 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <translation>煌天境</translation>
     </message>
     <message>
-        <location filename="../shared_types/enums.py" line="203" />
+        <location filename="../plugins/XianNiUpgrade/models.py" line="300" />
         <source>自定义</source>
         <translation>カスタム</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameAdvancedSettings.py" line="9" />
-        <source>鼠标点击（MouseClickCommand）</source>
-        <translation>マウスクリック (MouseClickCommand)</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameAdvancedSettings.py" line="10" />
-        <source>重开新局（NewGameCommand）</source>
-        <translation>新規ゲーム (NewGameCommand)</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameAdvancedSettings.py" line="11" />
-        <source>棋盘更新（BoardUpdateEvent）</source>
-        <translation>盤面更新 (BoardUpdateEvent)</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameAdvancedSettings.py" line="74" />
-        <source>允许{label}</source>
-        <translation>{label} を許可</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameScoreBoard.py" line="145" />
-        <source>游戏模式</source>
-        <translation>ゲームモード</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameScores.py" line="120" />
-        <source>成绩</source>
-        <translation>成績</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/gameScores.py" line="122" />
-        <source>Space</source>
-        <translation>Space</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="546" />
-        <source>目录</source>
-        <translation>ディレクトリ</translation>
     </message>
     <message>
         <location filename="../mainWindowGUIImportExport.py" line="64" />
@@ -2524,11 +2239,6 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <location filename="ui_import.py" line="175" />
         <source>选择文件</source>
         <translation>ファイル選択</translation>
-    </message>
-    <message>
-        <location filename="../plugin_sdk/config_types/path_config.py" line="63" />
-        <source>选择目录</source>
-        <translation>ディレクトリ選択</translation>
     </message>
     <message>
         <location filename="../plugins/History/filter_dialog.py" line="253" />
@@ -2940,7 +2650,47 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <source>显示空</source>
         <translation>空を表示</translation>
     </message>
-    </context>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="523" />
+        <source>录像</source>
+        <translation>Replay</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="220" />
+        <source>导出选中的录像</source>
+        <translation>Export selected replays</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="346" />
+        <source>时间</source>
+        <translation>Time</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="354" />
+        <source>事件</source>
+        <translation>Event</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="362" />
+        <source>标签</source>
+        <translation>Label</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="554" />
+        <source>目录</source>
+        <translation>Directory</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameScores.py" line="120" />
+        <source>成绩</source>
+        <translation>Scores</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameScores.py" line="122" />
+        <source>Space</source>
+        <translation>Space</translation>
+    </message>
+</context>
 <context>
     <name>LogViewerDialog</name>
     <message>
@@ -3122,17 +2872,12 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <translation>詳細設定</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="561" />
-        <source>Arbiter CSV</source>
-        <translation type="obsolete">Arbiter CSV</translation>
-    </message>
-    <message>
         <location filename="ui_main_board.py" line="614" />
         <source>Arbiter dat</source>
         <translation>Arbiter dat</translation>
     </message>
     <message>
-        <location filename="ui_main_board.py" line="589" />
+        <location filename="../mainWindowGUIImportExport.py" line="268" />
         <source>导入</source>
         <translation>インポート</translation>
     </message>
@@ -3320,16 +3065,6 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <location filename="../mineSweeperGUI.py" line="1551" />
         <source>剪贴板内容无法识别为扫雷局面</source>
         <translation>クリップボードの内容がマインスイーパ盤面として認識できません</translation>
-    </message>
-    <message>
-        <location filename="../superGUI.py" line="530" />
-        <source>匿名玩家(anonymous player)</source>
-        <translation>匿名プレイヤー</translation>
-    </message>
-    <message>
-        <location filename="ui_main_board.py" line="615" />
-        <source>预留、备用</source>
-        <translation>予約、予備</translation>
     </message>
 </context>
 <context>
@@ -3608,14 +3343,6 @@ th { background: #F3E5F5; color: #6A1B9A; }
     </message>
 </context>
 <context>
-    <name>ReleaseFrame</name>
-    <message>
-        <location filename="../dialogs/CheckUpdateGui.py" line="68" />
-        <source>unfold</source>
-        <translation>展開</translation>
-    </message>
-</context>
-<context>
     <name>SettingsDialog</name>
     <message>
         <location filename="../plugin_manager/main_window.py" line="521" />
@@ -3656,6 +3383,49 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <location filename="../plugin_manager/main_window.py" line="569" />
         <source>显示来源</source>
         <translation>ソース表示</translation>
+    </message>
+</context>
+<context>
+    <name>VideoControl</name>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="33" />
+        <source>危险的猜雷（正确概率 {0}）</source>
+        <translation>Dangerous guess (correct probability {0})</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="34" />
+        <source>高难度的判雷（{0}）</source>
+        <translation>High-difficulty judgment ({0})</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="35" />
+        <source>可以判雷时选择猜雷</source>
+        <translation>Guess when judgment was possible</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="36" />
+        <source>鼠标轨迹过于弯曲（{0}%）</source>
+        <translation>Mouse trace too curved ({0}%)</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="37" />
+        <source>鼠标轨迹弯曲（{0}%）</source>
+        <translation>Mouse trace curved ({0}%)</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="38" />
+        <source>笔直的鼠标轨迹</source>
+        <translation>Straight mouse trace</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="39" />
+        <source>可以判雷时视野的转移</source>
+        <translation>Vision transfer when judgment was possible</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="40" />
+        <source>教科书式的FL局部（{0} 步）</source>
+        <translation>Textbook FL local ({0} steps)</translation>
     </message>
 </context>
 </TS>

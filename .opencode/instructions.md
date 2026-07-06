@@ -53,6 +53,10 @@ python src/main.py
 cd uiFiles
 .\ui转py.bat
 
+# 国际化——执行此脚本，不准手动执行pylupdate5
+cd src/ui
+.\生成ts文件.bat
+
 # 测试
 pytest
 

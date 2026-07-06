@@ -27,11 +27,19 @@ _COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
     ("warning", "vision_transfer"):      "可以判雷时视野的转移",
     ("feature", "fl_local"):             "教科书式的FL局部（{0} 步）",
 }
-# pylupdate5 提取目标字符串
+# pylupdate5 提取目标字符串（必须使用字符串字面量，不能用变量）
+# fmt: off
 _COMMENT_TEMPLATES_EXTRACT = [
-    _translate("VideoControl", v)
-    for v in _COMMENT_TEMPLATES.values()
+    _translate("VideoControl", "危险的猜雷（正确概率 {0}）"),
+    _translate("VideoControl", "高难度的判雷（{0}）"),
+    _translate("VideoControl", "可以判雷时选择猜雷"),
+    _translate("VideoControl", "鼠标轨迹过于弯曲（{0}%）"),
+    _translate("VideoControl", "鼠标轨迹弯曲（{0}%）"),
+    _translate("VideoControl", "笔直的鼠标轨迹"),
+    _translate("VideoControl", "可以判雷时视野的转移"),
+    _translate("VideoControl", "教科书式的FL局部（{0} 步）"),
 ]
+# fmt: on
 
 def _translate_comments(comments: str) -> list[tuple[str, str]]:
     if not comments:

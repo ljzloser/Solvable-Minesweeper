@@ -171,6 +171,19 @@
 
 
 ## 下载链接
+### 正式版v3.3.2：
+- 现在播放录像时，可以绘制鼠标轨迹和空
+- 添加Ctrl+C快捷键，可以以ascii或emoji的渲染方式，复制.board数据或文件；添加Ctrl+V快捷键，快速进入研究模式或在研究模式中粘贴复制的局面
+- 计数器的尺寸可以随主界面一起放大缩小
+- 优化了概率算法，性能提高约100倍
+- 优化了调整式无猜埋雷算法，既改进了速度又保证无猜率100%。以16*30，200雷为例，单局埋雷最长耗时可以控制在200ms以下
+- 添加了F3重开本局
+- 现在计数器中，rqp和qg可以正确计算，并添加了max_block_len，含义为局面调整时最大约束区的格数，且取消了与该变量有关的性能约束
+- 在历史插件中，可以通过右键菜单，以json格式复制某一局的数据
+- 添加了导入历史版本的stats.dat文件的功能
+- 添加了导出meta.dat（仅包含扫开的数据）、meta.all.dat（包含扫开和未扫开的数据）、textstats.csv（包含扫开和未扫开的数据）功能
+- 修复了以下bug：3.2.2版本的md5不正确、计数器的键名不能包含大写字母、插件数据试图写入可能无权限的目录、数字快捷键切换难度直接引起报错、录像播放控制器的图片资源找不到、历史插件刚打开显示共0行0页、录像回放时左上角雷数显示不对、修仙插件里非标准模式无法获得经验、弱可猜模式下可能重埋雷失败。  
+链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)
 
 ### 正式版v3.3.1：
 棋盘更新事件（BoardUpdateEvent）现在视为不安全操作，需在高级设置中手动开启方可发送至插件。经验获得公式改进。  
