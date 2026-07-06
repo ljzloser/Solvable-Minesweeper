@@ -31,7 +31,6 @@ class ui_Form(Ui_Form):
         
         col0 = max(1, int(80 * scale))
         col1 = max(1, int(150 * scale))
-        row_h = max(1, int(25 * scale))
         fs_label = max(1, int(12 * scale))
         fs_table = max(1, int(15 * scale))
         btn_h = max(1, int(15 * scale))
@@ -39,6 +38,10 @@ class ui_Form(Ui_Form):
         
         self.tableWidget.setColumnWidth(0, col0)
         self.tableWidget.setColumnWidth(1, col1)
+        font = self.tableWidget.font()
+        font.setPointSize(fs_table)
+        fm = QtGui.QFontMetrics(font)
+        row_h = fm.height() + 4
         vh = self.tableWidget.verticalHeader()
         vh.setDefaultSectionSize(row_h)
         vh.show()
