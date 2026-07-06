@@ -41,7 +41,7 @@ class ui_Form(Ui_Form):
         font = self.tableWidget.font()
         font.setPointSize(fs_table)
         fm = QtGui.QFontMetrics(font)
-        row_h = fm.height() + 4
+        row_h = fm.height() + 2
         vh = self.tableWidget.verticalHeader()
         vh.setDefaultSectionSize(row_h)
         vh.show()
