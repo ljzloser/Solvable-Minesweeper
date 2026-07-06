@@ -26,6 +26,12 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
         self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
         self.ui_video_control.tabWidget.tabBar().tabBarClicked.connect(self.on_tab_clicked)
+        self.ui_video_control.pushButton_path.clicked[bool].connect(self.toggle_path_trace)
+        self.show_path_trace = False
+        self.mouse_trace_points = []
+        self.path_trace_left_clicks = set()
+        self.path_trace_right_clicks = set()
+        self.path_trace_double_clicks = set()
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
     
@@ -183,6 +189,14 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.mineUnFlagedNum = self.minenum
         self.showMineNum(self.mineUnFlagedNum)
 
+        self.cache_mouse_trace(video)
+        if self.show_path_trace:
+            self.label.path_trace_enabled = True
+            self.label.path_trace_points = self.mouse_trace_points
+            self.label.path_trace_left_clicks = self.path_trace_left_clicks
+            self.label.path_trace_right_clicks = self.path_trace_right_clicks
+            self.label.path_trace_double_clicks = self.path_trace_double_clicks
+
         # self.timer_video.start(10)
         self.video_replay()
         
@@ -205,9 +219,42 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             ...
         
 
+    def cache_mouse_trace(self, video):
+        self.mouse_trace_points.clear()
+        self.path_trace_left_clicks.clear()
+        self.path_trace_right_clicks.clear()
+        self.path_trace_double_clicks.clear()
+        last_pos = (0, 0)
+        for i, rec in enumerate(video.events):
+            if rec.event.is_mouse:
+                m = rec.event.unwrap_mouse()
+                last_pos = (m.x, m.y)
+                if m.mouse == 'lc':
+                    self.path_trace_left_clicks.add(i)
+                elif m.mouse == 'rc':
+                    self.path_trace_right_clicks.add(i)
+                elif m.mouse == 'cc':
+                    self.path_trace_double_clicks.add(i)
+            self.mouse_trace_points.append(last_pos)
+
+    def toggle_path_trace(self, checked):
+        self.show_path_trace = checked
+        self.label.path_trace_enabled = checked
+        if checked and self.mouse_trace_points:
+            self.label.path_trace_points = self.mouse_trace_points
+            self.label.path_trace_left_clicks = self.path_trace_left_clicks
+            self.label.path_trace_right_clicks = self.path_trace_right_clicks
+            self.label.path_trace_double_clicks = self.path_trace_double_clicks
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
+        else:
+            self.label.path_trace_points = []
+        self.label.update()
+
     def video_playing_step(self):
         # 播放录像时定时器的回调
         self.label.ms_board.current_time = self.video_time
+        if self.show_path_trace and self.mouse_trace_points:
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
         if self.video_time >= self.video_stop_time:
             self.timer_video.stop()
             self.video_playing = False
@@ -261,6 +308,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         # 把录像定位到某一个时刻。是拖动进度条的回调
         self.video_time = t / 1000
         self.label.ms_board.current_time = self.video_time
+        if self.show_path_trace and self.mouse_trace_points:
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
         self.label.update()
         self.score_board_manager.show(self.label.ms_board, index_type=3)
 

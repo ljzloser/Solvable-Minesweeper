@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath
+from PyQt5.QtGui import QPolygonF, QPainter, QPixmap, QPainterPath, QColor, QPen
 import ms_toollib as ms
 from PyQt5.QtCore import QPoint, Qt
 from config.constants import BOARD_READY, BOARD_PLAYING, CELL_UNOPENED
@@ -34,6 +34,12 @@ class mineLabel(QtWidgets.QLabel):
         self.paintProbability = False
         self.current_x = 0
         self.current_y = 0
+        self.path_trace_enabled = False
+        self.path_trace_points = []
+        self.path_trace_left_clicks = set()
+        self.path_trace_right_clicks = set()
+        self.path_trace_double_clicks = set()
+        self.current_trace_event_id = 0
 
     def setPath(self, r_path):
         # 告诉局面控件，相对路径
@@ -210,6 +216,34 @@ class mineLabel(QtWidgets.QLabel):
                             painter.drawPixmap(c * pix_size, r * pix_size, QPixmap(self.pixmapNum[0]))
             elif mouse_state == MouseState.DownUp.value and game_board[current_x][current_y] == CELL_UNOPENED:
                 painter.drawPixmap(current_y * pix_size, current_x * pix_size, QPixmap(self.pixmapNum[0]))
+        # 画鼠标路径轨迹
+        if self.path_trace_enabled and self.path_trace_points:
+            n = min(self.current_trace_event_id, len(self.path_trace_points))
+            if n > 0:
+                painter.save()
+                painter.fillRect(self.rect(), QColor(128, 128, 128, 100))
+                pen = QPen(Qt.white, 2)
+                painter.setPen(pen)
+                painter.setBrush(Qt.NoBrush)
+                for i in range(n - 1):
+                    x1, y1 = self.path_trace_points[i]
+                    x2, y2 = self.path_trace_points[i + 1]
+                    painter.drawLine(x1, y1, x2, y2)
+                for i in range(n):
+                    px, py = self.path_trace_points[i]
+                    if i in self.path_trace_left_clicks:
+                        painter.setPen(Qt.NoPen)
+                        painter.setBrush(QColor(255, 255, 0))
+                        painter.drawEllipse(QPoint(px, py), 4, 4)
+                    elif i in self.path_trace_right_clicks:
+                        painter.setPen(Qt.NoPen)
+                        painter.setBrush(QColor(0, 255, 255))
+                        painter.drawEllipse(QPoint(px, py), 4, 4)
+                    elif i in self.path_trace_double_clicks:
+                        painter.setPen(Qt.NoPen)
+                        painter.setBrush(QColor(0, 255, 0))
+                        painter.drawEllipse(QPoint(px, py), 4, 4)
+                painter.restore()
         # 画光标
         if self.paint_cursor:
             painter.translate(x, y)

@@ -132,30 +132,30 @@ class Ui_Form(object):
         self.label_speed.setAlignment(QtCore.Qt.AlignCenter)
         self.label_speed.setObjectName("label_speed")
         self.horizontalLayout.addWidget(self.label_speed)
-        self.pushButton = QtWidgets.QPushButton(self.widget)
-        self.pushButton.setMinimumSize(QtCore.QSize(40, 40))
-        self.pushButton.setMaximumSize(QtCore.QSize(40, 40))
-        self.pushButton.setStyleSheet("QPushButton {\n"
+        self.pushButton_path = QtWidgets.QPushButton(self.widget)
+        self.pushButton_path.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_path.setMaximumSize(QtCore.QSize(40, 40))
+        self.pushButton_path.setStyleSheet("QPushButton {\n"
 "    background-color: rgba(0,0,0,0);\n"
 "    border: none;\n"
 "    image: url(media/path.svg);\n"
 "}")
-        self.pushButton.setText("")
-        self.pushButton.setCheckable(True)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(self.widget)
-        self.pushButton_2.setMinimumSize(QtCore.QSize(40, 40))
-        self.pushButton_2.setMaximumSize(QtCore.QSize(40, 40))
-        self.pushButton_2.setStyleSheet("QPushButton {\n"
+        self.pushButton_path.setText("")
+        self.pushButton_path.setCheckable(True)
+        self.pushButton_path.setObjectName("pushButton_path")
+        self.horizontalLayout.addWidget(self.pushButton_path)
+        self.pushButton_op = QtWidgets.QPushButton(self.widget)
+        self.pushButton_op.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_op.setMaximumSize(QtCore.QSize(40, 40))
+        self.pushButton_op.setStyleSheet("QPushButton {\n"
 "    background-color: rgba(0,0,0,0);\n"
 "    border: none;\n"
 "    image: url(media/op.svg);\n"
 "}")
-        self.pushButton_2.setText("")
-        self.pushButton_2.setCheckable(True)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.pushButton_op.setText("")
+        self.pushButton_op.setCheckable(True)
+        self.pushButton_op.setObjectName("pushButton_op")
+        self.horizontalLayout.addWidget(self.pushButton_op)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.doubleSpinBox_time = QtWidgets.QDoubleSpinBox(self.widget)

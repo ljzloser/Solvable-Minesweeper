@@ -245,7 +245,7 @@ color: #50A6EA;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_path">
         <property name="minimumSize">
          <size>
           <width>40</width>
@@ -274,7 +274,7 @@ color: #50A6EA;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="pushButton_op">
         <property name="minimumSize">
          <size>
           <width>40</width>
