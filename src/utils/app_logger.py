@@ -11,11 +11,12 @@ from loguru import logger
 
 logger.remove()
 
-logger.add(
-    sys.stderr,
-    format="<level>{level:7}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-    level="DEBUG",
-    colorize=True,
-)
+if sys.stderr is not None:
+    logger.add(
+        sys.stderr,
+        format="<level>{level:7}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        level="DEBUG",
+        colorize=True,
+    )
 
 __all__ = ["logger"]
