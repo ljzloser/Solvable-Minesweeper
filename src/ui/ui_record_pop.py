@@ -157,7 +157,7 @@ class Ui_Form(object):
         self.label9 = QtWidgets.QLabel(self.widget9)
         self.label9.setMinimumSize(QtCore.QSize(36, 36))
         self.label9.setMaximumSize(QtCore.QSize(36, 36))
-        self.label9.setStyleSheet("border-image: url(media/path.svg);")
+        self.label9.setStyleSheet("border-image: url(media/path_record.svg);")
         self.label9.setText("")
         self.label9.setObjectName("label9")
         self.horizontalLayout_12.addWidget(self.label9)

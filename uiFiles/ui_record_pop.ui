@@ -529,7 +529,7 @@
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">border-image: url(media/path.svg);</string>
+         <string notr="true">border-image: url(media/path_record.svg);</string>
         </property>
         <property name="text">
          <string/>
