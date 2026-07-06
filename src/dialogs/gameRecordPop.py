@@ -33,7 +33,7 @@ class ui_Form(Ui_Form):
         self.label7.setStyleSheet("border-image: url(" +\
                                   str(m.joinpath('ioe.svg')).replace("\\", "/") + ");")
         self.label9.setStyleSheet("border-image: url(" +\
-                                  str(m.joinpath('path.svg')).replace("\\", "/") + ");")
+                                  str(m.joinpath('path_record.svg')).replace("\\", "/") + ");")
         self.label11.setStyleSheet("border-image: url(" +\
                                   str(m.joinpath('rqp.svg')).replace("\\", "/") + ");")
         self.label13.setStyleSheet("border-image: url(" +\

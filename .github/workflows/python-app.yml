@@ -81,6 +81,10 @@ jobs:
             --icon src/media/cat.ico `
             --add-data "src/plugins;plugins" `
             --add-data "src/shared_types;shared_types" `
+            --add-data "src/en_US.qm;." `
+            --add-data "src/de_DE.qm;." `
+            --add-data "src/ja_JP.qm;." `
+            --add-data "src/pl_PL.qm;." `
             --hidden-import sqlite3 `
             --hidden-import code `
             --hidden-import xmlrpc `
