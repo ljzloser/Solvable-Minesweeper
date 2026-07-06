@@ -2629,6 +2629,31 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <source>请填写至少一种吸收方式</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../plugin_sdk/config_types/path_config.py" line="64"/>
+        <source>选择目录</source>
+        <translation>ディレクトリ選択</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameAdvancedSettings.py" line="9"/>
+        <source>鼠标点击（MouseClickCommand）</source>
+        <translation>マウスクリック (MouseClickCommand)</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameAdvancedSettings.py" line="10"/>
+        <source>重开新局（NewGameCommand）</source>
+        <translation>新規ゲーム (NewGameCommand)</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameAdvancedSettings.py" line="11"/>
+        <source>棋盘更新（BoardUpdateEvent）</source>
+        <translation>盤面更新 (BoardUpdateEvent)</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/gameAdvancedSettings.py" line="62"/>
+        <source>允许{label}</source>
+        <translation>{label}を許可</translation>
+    </message>
 </context>
 <context>
     <name>LogViewerDialog</name>
@@ -3365,6 +3390,14 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <location filename="../dialogs/videoControl.py" line="40"/>
         <source>教科书式的FL局部（{0} 步）</source>
         <translation>Textbook FL local ({0} steps)</translation>
+    </message>
+</context>
+<context>
+    <name>ReleaseFrame</name>
+    <message>
+        <location filename="../dialogs/CheckUpdateGui.py" line="68"/>
+        <source>unfold</source>
+        <translation>展開</translation>
     </message>
 </context>
 </TS>
