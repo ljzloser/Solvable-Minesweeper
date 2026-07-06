@@ -1,5 +1,5 @@
 import time
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QLocalSocket, QLocalServer
 import sys
@@ -166,6 +166,7 @@ if __name__ == "__main__":
 
         # ── 启动 ZMQ Server + 插件管理器 ──
 
+        _translate = QtCore.QCoreApplication.translate
         data_dir = str(ui.setting_path / "data")
 
         # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
@@ -174,8 +175,8 @@ if __name__ == "__main__":
             plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
             if not os.path.exists(plugin_exe):
                 QtWidgets.QMessageBox.warning(
-                    mainWindow, "Plugin Manager",
-                    f"plugin_manager.exe not found:\n{plugin_exe}\n\nPlugins will be disabled.",
+                    mainWindow, _translate("MainWindow", "插件管理器"),
+                    _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace("{path}", plugin_exe),
                 )
                 plugin_process = None
             else:
@@ -187,8 +188,8 @@ if __name__ == "__main__":
                     )
                 except Exception as e:
                     QtWidgets.QMessageBox.warning(
-                        mainWindow, "Plugin Manager",
-                        f"Failed to start plugin_manager:\n{e}",
+                        mainWindow, _translate("MainWindow", "插件管理器"),
+                        _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace("{err}", str(e)),
                     )
                     plugin_process = None
         else:

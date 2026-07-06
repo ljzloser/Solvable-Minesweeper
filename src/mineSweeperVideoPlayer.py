@@ -42,9 +42,10 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def action_OpenFile(self, openfile_name=None):
         self.unlimit_cursor()
         if not openfile_name:
+            _translate = QCoreApplication.translate
             openfile_name = QFileDialog.\
-                getOpenFileName(self.mainWindow, '打开文件', str(self.setting_path / 'replay'),
-                                'All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)')
+                getOpenFileName(self.mainWindow, _translate("Form", "打开文件"), str(self.setting_path / 'replay'),
+                                _translate("Form", "All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)"))
             openfile_name = openfile_name[0]
         # 实例化
         if not openfile_name:

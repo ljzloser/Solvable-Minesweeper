@@ -241,16 +241,16 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
     def _import_stat_dat(self):
         """导入旧版 stats.dat 并合并到当前"""
         file_path, _ = QFileDialog.getOpenFileName(
-            self.mainWindow, "选择旧版 stats.dat",
+            self.mainWindow, _translate("MainWindow", "选择旧版 stats.dat"),
             str(self.setting_path),
-            "DAT文件 (stats.dat *.dat);;所有文件 (*)"
+            _translate("MainWindow", "DAT 文件 (stats.dat *.dat);;所有文件 (*)")
         )
         if not file_path:
             return
 
         old_path = Path(file_path)
         if old_path == self.setting_path / "stats.dat":
-            QMessageBox.warning(self.mainWindow, "导入失败", "不能导入当前正在使用的 stats.dat")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"), _translate("MainWindow", "不能导入当前正在使用的 stats.dat"))
             return
 
         records = self._read_dat_records(old_path)
@@ -258,23 +258,23 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
             return
 
         if not records:
-            QMessageBox.information(self.mainWindow, "导入", "旧版 stats.dat 中没有有效记录")
+            QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入"), _translate("MainWindow", "旧版 stats.dat 中没有有效记录"))
             return
 
         existing_md5s = self._read_stats_dat_short_md5s()
         new_records = [r for r in records if r.short_md5 not in existing_md5s]
 
         if not new_records:
-            QMessageBox.information(self.mainWindow, "导入",
-                                    f"共 {len(records)} 条记录，全部与当前重复")
+            QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入"),
+                                    _translate("MainWindow", "共 {n} 条记录，全部与当前重复").replace("{n}", str(len(records))))
             return
 
         count = self._do_import_entries(new_records)
 
-        QMessageBox.information(self.mainWindow, "导入成功",
-                                f"成功导入 {count} 条记录"
-                                + (f"，跳过 {len(records) - len(new_records)} 条重复"
-                                   if len(records) != len(new_records) else ""))
+        msg = _translate("MainWindow", "成功导入 {n} 条记录").replace("{n}", str(count))
+        if len(records) != len(new_records):
+            msg += _translate("MainWindow", "，跳过 {n} 条重复").replace("{n}", str(len(records) - len(new_records)))
+        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入成功"), msg)
 
     def _read_dat_records(self, path: Path) -> list | None:
         """读取 stats.dat 所有记录，根据版本号派发；返回 None 表示版本不支持"""
@@ -293,8 +293,8 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         if version == 0:
             return self._read_dat_records_v0(path, superGUI.STATS_DAT_KEY)
         else:
-            QMessageBox.warning(self.mainWindow, "导入失败",
-                                f"不支持的 stats.dat 版本 (v{version})，请升级程序")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
+                                _translate("MainWindow", "不支持的 stats.dat 版本 (v{ver})，请升级程序").replace("{ver}", str(version)))
             return None
 
     def _read_dat_records_v0(self, path: Path, key) -> list:
@@ -352,23 +352,23 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         '''
         dat_path = self.setting_path / 'stats.dat'
         if not dat_path.exists() or dat_path.stat().st_size == 0:
-            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导出失败"), _translate("MainWindow", "stats.dat 不存在或为空"))
             return
 
         safe_name = re.sub(r'[\\/:*?"<>|] ', '_', self.player_identifier)
         if all:
             default_name = f"{safe_name}_textstats.csv"
             save_path, _ = QFileDialog.getSaveFileName(
-                self.mainWindow, "导出 Arbiter Textstats CSV（全部）",
+                self.mainWindow, _translate("MainWindow", "导出 Arbiter Textstats CSV（全部）"),
                 str(self.setting_path / default_name),
-                "Textstats CSV文件 (*.csv)"
+                _translate("MainWindow", "Textstats CSV 文件 (*.csv)")
             )
         else:
             default_name = f"{safe_name}_stats.csv"
             save_path, _ = QFileDialog.getSaveFileName(
-                self.mainWindow, "导出 Arbiter Stats CSV",
+                self.mainWindow, _translate("MainWindow", "导出 Arbiter Stats CSV"),
                 str(self.setting_path / default_name),
-                "Stats CSV文件 (*.csv)"
+                _translate("MainWindow", "Stats CSV 文件 (*.csv)")
             )
         if not save_path:
             return
@@ -397,7 +397,7 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
                     continue
 
         if not records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导出失败"), _translate("MainWindow", "未找到有效的记录"))
             return
 
         if all:
@@ -462,29 +462,29 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
                     ])
                 record_num += 1
 
-        QMessageBox.information(self.mainWindow, "导出成功",
-                                f"已导出 {record_num} 条记录到\n{save_path}")
+        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导出成功"),
+                                _translate("MainWindow", "已导出 {n} 条记录到\n{path}").replace("{n}", str(record_num)).replace("{path}", save_path))
 
     def _export_meta_dat(self, all = False):
         dat_path = self.setting_path / 'stats.dat'
         if not dat_path.exists() or dat_path.stat().st_size == 0:
-            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导出失败"), _translate("MainWindow", "stats.dat 不存在或为空"))
             return
 
         safe_name = self.player_identifier.replace(' ', '_')
         if all:
             default_name = f"{safe_name}_meta_all.dat"
             save_path, _ = QFileDialog.getSaveFileName(
-                self.mainWindow, "导出 meta.all.dat",
+                self.mainWindow, _translate("MainWindow", "导出 meta.all.dat"),
                 str(self.setting_path / default_name),
-                "Meta All DAT文件 (*.all.dat)"
+                _translate("MainWindow", "Meta All DAT 文件 (*.all.dat)")
             )
         else:
             default_name = f"{safe_name}_meta.dat"
             save_path, _ = QFileDialog.getSaveFileName(
-                self.mainWindow, "导出 meta.dat",
+                self.mainWindow, _translate("MainWindow", "导出 meta.dat"),
                 str(self.setting_path / default_name),
-                "Meta DAT文件 (*.dat)"
+                _translate("MainWindow", "Meta DAT 文件 (*.dat)")
             )
         if not save_path:
             return
@@ -513,7 +513,7 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
                     continue
 
         if not records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导出失败"), _translate("MainWindow", "未找到有效的记录"))
             return
 
         if not all:
@@ -521,7 +521,7 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         else:
             export_records = records
         if not export_records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到记录")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导出失败"), _translate("MainWindow", "未找到记录"))
             return
 
         with open(save_path, 'wb') as f:
@@ -536,8 +536,8 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
                 f.write(len_bytes)
                 f.write(blob)
 
-        QMessageBox.information(self.mainWindow, "导出成功",
-                                f"已导出 {len(export_records)} 条记录到\n{save_path}")
+        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导出成功"),
+                                _translate("MainWindow", "已导出 {n} 条记录到\n{path}").replace("{n}", str(len(export_records))).replace("{path}", save_path))
 
 
 

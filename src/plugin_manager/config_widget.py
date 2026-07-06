@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QCoreApplication
 from PyQt5.QtWidgets import (
     QFormLayout,
     QLabel,
@@ -61,7 +61,8 @@ class OtherInfoWidget(QWidget):
 
         if not fields:
             # 无配置项时显示提示
-            label = QLabel("此插件无自定义配置")
+            _tr = QCoreApplication.translate
+            label = QLabel(_tr("Form", "此插件无自定义配置"))
             label.setStyleSheet("color: gray; font-style: italic;")
             layout.addRow(label)
             return

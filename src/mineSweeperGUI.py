@@ -1548,7 +1548,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
                             continue
 
         if not game_board:
-            QMessageBox.warning(self.mainWindow, "粘贴失败", "剪贴板内容无法识别为扫雷局面")
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "粘贴失败"), _translate("MainWindow", "剪贴板内容无法识别为扫雷局面"))
             return
 
         rows, cols = len(game_board), len(game_board[0])

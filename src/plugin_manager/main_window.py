@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QTimer, QEvent
+from PyQt5.QtCore import Qt, QCoreApplication, pyqtSignal, QPoint, QTimer, QEvent
 from PyQt5.QtGui import QColor, QMouseEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
@@ -433,7 +433,7 @@ class PluginSettingsDialog(QDialog):
 
         self._combo_mode = QComboBox()
         for mode in WindowMode:
-            label = WindowMode.LABELS().get(mode, mode)
+            label = self.tr(WindowMode.LABELS().get(mode, mode))
             self._combo_mode.addItem(label, mode)
         # WindowMode 继承自 str，直接 str() 转换
         idx = self._combo_mode.findData(str(state.window_mode))
@@ -450,7 +450,7 @@ class PluginSettingsDialog(QDialog):
 
         self._combo_loglevel = QComboBox()
         for level in LogLevel:
-            label = LogLevel.LABELS().get(level, level)
+            label = self.tr(LogLevel.LABELS().get(level, level))
             self._combo_loglevel.addItem(label, level)
         # LogLevel 继承自 str，直接 str() 转换
         _lvl_idx = self._combo_loglevel.findData(str(state.log_level).upper())
@@ -518,15 +518,16 @@ class BasicSettingsDialog(QDialog):
     def __init__(self, settings_manager: "SettingsManager", parent=None) -> None:
         super().__init__(parent)
         self._settings_manager = settings_manager
-        self.setWindowTitle("基础设置")
+        self.setWindowTitle(QCoreApplication.translate("SettingsDialog", "基础设置"))
         self.setMinimumWidth(400)
         self._setup_ui()
 
     def _setup_ui(self) -> None:
+        _translate = QCoreApplication.translate
         layout = QVBoxLayout(self)
 
         # ── 主进程日志设置组 ──
-        main_log_group = QGroupBox("主进程文件日志")
+        main_log_group = QGroupBox(_translate("SettingsDialog", "主进程文件日志"))
         main_log_layout = QFormLayout(main_log_group)
 
         self._file_log_level_combo = QComboBox()
@@ -536,14 +537,14 @@ class BasicSettingsDialog(QDialog):
         if index >= 0:
             self._file_log_level_combo.setCurrentIndex(index)
 
-        file_log_label = QLabel("日志等级")
-        file_log_label.setToolTip("主进程日志文件的记录等级")
+        file_log_label = QLabel(_translate("SettingsDialog", "日志等级"))
+        file_log_label.setToolTip(_translate("SettingsDialog", "主进程日志文件的记录等级"))
         main_log_layout.addRow(file_log_label, self._file_log_level_combo)
 
         layout.addWidget(main_log_group)
 
         # ── 日志查看器设置组 ──
-        viewer_group = QGroupBox("日志查看器")
+        viewer_group = QGroupBox(_translate("SettingsDialog", "日志查看器"))
         viewer_layout = QFormLayout(viewer_group)
 
         self._viewer_log_level_combo = QComboBox()
@@ -553,19 +554,19 @@ class BasicSettingsDialog(QDialog):
         if index >= 0:
             self._viewer_log_level_combo.setCurrentIndex(index)
 
-        viewer_log_label = QLabel("日志等级")
-        viewer_log_label.setToolTip("日志查看器显示的日志等级")
+        viewer_log_label = QLabel(_translate("SettingsDialog", "日志等级"))
+        viewer_log_label.setToolTip(_translate("SettingsDialog", "日志查看器显示的日志等级"))
         viewer_layout.addRow(viewer_log_label, self._viewer_log_level_combo)
 
         self._auto_scroll_cb = QCheckBox()
         self._auto_scroll_cb.setChecked(
             self._settings_manager.viewer_auto_scroll)
-        viewer_layout.addRow("自动滚动", self._auto_scroll_cb)
+        viewer_layout.addRow(_translate("SettingsDialog", "自动滚动"), self._auto_scroll_cb)
 
         self._show_source_cb = QCheckBox()
         self._show_source_cb.setChecked(
             self._settings_manager.viewer_show_source)
-        viewer_layout.addRow("显示来源", self._show_source_cb)
+        viewer_layout.addRow(_translate("SettingsDialog", "显示来源"), self._show_source_cb)
 
         layout.addWidget(viewer_group)
 
@@ -648,7 +649,7 @@ class LogViewerDialog(QDialog):
             parent: 父窗口
         """
         super().__init__(parent)
-        self.setWindowTitle("日志查看")
+        self.setWindowTitle(QCoreApplication.translate("LogViewerDialog", "日志查看"))
         self.setMinimumSize(900, 600)
         self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint)
 
@@ -664,24 +665,25 @@ class LogViewerDialog(QDialog):
         self._attach_sink(initial_log)
 
     def _setup_ui(self) -> None:
+        _translate = QCoreApplication.translate
         layout = QVBoxLayout(self)
 
         # 顶部：日志选择
         top_layout = QHBoxLayout()
 
-        top_layout.addWidget(QLabel("日志源:"))
+        top_layout.addWidget(QLabel(_translate("LogViewerDialog", "日志源:")))
 
         self._log_combo = QComboBox()
-        self._log_combo.addItem("主进程", "main")
+        self._log_combo.addItem(_translate("LogViewerDialog", "主进程"), "main")
         for name in self._plugin_names:
-            self._log_combo.addItem(f"插件: {name}", name)
+            self._log_combo.addItem(_translate("LogViewerDialog", "插件: {name}").replace("{name}", name), name)
         self._log_combo.currentIndexChanged.connect(self._on_log_changed)
         top_layout.addWidget(self._log_combo)
 
         top_layout.addSpacing(20)
 
         # 日志等级
-        top_layout.addWidget(QLabel("等级:"))
+        top_layout.addWidget(QLabel(_translate("LogViewerDialog", "等级:")))
 
         self._level_combo = QComboBox()
         self._level_combo.addItems(self.LOG_LEVELS)
@@ -692,17 +694,17 @@ class LogViewerDialog(QDialog):
         top_layout.addSpacing(20)
 
         # 自动滚动
-        self._auto_scroll_cb = QCheckBox("自动滚动")
+        self._auto_scroll_cb = QCheckBox(_translate("LogViewerDialog", "自动滚动"))
         self._auto_scroll_cb.setChecked(self._auto_scroll_default)
         top_layout.addWidget(self._auto_scroll_cb)
 
         # 显示来源
-        self._show_source_cb = QCheckBox("显示来源")
+        self._show_source_cb = QCheckBox(_translate("LogViewerDialog", "显示来源"))
         self._show_source_cb.setChecked(self._show_source_default)
         top_layout.addWidget(self._show_source_cb)
 
         # 清空按钮
-        clear_btn = QPushButton("清空")
+        clear_btn = QPushButton(_translate("LogViewerDialog", "清空"))
         clear_btn.clicked.connect(self._clear_log)
         top_layout.addWidget(clear_btn)
 

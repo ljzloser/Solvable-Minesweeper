@@ -27,6 +27,11 @@ _COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
     ("warning", "vision_transfer"):      "可以判雷时视野的转移",
     ("feature", "fl_local"):             "教科书式的FL局部（{0} 步）",
 }
+# pylupdate5 提取目标字符串
+_COMMENT_TEMPLATES_EXTRACT = [
+    _translate("VideoControl", v)
+    for v in _COMMENT_TEMPLATES.values()
+]
 
 def _translate_comments(comments: str) -> list[tuple[str, str]]:
     if not comments:
@@ -538,7 +543,7 @@ class ui_Form(QWidget, Ui_Form):
         tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
         
         
-        self.tabWidget.addTab(tab, f"目录({self.tab_id})")
+        self.tabWidget.addTab(tab, _translate("Form", "目录") + f"({self.tab_id})")
 
 
     def set_double_spin_box_time(self, int_time):

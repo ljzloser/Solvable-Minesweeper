@@ -183,7 +183,7 @@ class HistoryTable(QWidget):
             subprocess.Popen([str(exe), str(temp_filename)])
         else:
             QMessageBox.warning(
-                self, "错误", "找不到主程序 (main.py 或 metaminesweeper.exe)"
+                self, _translate("Form", "错误"), _translate("Form", "找不到主程序 (main.py 或 metaminesweeper.exe)")
             )
 
     def export_row(self):

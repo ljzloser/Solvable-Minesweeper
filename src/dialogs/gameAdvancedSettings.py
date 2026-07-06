@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QCheckBox
 from ui.ui_advanced import Ui_Form
 from ui.uiComponents import RoundQDialog
@@ -5,9 +6,9 @@ from shared_types.commands import COMMAND_TYPES
 
 
 _COMMAND_LABELS = {
-    "mouse_click": "鼠标点击（MouseClickCommand）",
-    "new_game": "重开新局（NewGameCommand）",
-    "board_update": "棋盘更新（BoardUpdateEvent）",
+    "mouse_click": QCoreApplication.translate("Form", "鼠标点击（MouseClickCommand）"),
+    "new_game": QCoreApplication.translate("Form", "重开新局（NewGameCommand）"),
+    "board_update": QCoreApplication.translate("Form", "棋盘更新（BoardUpdateEvent）"),
 }
 
 
@@ -58,7 +59,7 @@ class ui_Form(Ui_Form):
             label = _COMMAND_LABELS.get(tag, tag)
             cb = QCheckBox()
             cb.setChecked(tag in self._allowed_controls)
-            cb.setText(f"允许{label}")
+            cb.setText(QCoreApplication.translate("Form", "允许{label}").replace("{label}", label))
 
             cb.stateChanged.connect(
                 lambda checked, t=tag: self._on_allow_toggled(t, bool(checked))
@@ -70,7 +71,7 @@ class ui_Form(Ui_Form):
             label = _COMMAND_LABELS.get(tag, tag)
             cb = QCheckBox()
             cb.setChecked(tag in self._allowed_controls)
-            cb.setText(f"允许{label}")
+            cb.setText(QCoreApplication.translate("Form", "允许{label}").replace("{label}", label))
 
             cb.stateChanged.connect(
                 lambda checked, t=tag: self._on_allow_toggled(t, bool(checked))
