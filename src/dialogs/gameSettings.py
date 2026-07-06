@@ -7,13 +7,13 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QSortFilterProxyModel
 from config.constants import BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT
+from utils.path_utils import resource_path
 
 
 class ui_Form(Ui_Form):
     def __init__(self, mainWindow):
         # 设置界面的参数，不能用快捷键修改的从配置文件里来；能用快捷键修改的从mainWindow来
         self.game_setting = mainWindow.game_setting
-        self.r_path = mainWindow.r_path
         # config = configparser.ConfigParser()
         # config.read(self.game_setting_path, encoding='utf-8')
         self.gameMode = mainWindow.gameMode
@@ -59,7 +59,7 @@ class ui_Form(Ui_Form):
             self.label_national_flag.update()
         else:
             fn = country_name[flag_name]
-            pixmap = QPixmap(str(self.r_path.with_name('media') / \
+            pixmap = QPixmap(str(resource_path('media') / \
                                  (fn + ".svg"))).scaled(51, 31)
             self.label_national_flag.setPixmap(pixmap)
             self.label_national_flag.update()

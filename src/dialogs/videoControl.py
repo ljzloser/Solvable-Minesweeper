@@ -12,6 +12,7 @@ import ms_toollib as ms
 from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from utils.app_logger import logger
+from utils.path_utils import resource_path
 
 _translate = QtCore.QCoreApplication.translate
 
@@ -462,14 +463,14 @@ class ui_Form(QWidget, Ui_Form):
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
-    def __init__(self, r_path, game_setting, parent):
+    def __init__(self, game_setting, parent):
         super (ui_Form, self).__init__()
         self.tab_id = 0
         self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
         self.game_setting = game_setting
 
-        m = r_path.with_name('media').as_posix()
+        m = resource_path('media').as_posix()
         self.pushButton_replay.setStyleSheet(self.pushButton_replay.styleSheet().replace("url(media/", f"url({m}/"))
         self.pushButton_play.setStyleSheet(self.pushButton_play.styleSheet().replace("url(media/", f"url({m}/"))
         # self.label_2.setStyleSheet(self.label_2.styleSheet().replace("url(media/", f"url({m}/"))

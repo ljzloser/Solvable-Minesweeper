@@ -105,7 +105,6 @@ jobs:
           $dest = "dist\metasweeper"
           Copy-Item "dist\plugin_manager_out\plugin_manager\plugin_manager.exe" -Destination $dest -Force
           Copy-Item "dist\plugin_manager_out\plugin_manager\_internal\*" -Destination "$dest\_internal" -Recurse -Force
-          Copy-Item "src\media" -Destination "$dest\media" -Recurse -Force
           Copy-Item "src\params.onnx" -Destination "$dest\params.onnx" -Force
           Copy-Item "plugin-dev-tutorial.md" -Destination $dest -Force
           New-Item -ItemType Directory -Force "$dest\user_plugins" | Out-Null

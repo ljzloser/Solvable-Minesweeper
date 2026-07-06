@@ -7,6 +7,7 @@ from config.constants import BOARD_READY, BOARD_PLAYING, BOARD_WIN, BOARD_LOSS
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTableWidgetItem, QShortcut, QAbstractItemDelegate
 from PyQt5 import QtCore, QtGui
+from utils.path_utils import resource_path
 
 class ui_Form(Ui_Form):
     # barSetMineNum = QtCore.pyqtSignal(int)
@@ -16,11 +17,11 @@ class ui_Form(Ui_Form):
     # 设计基准：主界面 pixSize = 16 时，计时器各尺寸（80,150,25...）为基准值
     BASE_PIX = 26
     
-    def __init__(self, r_path, pix_size, parent):
+    def __init__(self, pix_size, parent):
         self.QWidget = RoundQWidget(parent)
         self.setupUi(self.QWidget)
         
-        self.QWidget.setWindowIcon (QtGui.QIcon (str(r_path.with_name('media').joinpath('cat.ico'))))
+        self.QWidget.setWindowIcon (QtGui.QIcon (str(resource_path('media') / 'cat.ico')))
         self.apply_scale(pix_size)
     
     def apply_scale(self, pix_size):
@@ -126,7 +127,7 @@ class gameScoreBoardManager():
     
     # is_visible = False
     # 5、错误的表达式，一旦算出报错，永远不再算，显示error
-    def __init__(self, r_path, score_board_setting, game_setting, pix_size, parent):
+    def __init__(self, score_board_setting, game_setting, pix_size, parent):
         # 从文件中读取指标并设置
         # self.ms_board = None
         self.pix_size = pix_size
@@ -164,7 +165,7 @@ class gameScoreBoardManager():
 
         self.update_score_board_items_type()
         self.index_num = len(self.score_board_items_type)
-        self.ui = ui_Form(r_path, pix_size, parent)
+        self.ui = ui_Form(pix_size, parent)
         self.ui.tableWidget.doubleClicked.connect(self.__table_change)
         self.ui.tableWidget.clicked.connect(self.__table_ok)
         # self.ui.tableWidget.cellChanged.connect(self.__cell_changed)

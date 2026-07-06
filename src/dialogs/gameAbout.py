@@ -4,19 +4,19 @@ from ui.uiComponents import RoundQDialog
 from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import Qt
+from utils.path_utils import resource_path
 
 class ui_Form(Ui_Form):
-    def __init__(self, r_path, parent):
+    def __init__(self, parent):
         self.Dialog = RoundQDialog(parent)
         self.setupUi(self.Dialog)
 
-        # Fix up resource paths (same pattern as videoControl.py)
-        m = r_path.with_name('media').as_posix()
+        m = resource_path('media').as_posix()
         self.label_10.setStyleSheet(
             self.label_10.styleSheet().replace("url(media/", f"url({m}/"))
         self.label_12.setStyleSheet(
             self.label_12.styleSheet().replace("url(media/", f"url({m}/"))
-        icon_path = str(r_path.with_name('media').joinpath('cat.ico'))
+        icon_path = str(resource_path('media') / 'cat.ico')
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(icon_path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Dialog.setWindowIcon(icon)

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget, QDialog, QScrollArea, QLabel, QVBoxLayout, 
     QSizePolicy, QPushButton, QFrame, QMessageBox, QFormLayout, QProgressDialog, QTextEdit, QComboBox
 
 from network.githubApi import GitHub, ReleaseInfo, PingThread
+from utils.path_utils import resource_path
 
 
 class AnimationButton(QPushButton):
@@ -61,14 +62,13 @@ class AnimationButton(QPushButton):
 class ReleaseFrame(QFrame):
     downLoadFile = pyqtSignal(ReleaseInfo)
 
-    def __init__(self, release: ReleaseInfo, mode=">", parent=None, r_path=""):
+    def __init__(self, release: ReleaseInfo, mode=">", parent=None):
         super().__init__(parent)
         self.release: ReleaseInfo = release
         self.showButton = AnimationButton()
         self.showButton.setToolTip(self.tr("unfold"))
         self.showButton.setCheckable(True)
-        self.showButton.pixmap = QPixmap(str(r_path.with_name(
-            'media').joinpath('unfold.png')).replace("\\", "/"))
+        self.showButton.pixmap = QPixmap(str(resource_path('media').joinpath('unfold.png')).replace("\\", "/"))
         self.dateTimeLabel = QLabel()
         self.titleWidget = QWidget()
         self.formWidget = QWidget()
@@ -244,7 +244,6 @@ class CheckUpdateGui(QDialog):
         # 去掉问号
         self.setWindowFlags(self.windowFlags() & ~
                             Qt.WindowContextHelpButtonHint)
-        self.r_path = parent.r_path
         self.github: GitHub = github
         self.github.setParent(self)
         self.checkUpdateButton = QPushButton(
@@ -335,7 +334,7 @@ class CheckUpdateGui(QDialog):
         layout.setSpacing(2)
         for release in releases:
             frame = ReleaseFrame(
-                release, self.github.compareVersion(release.tag_name), r_path=self.r_path, parent=self)
+                release, self.github.compareVersion(release.tag_name), parent=self)
             layout.addWidget(frame)
             frame.downLoadFile.connect(self.github.downloadRelease)
         # 底部加一个空白区域

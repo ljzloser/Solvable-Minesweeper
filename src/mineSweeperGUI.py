@@ -983,7 +983,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
 
         if len(del_items) < 9:
             ui = gameRecordPop.ui_Form(
-                self.r_path, del_items, b.bbbv, nf_items, self.mainWindow)
+                del_items, b.bbbv, nf_items, self.mainWindow)
             ui.label_16.setText(mode_text)
             ui.Dialog.show()
             self._popup_dialog = ui
@@ -1239,7 +1239,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
 
     def action_AEvent(self):
         # 关于
-        ui = gameAbout.ui_Form(self.r_path, self.mainWindow)
+        ui = gameAbout.ui_Form(self.mainWindow)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
         ui.Dialog.exec_()

@@ -5,6 +5,7 @@ from PyQt5.QtCore import QPoint, Qt, QRect
 from config.constants import BOARD_READY, BOARD_PLAYING, CELL_UNOPENED
 from shared_types.enums import MouseState
 import utils
+from utils.path_utils import resource_path
 
 
 class mineLabel(QtWidgets.QLabel):
@@ -46,23 +47,23 @@ class mineLabel(QtWidgets.QLabel):
         self.opening_ops2 = []
         self.opening_count = 0
 
-    def setPath(self, r_path):
-        # 告诉局面控件，相对路径
-        self.celldown_path = str(r_path.with_name('media').joinpath('celldown.svg'))
-        self.cell1_path = str(r_path.with_name('media').joinpath('cell1.svg'))
-        self.cell2_path = str(r_path.with_name('media').joinpath('cell2.svg'))
-        self.cell3_path = str(r_path.with_name('media').joinpath('cell3.svg'))
-        self.cell4_path = str(r_path.with_name('media').joinpath('cell4.svg'))
-        self.cell5_path = str(r_path.with_name('media').joinpath('cell5.svg'))
-        self.cell6_path = str(r_path.with_name('media').joinpath('cell6.svg'))
-        self.cell7_path = str(r_path.with_name('media').joinpath('cell7.svg'))
-        self.cell8_path = str(r_path.with_name('media').joinpath('cell8.svg'))
-        self.cellup_path = str(r_path.with_name('media').joinpath('cellup.svg'))
-        self.cellmine_path = str(r_path.with_name('media').joinpath('cellmine.svg'))
-        self.cellflag_path = str(r_path.with_name('media').joinpath('cellflag.svg'))
-        self.blast_path = str(r_path.with_name('media').joinpath('blast.svg'))
-        self.falsemine_path = str(r_path.with_name('media').joinpath('falsemine.svg'))
-        self.mine_path = str(r_path.with_name('media').joinpath('mine.svg'))
+    def setPath(self):
+        m = resource_path('media')
+        self.celldown_path = str(m.joinpath('celldown.svg'))
+        self.cell1_path = str(m.joinpath('cell1.svg'))
+        self.cell2_path = str(m.joinpath('cell2.svg'))
+        self.cell3_path = str(m.joinpath('cell3.svg'))
+        self.cell4_path = str(m.joinpath('cell4.svg'))
+        self.cell5_path = str(m.joinpath('cell5.svg'))
+        self.cell6_path = str(m.joinpath('cell6.svg'))
+        self.cell7_path = str(m.joinpath('cell7.svg'))
+        self.cell8_path = str(m.joinpath('cell8.svg'))
+        self.cellup_path = str(m.joinpath('cellup.svg'))
+        self.cellmine_path = str(m.joinpath('cellmine.svg'))
+        self.cellflag_path = str(m.joinpath('cellflag.svg'))
+        self.blast_path = str(m.joinpath('blast.svg'))
+        self.falsemine_path = str(m.joinpath('falsemine.svg'))
+        self.mine_path = str(m.joinpath('mine.svg'))
 
     def set_rcp(self, row, column, pixSize):
         '''

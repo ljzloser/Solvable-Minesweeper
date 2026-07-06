@@ -7,6 +7,7 @@ import configparser
 from PyQt5.QtGui import QPalette, QPixmap, QIcon
 from ui.ui_main_board import Ui_MainWindow
 from pathlib import Path
+from utils.path_utils import resource_path
 from dialogs.gameScoreBoard import gameScoreBoardManager
 from country_name import country_name
 import os, sys
@@ -25,12 +26,7 @@ version = "元3.3.2"
 # AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
 STATS_DAT_KEY = bytes([173,239,218,129,84,35,95,237,23,47,166,30,121,187,124,187])  # 16字节 AES-128 key
 
-def resource_path(relative_path: str) -> Path:
-    """获取资源文件路径（开发环境 + PyInstaller）
-    用于qm文件和media
-    """
-    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
-    return base_path / relative_path
+
 
 
 class IniConfig:
@@ -236,8 +232,8 @@ class Ui_MainWindow(Ui_MainWindow):
         # 标准、win7、经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
 
         self.read_or_create_record()
-        self.label.setPath(r_path)
-        self.label_2.setPath(r_path)
+        self.label.setPath()
+        self.label_2.setPath()
 
 
         self.readPredefinedBoardPara()
@@ -251,7 +247,7 @@ class Ui_MainWindow(Ui_MainWindow):
         # 记录了计数器的配置，显示哪些指标等等
         score_board_path = str(self.setting_path / 'scoreBoardSetting.ini')
         self.score_board_setting = IniConfig(score_board_path)
-        self.score_board_manager = gameScoreBoardManager(r_path, self.score_board_setting,
+        self.score_board_manager = gameScoreBoardManager(self.score_board_setting,
                                                          self.game_setting,
                                                          self.pixSize, MainWindow)
         # self.score_board_manager.ui.QWidget.move(_scoreBoardTop, _scoreBoardLeft)
