@@ -65,6 +65,10 @@ jobs:
             --add-data "src/de_DE.qm;." `
             --add-data "src/pl_PL.qm;." `
             --add-data "src/ja_JP.qm;." `
+            --exclude PIL --exclude Pillow --exclude Cython `
+            --exclude setuptools --exclude pkg_resources `
+            --exclude certifi --exclude charset_normalizer `
+            --exclude psutil --exclude numpy `
             --runtime-hook package_tool/hook-debugpy-pyinstaller.py `
             src/main.py
 
@@ -111,7 +115,7 @@ jobs:
           import shutil, site, os
           sp = site.getsitepackages()[0]
           dest = 'dist/metasweeper/_internal'
-          for pkg in ['debugpy', 'msgspec', 'setuptools']:
+          for pkg in ['debugpy', 'msgspec']:
               src = os.path.join(sp, pkg)
               if os.path.exists(src):
                   shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
