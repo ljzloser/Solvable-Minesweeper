@@ -162,12 +162,7 @@ jobs:
             Write-Output "Trimmed Qt translations (kept $remaining qtbase_*.qm files)"
           }
 
-          # 5) 删除 Qt 捆绑的旧版 OpenSSL (~3.7 MB)，让 pycryptodome 的 libcrypto-3 处理
-          $oldSsl = @("libcrypto-1_1-x64.dll", "libssl-1_1-x64.dll")
-          foreach ($dll in $oldSsl) {
-            $path = "$qt\bin\$dll"
-            if (Test-Path $path) { Remove-Item $path -Force; Write-Output "Removed $dll" }
-          }
+
 
           # 报告最终大小
           $total = (Get-ChildItem -Recurse "dist\metasweeper" -File | Measure-Object -Property Length -Sum).Sum
