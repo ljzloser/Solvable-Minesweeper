@@ -48,7 +48,7 @@ jobs:
         run: |
           cd package_tool
           python -u randomize_cat_icon.py
-          copy /Y cat.ico ..\src\media\cat.ico
+          Copy-Item cat.ico ..\src\media\cat.ico -Force
 
       - name: Package main app with PyInstaller
         run: |
