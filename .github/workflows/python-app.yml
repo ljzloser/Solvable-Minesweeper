@@ -94,6 +94,10 @@ jobs:
             --hidden-import Crypto.Cipher.AES `
             --hidden-import Crypto.Random `
             --hidden-import ms_toollib `
+            --exclude PIL --exclude Pillow --exclude Cython `
+            --exclude setuptools --exclude pkg_resources `
+            --exclude certifi --exclude charset_normalizer `
+            --exclude psutil --exclude numpy `
             --runtime-hook package_tool/hook-debugpy-pyinstaller.py `
             --distpath dist\plugin_manager_out `
             src\plugin_manager\_run.py
