@@ -16,16 +16,16 @@ from utils.app_logger import logger
 _translate = QtCore.QCoreApplication.translate
 
 # ── 评论翻译 ──────────────────────────────────────────────
-# severity + key → 可翻译模板
+# severity + key → 中文原文（默认），国际化引擎翻译为其他语言
 _COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
-    ("error", "high_risk_guess"):        "Dangerous guess (correct probability {0})",
-    ("feature", "hard_judgment"):        "Hard judgment ({0})",
-    ("warning", "needless_guess"):       "Needless guess while judgment available",
-    ("error", "mouse_trace_too_curved"): "Too curved mouse trace ({0}%)",
-    ("warning", "mouse_trace_curved"):   "Curved mouse trace ({0}%)",
-    ("suspect", "mouse_trace_straight"): "Suspiciously straight mouse trace",
-    ("warning", "vision_transfer"):      "Vision transfer while judgment available",
-    ("feature", "fl_local"):             "Textbook FL local ({0} steps)",
+    ("error", "high_risk_guess"):        "危险的猜雷（正确概率 {0}）",
+    ("feature", "hard_judgment"):        "高难度的判雷（{0}）",
+    ("warning", "needless_guess"):       "可以判雷时选择猜雷",
+    ("error", "mouse_trace_too_curved"): "鼠标轨迹过于弯曲（{0}%）",
+    ("warning", "mouse_trace_curved"):   "鼠标轨迹弯曲（{0}%）",
+    ("suspect", "mouse_trace_straight"): "笔直的鼠标轨迹",
+    ("warning", "vision_transfer"):      "可以判雷时视野的转移",
+    ("feature", "fl_local"):             "教科书式的FL局部（{0} 步）",
 }
 
 def _translate_comments(comments: str) -> list[tuple[str, str]]:
@@ -41,6 +41,10 @@ def _translate_comments(comments: str) -> list[tuple[str, str]]:
             severity, key, params = m.group(1), m.group(2), m.group(3).strip()
             template = _COMMENT_TEMPLATES.get((severity, key))
             if template:
+                try:
+                    params = f"{float(params):.3f}"
+                except ValueError:
+                    pass
                 text = _translate("VideoControl", template).format(params)
                 result.append((severity, text))
     return result
