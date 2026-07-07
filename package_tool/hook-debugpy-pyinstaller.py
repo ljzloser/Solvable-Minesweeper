@@ -10,17 +10,23 @@ import sys
 # 此 hook 在任何代码执行前将 debugpy 的真实解压路径注入 sys._MEIPASS 搜索逻辑。
 
 def _fix_debugpy_paths():
-    # PyInstaller 运行时，已解压的文件在 sys._MEIPASS 下
     meipass = getattr(sys, "_MEIPASS", None)
     if not meipass:
-        return  # 非打包环境，不需要处理
+        return
 
     debugpy_dir = os.path.join(meipass, "debugpy")
-    vendored_dir = os.path.join(debugpy_dir, "_vendored")
 
     if os.path.isdir(debugpy_dir):
-        # 确保 debugpy 在 sys.path 中靠前（PyInstaller 已处理，但保险起见）
         if debugpy_dir not in sys.path:
             sys.path.insert(0, debugpy_dir)
+        # debugpy 1.8+ 将 vendored 包直接内联，不再有 _vendored 目录
+        vendored_dir = os.path.join(debugpy_dir, "_vendored")
+        if os.path.isdir(vendored_dir) and vendored_dir not in sys.path:
+            sys.path.insert(0, vendored_dir)
+        # debugpy 1.9+ 可能将 vendored 放到了 deeper 路径
+        for sub in ("_vendored", "_vendored2"):
+            p = os.path.join(debugpy_dir, sub)
+            if os.path.isdir(p) and p not in sys.path:
+                sys.path.insert(0, p)
 
 _fix_debugpy_paths()

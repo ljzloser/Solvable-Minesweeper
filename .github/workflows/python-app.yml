@@ -124,9 +124,20 @@ jobs:
           dest = 'dist/metasweeper/_internal'
           for pkg in ['debugpy', 'msgspec']:
               src = os.path.join(sp, pkg)
+              dst = os.path.join(dest, pkg)
               if os.path.exists(src):
-                  shutil.copytree(src, os.path.join(dest, pkg), dirs_exist_ok=True)
-                  print(f'Copied {pkg}')
+                  shutil.copytree(src, dst, dirs_exist_ok=True)
+                  n = sum(1 for _,_,fs in os.walk(dst) for f in fs)
+                  kb = sum(os.path.getsize(os.path.join(d, f)) for d,_,fs in os.walk(dst) for f in fs) // 1024
+                  print(f'Copied {pkg} ({n} files, {kb} KB)')
+                  for sub in ['_vendored', '_vendored2']:
+                      vd = os.path.join(dst, sub)
+                      if os.path.isdir(vd):
+                          print(f'  {sub}/ present ({len(os.listdir(vd))} items)')
+                      else:
+                          print(f'  {sub}/ absent (OK for debugpy >=1.8)')
+              else:
+                  print(f'WARNING: {pkg} not found in site-packages!')
           "
 
       - name: Strip unnecessary Qt binaries

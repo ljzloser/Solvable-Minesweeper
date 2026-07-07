@@ -475,6 +475,8 @@ class ui_Form(QWidget, Ui_Form):
         self.pushButton_play.setStyleSheet(self.pushButton_play.styleSheet().replace("url(media/", f"url({m}/"))
         # self.label_2.setStyleSheet(self.label_2.styleSheet().replace("url(media/", f"url({m}/"))
         self.label_speed.setStyleSheet(self.label_speed.styleSheet().replace("url(media/", f"url({m}/"))
+        self.pushButton_path.setStyleSheet(self.pushButton_path.styleSheet().replace("url(media/", f"url({m}/"))
+        self.pushButton_op.setStyleSheet(self.pushButton_op.styleSheet().replace("url(media/", f"url({m}/"))
 
         self.QWidget.closeEvent_.connect(self.close)
         # self.horizontalSlider_time.setMaximum(int(video.video_end_time * 1000))
