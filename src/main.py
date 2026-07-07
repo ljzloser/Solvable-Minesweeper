@@ -169,40 +169,56 @@ if __name__ == "__main__":
         _translate = QtCore.QCoreApplication.translate
         data_dir = str(ui.setting_path / "data")
 
-        # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
-        if getattr(sys, 'frozen', False):
-            base_dir = os.path.dirname(sys.executable)
-            plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
-            if not os.path.exists(plugin_exe):
-                QtWidgets.QMessageBox.warning(
-                    mainWindow, _translate("MainWindow", "插件管理器"),
-                    _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace("{path}", plugin_exe),
-                )
-                plugin_process = None
+        # 检查插件管理器是否已在运行（上一次崩溃后残存的互斥体）
+        _plugin_manager_running = False
+        try:
+            import win32api
+            import win32event
+            import winerror
+            hMutex = win32event.OpenMutex(0x001F0001, False, "Metasweeper-PluginManager")
+            if hMutex:
+                win32api.CloseHandle(hMutex)
+                _plugin_manager_running = True
+        except win32api.error:
+            pass  # 互斥体不存在，正常启动
+
+        plugin_process = None
+
+        if not _plugin_manager_running:
+            # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
+            if getattr(sys, 'frozen', False):
+                base_dir = os.path.dirname(sys.executable)
+                plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
+                if not os.path.exists(plugin_exe):
+                    QtWidgets.QMessageBox.warning(
+                        mainWindow, _translate("MainWindow", "插件管理器"),
+                        _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace("{path}", plugin_exe),
+                    )
+                    plugin_process = None
+                else:
+                    cmd = [plugin_exe, "--mode", "tray", "--data-dir", data_dir]
+                    cwd = base_dir
+                    try:
+                        plugin_process = subprocess.Popen(
+                            cmd, cwd=cwd, env=get_env_for_subprocess(),
+                        )
+                    except Exception as e:
+                        QtWidgets.QMessageBox.warning(
+                            mainWindow, _translate("MainWindow", "插件管理器"),
+                            _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace("{err}", str(e)),
+                        )
+                        plugin_process = None
             else:
-                cmd = [plugin_exe, "--mode", "tray", "--data-dir", data_dir]
-                cwd = base_dir
+                cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray",
+                       "--data-dir", data_dir]
+                cwd = os.path.dirname(os.path.abspath(__file__))
                 try:
                     plugin_process = subprocess.Popen(
                         cmd, cwd=cwd, env=get_env_for_subprocess(),
                     )
                 except Exception as e:
-                    QtWidgets.QMessageBox.warning(
-                        mainWindow, _translate("MainWindow", "插件管理器"),
-                        _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace("{err}", str(e)),
-                    )
+                    logger.warning(f"Failed to start plugin_manager: {e}")
                     plugin_process = None
-        else:
-            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray",
-                   "--data-dir", data_dir]
-            cwd = os.path.dirname(os.path.abspath(__file__))
-            try:
-                plugin_process = subprocess.Popen(
-                    cmd, cwd=cwd, env=get_env_for_subprocess(),
-                )
-            except Exception as e:
-                logger.warning(f"Failed to start plugin_manager: {e}")
-                plugin_process = None
 
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 

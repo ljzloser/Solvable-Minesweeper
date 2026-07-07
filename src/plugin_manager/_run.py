@@ -14,8 +14,34 @@ import sys
 os.environ.setdefault("QT_ENABLE_HIGHDPI_SCALING", "1")
 os.environ.setdefault("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough")
 
+# ── 互斥体：防止重复实例 ──
+
+_MUTEX_NAME = "Metasweeper-PluginManager"
+_mutex_handle = None
+
+
+def _acquire_mutex() -> bool:
+    """创建命名互斥体。已有实例时返回 False。"""
+    global _mutex_handle
+    try:
+        import win32api
+        import win32event
+        import winerror
+        _mutex_handle = win32event.CreateMutex(None, False, _MUTEX_NAME)
+        if win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS:
+            win32api.CloseHandle(_mutex_handle)
+            _mutex_handle = None
+            return False
+        return True
+    except Exception:
+        return True  # 非 Windows 或 pywin32 缺失时放行
+
 
 def main() -> int:
+    if not _acquire_mutex():
+        print("[plugin_manager] 已有实例在运行，退出")
+        return 0
+
     parser = argparse.ArgumentParser(description="Solvable-Minesweeper 插件管理器")
     parser.add_argument(
         "--endpoint",
