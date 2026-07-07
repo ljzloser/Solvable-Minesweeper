@@ -6,7 +6,7 @@
 ; 程序名称
 #define MyAppName "Metasweeper"
 ; 程序版本
-#define MyAppVersion "3.3.1"
+#define MyAppVersion "3.3.2"
 ; 发行商
 #define MyAppPublisher "eee555"
 ; 官网
@@ -18,7 +18,7 @@
 ; 根目录
 #define RootPath "Metasweeper-snapshot"
 ; 图标
-#define IconPath "metasweeper\media\cat.ico"
+#define IconPath "metasweeper\_internal\media\cat.ico"
 [Setup]
 ;注意：AppId 的值唯一标识此应用程序。不要在其他应用程序的安装程序中使用相同的 AppId 值。
 ;（要生成新的 GUID，请单击 Tools |在 IDE 中生成 GUID

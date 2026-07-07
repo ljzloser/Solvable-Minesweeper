@@ -182,7 +182,7 @@
 - 在历史插件中，可以通过右键菜单，以json格式复制某一局的数据
 - 添加了导入历史版本的stats.dat文件的功能
 - 添加了导出meta.dat（仅包含扫开的数据）、meta.all.dat（包含扫开和未扫开的数据）、textstats.csv（包含扫开和未扫开的数据）功能
-- 修复了以下bug：3.2.2版本的md5不正确、计数器的键名不能包含大写字母、插件数据试图写入可能无权限的目录、数字快捷键切换难度直接引起报错、录像播放控制器的图片资源找不到、历史插件刚打开显示共0行0页、录像回放时左上角雷数显示不对、修仙插件里非标准模式无法获得经验、弱可猜模式下可能重埋雷失败。  
+- 修复了以下bug：3.2.2版本的md5不正确、计数器的键名不能包含大写字母、插件数据试图写入可能无权限的目录、数字快捷键切换难度直接引起报错、录像播放控制器的图片资源找不到、历史插件刚打开显示共0行0页、录像回放时左上角雷数显示不对、修仙插件里非标准模式无法获得经验、弱可猜模式下可能重埋雷失败  
 链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)
 
 ### 正式版v3.3.1：

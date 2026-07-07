@@ -141,7 +141,7 @@ def copy_board_to_clipboard(
     render: str = "ascii",
 ) -> None:
     if copy_format == 0:
-        text = board_to_array_str(real_board)
+        text = board_to_array_str(game_board)
         QApplication.clipboard().setText(text)
 
     elif copy_format == 1:
