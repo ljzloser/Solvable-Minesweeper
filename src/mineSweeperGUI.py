@@ -1124,6 +1124,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
+            self.game_state = 'ready'
             self.setBoard_and_start(ui.row, ui.column, ui.minenum)
             # self.score_board_manager.with_namespace({
             #     "row": self.row,
