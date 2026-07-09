@@ -132,6 +132,13 @@ def cli_check_file(file_path: str) -> int:
 
 
 if __name__ == "__main__":
+    sys.excepthook = lambda typ, val, tb: (
+        QtWidgets.QMessageBox.critical(
+            None, "程序错误",
+            "".join(__import__("traceback").format_exception(typ, val, tb)),
+        ) if QtWidgets.QApplication.instance() else None
+    ) or sys.exit(1) or None
+
     # metasweeper.exe -c filename.evf用法，检查文件的合法性
     # metasweeper.exe -c filename.evfs
     # metasweeper.exe -c ./somepath/replay
