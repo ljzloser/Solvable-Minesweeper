@@ -35,7 +35,7 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 │        │                             │
 │   EventDispatcher ──→ 事件分发       │
 │        │                             │
-│   BasePlugin(QThread) × N            │
+│   BasePlugin(QObject + moveToThread) × N
 │     ├─ HistoryPlugin (内置)          │
 │     ├─ 你的插件A (用户)              │
 │     └─ 你的插件B (用户)              │
@@ -45,7 +45,7 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 ```
 
 **关键点：**
-- 每个插件运行在**独立的 QThread** 中，互不阻塞
+- 每个插件运行在**独立的线程**中（QObject + moveToThread），互不阻塞
 - 主进程和插件管理器通过 **ZeroMQ** 通信
 - 插件通过**事件订阅**接收游戏数据，通过**指令发送**控制主进程
 
@@ -478,12 +478,12 @@ class MyPlugin(BasePlugin):
 
 > **为什么需要跨线程机制？**
 >
-> `BasePlugin` 继承自 `QThread`，它本身就是一个 `QObject`。事件处理器运行在**插件工作线程**中，
+> `BasePlugin` 是 `QObject`（通过 moveToThread 运行在独立线程）。事件处理器运行在**插件工作线程**中，
 > 但 PyQt 的 GUI 操作只能在**主线程**执行。直接跨线程操作 GUI 会导致未定义行为或崩溃。
 >
 > **推荐：使用 `pyqtSignal`（信号槽）**
 
-因为插件类本身就是 `QObject`（QThread 的父类），所以可以直接在 Widget 或 Plugin 类上定义信号：
+因为插件类本身就是 `QObject`，所以可以直接在 Widget 或 Plugin 类上定义信号：
 Qt 会自动用 **QueuedConnection** 跨线程投递，安全且高效。
 
 ```python
@@ -1353,13 +1353,13 @@ def on_initialized(self):
                               │
                    set_event_dispatcher()  ← 注入事件分发器
                               │
-                        initialize()  ← 启动 QThread
+                        initialize()  ← 启动插件线程
                               │
                     ┌─► _setup_subscriptions()  ← 注册事件订阅
                     │         │
                     │    _create_widget()  ← 创建 UI（主线程）
                     │         │
-                    │      start()  ← QThread 开始运行
+                    │      _thread.start()  ← QThread 事件循环开始运行
                     │         │
                     │    on_initialized()  ← 【工作线程】初始化回调
                     │         │

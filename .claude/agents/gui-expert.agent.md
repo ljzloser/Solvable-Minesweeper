@@ -62,7 +62,7 @@ MainWindow (QMainWindow)
 
 ### 3. 插件内界面
 
-插件运行在独立 QThread，GUI 操作必须通过信号槽调度到主线程。
+插件运行在独立线程（QObject + moveToThread），GUI 操作必须通过信号槽调度到主线程。
 
 **关键文件**：
 
@@ -74,7 +74,7 @@ MainWindow (QMainWindow)
 
 **跨线程 GUI 安全模式**：
 
-插件运行在独立 QThread，**绝对不能**直接在插件线程中操作 GUI。
+插件运行在独立线程（QObject + moveToThread），**绝对不能**直接在插件线程中操作 GUI。
 
 **模式 1：通过 pyqtSignal**
 ```python

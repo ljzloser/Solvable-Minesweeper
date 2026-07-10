@@ -2,11 +2,11 @@
 
 ## 为什么需要跨线程机制？
 
-`BasePlugin` 继承自 `QThread`，事件处理器运行在**插件工作线程**中，但 PyQt 的 GUI 操作只能在**主线程**执行。直接跨线程操作 GUI 会导致未定义行为或崩溃。
+`BasePlugin` 是 `QObject`（通过 moveToThread 运行在独立线程），事件处理器运行在**插件工作线程**中，但 PyQt 的 GUI 操作只能在**主线程**执行。直接跨线程操作 GUI 会导致未定义行为或崩溃。
 
 ## 推荐方式：pyqtSignal + 槽函数
 
-因为插件类本身就是 `QObject`（QThread 的父类），所以可以直接定义信号：
+因为插件类本身就是 `QObject`，所以可以直接定义信号：
 
 ```python
 from PyQt5.QtCore import pyqtSignal
