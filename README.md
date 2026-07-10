@@ -171,6 +171,11 @@
 
 
 ## 下载链接
+### 正式版v3.3.3：
+- 任何未捕获异常会弹对话框显示完整 traceback，不再无声闪退
+- 修复了以下bug：将局面复制到矩阵时矩阵全0，插件管理器不再能多开，文件关联打开录像报错，游戏开始后通过自定义菜单修改配置确定后闪退，双键踩雷后闪退  
+链接：[https://gitee.com/ee55/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe)、[https://github.com/eee555/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe)
+
 ### 正式版v3.3.2：
 - 现在播放录像时，可以绘制鼠标轨迹和空
 - 添加Ctrl+C快捷键，可以以ascii或emoji的渲染方式，复制.board数据或文件；添加Ctrl+V快捷键，快速进入研究模式或在研究模式中粘贴复制的局面
