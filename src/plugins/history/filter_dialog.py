@@ -251,7 +251,7 @@ class FilterDialog(ConfirmDialog):
 
             if right_count > left_count:
                 QMessageBox.warning(
-                    self, "错误", f"第{row}行 右括号数量大于左括号数量，请检查"
+                    self, _translate("Form", "错误"), _translate("Form", "第{n}行 右括号数量大于左括号数量，请检查").replace("{n}", str(row))
                 )
                 return None
 
@@ -269,7 +269,7 @@ class FilterDialog(ConfirmDialog):
                     for v in values:
                         if not v.replace("-", "").replace(".", "").isdigit():
                             QMessageBox.warning(
-                                self, "错误", f"第{row}行 {v} 不是数字"
+                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是数字").replace("{n}", str(row)).replace("{val}", v)
                             )
                             return None
                     value = ",".join(v for v in values)
@@ -299,7 +299,7 @@ class FilterDialog(ConfirmDialog):
                                     raise ValueError(f"无法解析日期: {v}")
                             except ValueError as e:
                                 QMessageBox.warning(
-                                    self, "错误", f"第{row}行 {v} 不是合法的日期时间"
+                                    self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", v)
                                 )
                                 return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -317,7 +317,7 @@ class FilterDialog(ConfirmDialog):
                                 break
                         else:
                             QMessageBox.warning(
-                                self, "错误", f"第{row}行 {v} 不是合法的枚举选项"
+                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的枚举选项").replace("{n}", str(row)).replace("{val}", v)
                             )
                             return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -343,12 +343,12 @@ class FilterDialog(ConfirmDialog):
                                 continue
                         else:
                             QMessageBox.warning(
-                                self, "错误", f"第{row}行 {value} 不是合法的日期时间"
+                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
                             )
                             return None
                     except ValueError:
                         QMessageBox.warning(
-                            self, "错误", f"第{row}行 {value} 不是合法的日期时间"
+                            self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
                         )
                         return None
             elif value and not value.startswith("'"):
@@ -362,6 +362,6 @@ class FilterDialog(ConfirmDialog):
                 filter_str += logic
 
         if left_count != right_count:
-            QMessageBox.warning(self, "错误", "左括号数量和右括号数量不匹配，请检查")
+            QMessageBox.warning(self, _translate("Form", "错误"), _translate("Form", "左括号数量和右括号数量不匹配，请检查"))
             return None
         return filter_str

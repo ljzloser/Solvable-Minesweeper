@@ -135,6 +135,7 @@ class XianNiUpgradePlugin(BasePlugin):
         assets_path = Path(__file__).parent
         self._ui.set_image_dir(assets_path)
         self._ui.set_absorb_callbacks(self.validate_replays, self.absorb_replays)
+        self._ui.set_save_callbacks(self.validate_save, self.absorb_save)
         return self._ui
 
     def on_initialized(self) -> None:
@@ -226,9 +227,9 @@ class XianNiUpgradePlugin(BasePlugin):
             elif level == 5:
                 if ioe >= 0.8:
                     if nf:
-                        exp_e = 10000 * ioe ** 50
+                        exp_e = 1200 * ioe ** 50
                     else:
-                        exp_e = 100 * ioe ** 10
+                        exp_e = 1 * ioe ** 20
 
 
         total = int(exp_b + exp_r + exp_t + exp_e)
@@ -304,7 +305,7 @@ class XianNiUpgradePlugin(BasePlugin):
             actual_md5 = hashlib.md5(exe.read_bytes()).hexdigest()
 
             match actual_md5:
-                case "d5fd61ae1372297aa7008d7b7cd8a13b":
+                case "3271d11bab9afc8b0a2b9546e13d46cd":
                     return self._validate_metasweeper_3_2_2(exe, replay_path)
                 case _:
                     self.logger.error(f"未知法器 MD5: {actual_md5}")
@@ -362,7 +363,7 @@ class XianNiUpgradePlugin(BasePlugin):
                     self.logger.warning(f"解析录像失败 {fp}: {e}")
 
             return {
-                "md5": "d5fd61ae1372297aa7008d7b7cd8a13b",
+                "md5": "3271d11bab9afc8b0a2b9546e13d46cd",
                 "new_files": new_files,
                 "duplicates": dup_files,
                 "total_new_xp": sum(n["xp"] for n in new_files),
@@ -413,6 +414,114 @@ class XianNiUpgradePlugin(BasePlugin):
         self._push_ui_update()
         return gained_total
 
+    # ═══════════════════════════════════════════════════════════
+    # 导入道行存档（3.3.1+ 版本之间跨版本累计）
+    # ═══════════════════════════════════════════════════════════
+
+    def validate_save(self, dir_path: str) -> dict | None:
+        """递归搜索 player_data.dat，解析并去重后返回预览"""
+        files = list(Path(dir_path).rglob("player_data.dat"))
+        if not files:
+            return None
+
+        parsed = []
+        for fp in files:
+            try:
+                raw = _decrypt(fp.read_bytes())
+                data = json.loads(raw)
+                if "identifiers" in data and "players" in data:
+                    parsed.append(data)
+            except Exception:
+                continue
+
+        if not parsed:
+            return None
+
+        # 跨文件去重：同一 identifier 取最高经验
+        merged: dict[str, int] = {}
+        for data in parsed:
+            for identifier, player in zip(data["identifiers"], data["players"]):
+                xp = player["xp"]
+                if identifier not in merged or xp > merged[identifier]:
+                    merged[identifier] = xp
+
+        return {
+            "files": parsed,
+            "preview": {
+                "players": [{"identifier": k, "xp": v} for k, v in merged.items()],
+                "total_xp": sum(merged.values()),
+                "total_players": len(merged),
+            },
+        }
+
+    def absorb_save(self, preview: dict) -> int:
+        """合并预览中的存档数据到当前玩家"""
+        # 第一步：跨文件去重，每个 identifier 取最高经验
+        merged: dict[str, int] = {}
+        for data in preview["files"]:
+            for identifier, player in zip(data["identifiers"], data["players"]):
+                xp = player["xp"]
+                if identifier not in merged or xp > merged[identifier]:
+                    merged[identifier] = xp
+
+        gained_total = 0
+
+        # 第二步：合并玩家经验
+        for identifier, import_xp in merged.items():
+            pid = self._get_or_create_pid(identifier)
+            player = self._players[pid]
+            if import_xp > player["xp"]:
+                added = import_xp - player["xp"]
+                player["xp"] = import_xp
+                gained_total += added
+
+            while player["level"] < 100:
+                need = _total_xp(player["level"] + 1)
+                if player["xp"] < need:
+                    break
+                player["level"] += 1
+
+            top = _total_xp(100)
+            if player["xp"] > top:
+                player["xp"] = top
+
+        # 第三步：合并修行日志（按新 pid + 时间去重）
+        existing_keys = set((h["pid"], h["time"]) for h in self._history)
+        old_idents = []
+        old_histories = []
+        for data in preview["files"]:
+            old_idents.append(data.get("identifiers", []))
+            old_histories.append(data.get("history", []))
+
+        for idents, history in zip(old_idents, old_histories):
+            for h in history:
+                old_pid = h.get("pid", 0)
+                identifier = idents[old_pid] if 0 <= old_pid < len(idents) else None
+                if identifier is None:
+                    continue
+                try:
+                    new_pid = self._identifiers.index(identifier)
+                except ValueError:
+                    continue
+                key = (new_pid, h["time"])
+                if key not in existing_keys:
+                    entry = dict(h)
+                    entry["pid"] = new_pid
+                    self._history.append(entry)
+                    existing_keys.add(key)
+
+        if len(self._history) > 1000:
+            self._history.sort(key=lambda x: x["time"])
+            self._history = self._history[-1000:]
+
+        # 第四步：合并已导入录像集
+        for data in preview["files"]:
+            self._imported.update(tuple(v) for v in data.get("imported_videos", []))
+
+        self._save_data()
+        self._push_ui_update()
+        return gained_total
+
     def _build_update_data(self) -> dict:
         if not self._players:
             return {
@@ -446,7 +555,7 @@ class XianNiUpgradePlugin(BasePlugin):
     def _on_game_finished(self, event: GameFinishedEvent):
         # self.logger.info(event.game_state)
         # self.logger.info(event)
-        if event.game_state != 6 or not event.is_official:
+        if event.game_state != 6 or not event.is_fair:
             return
 
         pid = self._get_or_create_pid(event.player_identifier)

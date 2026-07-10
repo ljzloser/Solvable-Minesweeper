@@ -1,6 +1,5 @@
 import time
-from PyQt5 import QtWidgets
-# from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QLocalSocket, QLocalServer
 import sys
@@ -11,9 +10,8 @@ import mainWindowGUI as mainWindowGUI
 import mineSweeperGUI as mineSweeperGUI
 import ms_toollib as ms
 import ctypes
-# from ctypes import wintypes
 from pathlib import Path
-from utils import get_paths, patch_env
+from utils.app_logger import logger
 
 # 插件系统（新）
 from plugin_sdk import GameServerBridge
@@ -21,6 +19,9 @@ from plugin_manager.app_paths import get_env_for_subprocess
 from shared_types.commands import NewGameCommand, MouseClickCommand
 from shared_types.enums import GameLevel
 import subprocess
+from config.constants import (
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+)
 
 os.environ["QT_FONT_DPI"] = "96"
 
@@ -77,7 +78,8 @@ def cli_check_file(file_path: str) -> int:
                     video = ms.EvfVideo(e)
                     try:
                         video.parse()
-                    except:
+                    except Exception:
+                        logger.warning("Failed to parse evf file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         checksum = ui.checksum_guard.get_checksum(
@@ -89,7 +91,8 @@ def cli_check_file(file_path: str) -> int:
                     videos = ms.Evfs(e)
                     try:
                         videos.parse()
-                    except:
+                    except Exception:
+                        logger.warning("Failed to parse evfs file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         if videos.len() <= 0:
@@ -129,6 +132,13 @@ def cli_check_file(file_path: str) -> int:
 
 
 if __name__ == "__main__":
+    sys.excepthook = lambda typ, val, tb: (
+        QtWidgets.QMessageBox.critical(
+            None, "程序错误",
+            "".join(__import__("traceback").format_exception(typ, val, tb)),
+        ) if QtWidgets.QApplication.instance() else None
+    ) or sys.exit(1) or None
+
     # metasweeper.exe -c filename.evf用法，检查文件的合法性
     # metasweeper.exe -c filename.evfs
     # metasweeper.exe -c ./somepath/replay
@@ -163,39 +173,59 @@ if __name__ == "__main__":
 
         # ── 启动 ZMQ Server + 插件管理器 ──
 
-        # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
-        if getattr(sys, 'frozen', False):
-            base_dir = os.path.dirname(sys.executable)
-            plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
-            if not os.path.exists(plugin_exe):
-                QtWidgets.QMessageBox.warning(
-                    mainWindow, "Plugin Manager",
-                    f"plugin_manager.exe not found:\n{plugin_exe}\n\nPlugins will be disabled.",
-                )
-                plugin_process = None
+        _translate = QtCore.QCoreApplication.translate
+        data_dir = str(ui.setting_path / "data")
+
+        # 检查插件管理器是否已在运行（上一次崩溃后残存的互斥体）
+        _plugin_manager_running = False
+        try:
+            import win32api
+            import win32event
+            import winerror
+            hMutex = win32event.OpenMutex(0x001F0001, False, "Metasweeper-PluginManager")
+            if hMutex:
+                win32api.CloseHandle(hMutex)
+                _plugin_manager_running = True
+        except win32api.error:
+            pass  # 互斥体不存在，正常启动
+
+        plugin_process = None
+
+        if not _plugin_manager_running:
+            # 打包后直接调用 plugin_manager.exe，开发模式用 python -m
+            if getattr(sys, 'frozen', False):
+                base_dir = os.path.dirname(sys.executable)
+                plugin_exe = os.path.join(base_dir, "plugin_manager.exe")
+                if not os.path.exists(plugin_exe):
+                    QtWidgets.QMessageBox.warning(
+                        mainWindow, _translate("MainWindow", "插件管理器"),
+                        _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace("{path}", plugin_exe),
+                    )
+                    plugin_process = None
+                else:
+                    cmd = [plugin_exe, "--mode", "tray", "--data-dir", data_dir]
+                    cwd = base_dir
+                    try:
+                        plugin_process = subprocess.Popen(
+                            cmd, cwd=cwd, env=get_env_for_subprocess(),
+                        )
+                    except Exception as e:
+                        QtWidgets.QMessageBox.warning(
+                            mainWindow, _translate("MainWindow", "插件管理器"),
+                            _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace("{err}", str(e)),
+                        )
+                        plugin_process = None
             else:
-                cmd = [plugin_exe, "--mode", "tray"]
-                cwd = base_dir
+                cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray",
+                       "--data-dir", data_dir]
+                cwd = os.path.dirname(os.path.abspath(__file__))
                 try:
                     plugin_process = subprocess.Popen(
                         cmd, cwd=cwd, env=get_env_for_subprocess(),
                     )
                 except Exception as e:
-                    QtWidgets.QMessageBox.warning(
-                        mainWindow, "Plugin Manager",
-                        f"Failed to start plugin_manager:\n{e}",
-                    )
+                    logger.warning(f"Failed to start plugin_manager: {e}")
                     plugin_process = None
-        else:
-            cmd = [sys.executable, "-m", "plugin_manager", "--mode", "tray"]
-            cwd = os.path.dirname(os.path.abspath(__file__))
-            try:
-                plugin_process = subprocess.Popen(
-                    cmd, cwd=cwd, env=get_env_for_subprocess(),
-                )
-            except Exception as e:
-                print(f"[WARN] Failed to start plugin_manager: {e}")
-                plugin_process = None
 
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
 
@@ -217,16 +247,16 @@ if __name__ == "__main__":
 
             # 根据 level 确定参数
             if cmd.level == GameLevel.BEGINNER.value:
-                rows, cols, mines = 8, 8, 10
+                rows, cols, mines = BOARD_BEGINNER
             elif cmd.level == GameLevel.INTERMEDIATE.value:
-                rows, cols, mines = 16, 16, 40
+                rows, cols, mines = BOARD_INTERMEDIATE
             elif cmd.level == GameLevel.EXPERT.value:
-                rows, cols, mines = 16, 30, 99
+                rows, cols, mines = BOARD_EXPERT
             else:
                 # 自定义模式，使用传入的参数
                 rows, cols, mines = cmd.rows, cmd.cols, cmd.mines
 
-            print(
+            logger.info(
                 f"[NewGameCommand] level={cmd.level}, rows={rows}, cols={cols}, mines={mines}")
             ui.setBoard_and_start(rows, cols, mines)
             return CommandResponse(request_id=cmd.request_id, success=True)
@@ -238,7 +268,7 @@ if __name__ == "__main__":
             if 'mouse_click' not in ui._allowed_controls:
                 return CommandResponse(request_id=cmd.request_id, success=False)
 
-            print(
+            logger.info(
                 f"[MouseClickCommand] row={cmd.row}, col={cmd.col}, button={cmd.button}")
             success = ui.execute_cell_click(cmd.row, cmd.col, cmd.button)
             return CommandResponse(request_id=cmd.request_id, success=success)
@@ -265,8 +295,6 @@ if __name__ == "__main__":
 
         app.aboutToQuit.connect(_cleanup)
         sys.exit(app.exec_())
-    # except:
-    #     pass
 
 # 最高优先级
 # 计时器快捷键切换

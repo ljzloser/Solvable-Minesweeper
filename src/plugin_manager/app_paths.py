@@ -48,16 +48,73 @@ def get_executable_dir() -> Path:
     return get_bundle_dir().parent
 
 
+# ── 指针文件（持久化 data-dir 路径，支持独立启动） ──
+
+_POINTER_FILENAME = ".metasweeper"
+
+
+def _get_pointer_path() -> Path:
+    """%APPDATA%/.metasweeper 指针文件路径"""
+    return Path(os.environ["APPDATA"]) / _POINTER_FILENAME
+
+
+def _write_pointer_file(data_dir: str) -> None:
+    """将 data-dir 写入指针文件"""
+    try:
+        _get_pointer_path().write_text(data_dir, encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"写入指针文件失败: {e}")
+
+
+def _read_pointer_file() -> str | None:
+    """读取指针文件，获取上次的 data-dir"""
+    try:
+        p = _get_pointer_path()
+        if p.exists():
+            text = p.read_text(encoding="utf-8").strip()
+            if text and Path(text).is_dir():
+                return text
+    except Exception as e:
+        logger.warning(f"读取指针文件失败: {e}")
+    return None
+
+
+# ── 可写数据目录（由主进程启动时通过 --data-dir 传入） ─
+
+_data_dir_override: str | None = None
+
+
+def set_data_dir_override(path: str) -> None:
+    """由主进程在启动时调用，传入已测过权限的 data 目录"""
+    global _data_dir_override
+    _data_dir_override = path
+    _write_pointer_file(path)
+
+
 def get_data_dir() -> Path:
     """
-    获取可写的数据目录（用于存放状态文件、日志等持久化数据）
+    获取可写的数据目录
 
-    - 开发模式: <project>/src/data/
-    - 打包模式:   <exe所在目录>/data/
+    优先级:
+    1. 命令行 --data-dir（主进程传入）
+    2. %APPDATA%/.metasweeper 指针文件（独立启动时读取）
+    3. 默认: <exe所在目录>/data/
     """
+    if _data_dir_override:
+        data_dir = Path(_data_dir_override)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
+
+    pointer = _read_pointer_file()
+    if pointer:
+        data_dir = Path(pointer)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
+
     base = get_executable_dir()
     data_dir = base / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
+    _write_pointer_file(str(data_dir))
     return data_dir
 
 

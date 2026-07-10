@@ -81,8 +81,12 @@ class AbsorbDialog(QDialog):
 
     def _setup_ui(self):
         self.setWindowTitle(_translate("Form", "吸收灵气"))
-        self.resize(500, 150)
+        self.resize(500, 210)
         layout = QVBoxLayout(self)
+
+        sep_old = QLabel(_translate("Form", "━━━ 元扫雷 3.2.2 ━━━"))
+        sep_old.setStyleSheet("color: #9E9E9E; font-size: 11px; font-weight: bold;")
+        layout.addWidget(sep_old)
 
         exe_row = QHBoxLayout()
         self._exe_edit = QLineEdit()
@@ -103,6 +107,24 @@ class AbsorbDialog(QDialog):
         replay_row.addWidget(self._replay_edit)
         replay_row.addWidget(browse_replay)
         layout.addLayout(replay_row)
+
+        sep_new = QLabel(_translate("Form", "━━━ 元扫雷 3.3.1+ ━━━"))
+        sep_new.setStyleSheet("color: #9E9E9E; font-size: 11px; font-weight: bold;")
+        layout.addWidget(sep_new)
+
+        save_row = QHBoxLayout()
+        self._save_edit = QLineEdit()
+        self._save_edit.setPlaceholderText(_translate("Form", "选择道藏目录..."))
+        browse_save = QPushButton(_translate("Form", "浏览"))
+        browse_save.clicked.connect(self._browse_save_dir)
+        save_row.addWidget(QLabel(_translate("Form", "导入道行存档:")))
+        save_row.addWidget(self._save_edit)
+        save_row.addWidget(browse_save)
+        layout.addLayout(save_row)
+
+        hint = QLabel(_translate("Form", "提示：请选择旧版安装目录下 data/plugin_data/XianNiUpgrade/ 文件夹"))
+        hint.setStyleSheet("color: #9E9E9E; font-size: 10px;")
+        layout.addWidget(hint)
 
         layout.addStretch()
 
@@ -126,8 +148,16 @@ class AbsorbDialog(QDialog):
         if path:
             self._replay_edit.setText(path)
 
+    def _browse_save_dir(self):
+        path = QFileDialog.getExistingDirectory(self, _translate("Form", "选择道藏目录"))
+        if path:
+            self._save_edit.setText(path)
+
     def get_paths(self) -> tuple[str, str]:
         return self._exe_edit.text().strip(), self._replay_edit.text().strip()
+
+    def get_save_dir(self) -> str:
+        return self._save_edit.text().strip()
 
 
 class RulesDialog(QDialog):
@@ -210,15 +240,15 @@ th { background: #F3E5F5; color: #6A1B9A; }
 
 <p><b>基础经验</b>（所有模式/难度均有效）：</p>
 <ul>
-<li>若雷密度 ≤ 80％：<br>
+<li>若雷密度 ≤ 80％（标准/Win7/弱无猜）或 ≤ 30％（经典无猜/强无猜）：<br>
   <code>基础 = k × 1.08^(雷数/格数 × 341) × min(行,列)^1.2 × max(行,列)^1.6 / 17411</code></li>
-<li>若雷密度 &gt; 80％：基础 = 0</li>
+<li>其余情况：基础 = 0</li>
 <li>k 为模式系数：标准=1、Win7=0.8、经典无猜=0.2、强无猜=0.25、弱无猜=2，其他=0（无经验）</li>
 </ul>
 
 <p><b>稀有局面经验</b>（仅标准模式·标准难度）：</p>
 <ul>
-<li>统计 3BV、Op、Isl、Cell6、Cell7、Cell8 六个指标在分布中的罕见程度</li>
+<li>统计 3BV、Op、Isl、Cell1~Cell8 共 11 个指标在分布中的罕见程度</li>
 <li>对每个指标，取 <code>p = min(P(X≤v), P(X≥v))</code>（双向累积概率），<br>
   累加 <code>(0.5 / p)^1.2</code></li>
 <li>高级：<code>稀有经验 = 累加值</code>；中级：<code>累加值 / 8</code>；初级：<code>累加值 / 100</code></li>
@@ -236,7 +266,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <li>效率指标 <code>IOE = 3BV / (lefts + rights + chordings)</code></li>
 <li>初级：IOE ≥ 0.95 时 <code>IOE^3.5</code></li>
 <li>中级：IOE ≥ 0.9 时 <code>10 × IOE^4</code>（标雷）/ <code>20 × IOE^5</code>（盲扫）</li>
-<li>高级：IOE ≥ 0.8 时 <code>100 × IOE^10</code>（标雷）/ <code>10000 × IOE^50</code>（盲扫）</li>
+<li>高级：IOE ≥ 0.8 时 <code>1 × IOE^20</code>（标雷）/ <code>1200 × IOE^50</code>（盲扫）</li>
 </ul>
 
 <p><b>总经验</b> = 基础 + 稀有 + 竞速 + 效率，上限 99999/局。</p>
@@ -255,7 +285,7 @@ th { background: #F3E5F5; color: #6A1B9A; }
 <p>目前支持的版本：</p>
 <table>
 <tr><th>版本</th><th>MD5</th></tr>
-<tr><td>Metasweeper 3.2.2</td><td><code>d5fd61ae1372297aa7008d7b7cd8a13b</code></td></tr>
+<tr><td>Metasweeper 3.2.2</td><td><code>3271d11bab9afc8b0a2b9546e13d46cd</code></td></tr>
 </table>
 
 <h3>五、存档说明</h3>
@@ -388,12 +418,18 @@ class XianNiUpgradeUI(QWidget):
         self._assets: dict[int, bytes] = {}
         self._validate_cb = None
         self._absorb_cb = None
+        self._validate_save_cb = None
+        self._absorb_save_cb = None
         self._setup_ui()
         self._signal_update.connect(self._do_update)
 
     def set_absorb_callbacks(self, validate_cb, absorb_cb):
         self._validate_cb = validate_cb
         self._absorb_cb = absorb_cb
+
+    def set_save_callbacks(self, validate_cb, absorb_cb):
+        self._validate_save_cb = validate_cb
+        self._absorb_save_cb = absorb_cb
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -469,24 +505,45 @@ class XianNiUpgradeUI(QWidget):
         dialog = AbsorbDialog(self)
         if dialog.exec_() != QDialog.Accepted:
             return
+
+        msgs = []
+        total_gained = 0
+
+        # ── 方式一：3.2.2 录像吸收 ──
         exe_path, replay_path = dialog.get_paths()
-        if not exe_path or not replay_path:
-            QMessageBox.warning(self, _translate("Form", "提示"), _translate("Form", "请填写验证法器和灵箓目录"))
-            return
+        if exe_path and replay_path:
+            preview = self._validate_cb(exe_path, replay_path)
+            if preview is None:
+                msgs.append(_translate("Form", "3.2.2 验证失败，查看日志"))
+            elif not preview["new_files"]:
+                msgs.append(_translate("Form", "3.2.2 没有新的灵箓"))
+            else:
+                gained = self._absorb_cb(preview)
+                total_gained += gained
+                msgs.append(_translate("Form", "3.2.2 新增 %1 道灵箓，获 %2 道行").replace("%1", str(len(preview['new_files']))).replace("%2", str(gained)))
 
-        preview = self._validate_cb(exe_path, replay_path)
-        if preview is None:
-            QMessageBox.warning(self, _translate("Form", "吸收灵气失败"), _translate("Form", "验证失败，请查看插件日志"))
-            return
-        if not preview["new_files"]:
-            QMessageBox.information(self, _translate("Form", "吸收灵气"), _translate("Form", "没有新的灵箓需要导入"))
-            return
+        # ── 方式二：3.3.1+ 存档导入 ──
+        save_dir = dialog.get_save_dir()
+        if save_dir and self._validate_save_cb and self._absorb_save_cb:
+            preview = self._validate_save_cb(save_dir)
+            if preview is None:
+                msgs.append(_translate("Form", "3.3.1+ 未找到有效道藏"))
+            else:
+                p = preview["preview"]
+                ret = QMessageBox.question(
+                    self, _translate("Form", "导入道藏"),
+                    _translate("Form", "发现 %1 位道友，共 %2 道行，确认导入？").replace("%1", str(p["total_players"])).replace("%2", str(p["total_xp"])),
+                    QMessageBox.Yes | QMessageBox.No
+                )
+                if ret == QMessageBox.Yes:
+                    gained = self._absorb_save_cb(preview)
+                    total_gained += gained
+                    msgs.append(_translate("Form", "3.3.1+ 导入 %1 位道友，获 %2 道行").replace("%1", str(p["total_players"])).replace("%2", str(gained)))
 
-        gained = self._absorb_cb(preview)
-        QMessageBox.information(
-            self, _translate("Form", "吸收灵气完成"),
-            _translate("Form", "新增 %1 道灵箓\n获得 %2 道行").replace("%1", str(len(preview['new_files']))).replace("%2", str(gained))
-        )
+        if not msgs:
+            QMessageBox.information(self, _translate("Form", "提示"), _translate("Form", "请填写至少一种吸收方式"))
+        else:
+            QMessageBox.information(self, _translate("Form", "吸收灵气完成"), "\n".join(msgs))
 
     def _do_update(self, data: dict):
         rank = LEVEL_NAMES.get(data["level"], "")

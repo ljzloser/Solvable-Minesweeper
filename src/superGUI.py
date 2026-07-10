@@ -1,30 +1,32 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSize, QTimer
 from PyQt5.QtCore import QTranslator
-# from os import environ
+
 from PyQt5.QtWidgets import QApplication
 import configparser
 from PyQt5.QtGui import QPalette, QPixmap, QIcon
 from ui.ui_main_board import Ui_MainWindow
 from pathlib import Path
-from gameScoreBoard import gameScoreBoardManager
+from utils.path_utils import resource_path
+from dialogs.gameScoreBoard import gameScoreBoardManager
 from country_name import country_name
 import os, sys
 from typing import List, Tuple
 
 from shared_types.events import LanguageChangeEvent
+from config.constants import (
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+    FACE_SMILE, FACE_CLICK, FACE_LOST, FACE_WIN, FACE_SMILE_DOWN,
+    LEVEL_NAME_BEGINNER, LEVEL_NAME_INTERMEDIATE, LEVEL_NAME_EXPERT, LEVEL_NAME_CUSTOM,
+)
+from utils.app_logger import logger
 from plugin_sdk import GameServerBridge
 
-version = "元3.3.1"
+version = "元3.3.3"
 # AES-GCM 加密。请勿开发恶意篡改历史记录的工具，可以开发有益的应用。
 STATS_DAT_KEY = bytes([173,239,218,129,84,35,95,237,23,47,166,30,121,187,124,187])  # 16字节 AES-128 key
 
-def resource_path(relative_path: str) -> Path:
-    """获取资源文件路径（开发环境 + PyInstaller）
-    用于qm文件和media
-    """
-    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
-    return base_path / relative_path
+
 
 
 class IniConfig:
@@ -37,6 +39,7 @@ class IniConfig:
         # QSettings的键名是无序的，无法使用
         # ConfigParser会将%转义，而这里要求%是原义
         self.config = configparser.RawConfigParser()
+        self.config.optionxform = str
         self.config.default_section = ""
         # 如果文件不存在则创建
         if not os.path.exists(file_path):
@@ -229,8 +232,8 @@ class Ui_MainWindow(Ui_MainWindow):
         # 标准、win7、经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
 
         self.read_or_create_record()
-        self.label.setPath(r_path)
-        self.label_2.setPath(r_path)
+        self.label.setPath()
+        self.label_2.setPath()
 
 
         self.readPredefinedBoardPara()
@@ -244,20 +247,16 @@ class Ui_MainWindow(Ui_MainWindow):
         # 记录了计数器的配置，显示哪些指标等等
         score_board_path = str(self.setting_path / 'scoreBoardSetting.ini')
         self.score_board_setting = IniConfig(score_board_path)
-        self.score_board_manager = gameScoreBoardManager(r_path, self.score_board_setting,
+        self.score_board_manager = gameScoreBoardManager(self.score_board_setting,
                                                          self.game_setting,
                                                          self.pixSize, MainWindow)
         # self.score_board_manager.ui.QWidget.move(_scoreBoardTop, _scoreBoardLeft)
 
 
-        # self.importLEDPic() # 导入图片
-        # self.label.setPath(r_path)
-
-
         self.label_2.leftRelease.connect(self.gameRestart)
         self.MinenumTimeWigdet.mouseReleaseEvent = self.gameRestart
 
-        self.label_2.setPixmap(self.pixmapNum[14])
+        self.label_2.setPixmap(self.pixmapNum[FACE_SMILE])
         self.label_2.setScaledContents(True)
         pe = QPalette()
         pe.setColor(QPalette.WindowText, Qt.black)  # 设置字体颜色
@@ -272,11 +271,20 @@ class Ui_MainWindow(Ui_MainWindow):
         self.frameShortcut6 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_5), MainWindow)
         self.frameShortcut7 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_6), MainWindow)
         self.frameShortcut4 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F2), MainWindow)
+        self.frameShortcutF3 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F3), MainWindow)
         self.frameShortcut8 = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space), MainWindow)
         self.frameShortcut8.setAutoRepeat(False)
         self.frameShortcut9 = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+Space"), MainWindow)
         self.shortcut_hidden_score_board = QtWidgets.QShortcut(
             QtGui.QKeySequence(QtCore.Qt.Key_Slash), MainWindow) # /键隐藏计数器
+
+        self.shortcut_copy_board = QtWidgets.QShortcut(
+            QtGui.QKeySequence("Ctrl+C"), MainWindow)
+        self.shortcut_copy_board.activated.connect(lambda: self.copy_board())
+
+        self.shortcut_paste_board = QtWidgets.QShortcut(
+            QtGui.QKeySequence("Ctrl+V"), MainWindow)
+        self.shortcut_paste_board.activated.connect(lambda: self.paste_board())
 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -311,13 +319,13 @@ class Ui_MainWindow(Ui_MainWindow):
         pixmap16 = QPixmap(self.lostface_path)
         pixmap17 = QPixmap(self.winface_path)
         pixmap18 = QPixmap(self.smilefacedown_path)
-        self.pixmapNumPix = {14: pixmap14, 15: pixmap15, 16: pixmap16, 17: pixmap17, 18: pixmap18}
+        self.pixmapNumPix = {FACE_SMILE: pixmap14, FACE_CLICK: pixmap15, FACE_LOST: pixmap16, FACE_WIN: pixmap17, FACE_SMILE_DOWN: pixmap18}
         pixmap14_ = pixmap14.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap15_ = pixmap15.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap16_ = pixmap16.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap17_ = pixmap17.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
         pixmap18_ = pixmap18.scaled(int(pixSize * 1.5), int(pixSize * 1.5))
-        self.pixmapNum = {14: pixmap14_, 15: pixmap15_, 16: pixmap16_, 17: pixmap17_, 18: pixmap18_}
+        self.pixmapNum = {FACE_SMILE: pixmap14_, FACE_CLICK: pixmap15_, FACE_LOST: pixmap16_, FACE_WIN: pixmap17_, FACE_SMILE_DOWN: pixmap18_}
         # 以上是读取数字的图片，局面中的数字；以下是上方LED数字的图片
         pixLEDmap0 = QPixmap(self.LED0_path)
         pixLEDmap1 = QPixmap(self.LED1_path)
@@ -332,16 +340,16 @@ class Ui_MainWindow(Ui_MainWindow):
         self.pixmapLEDNumPix = {0: pixLEDmap0, 1: pixLEDmap1, 2: pixLEDmap2, 3: pixLEDmap3,
                         4: pixLEDmap4, 5: pixLEDmap5, 6: pixLEDmap6, 7: pixLEDmap7,
                         8: pixLEDmap8, 9: pixLEDmap9}
-        pixLEDmap0_ = pixLEDmap0.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap1_ = pixLEDmap1.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap2_ = pixLEDmap2.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap3_ = pixLEDmap3.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap4_ = pixLEDmap4.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap5_ = pixLEDmap5.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap6_ = pixLEDmap6.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap7_ = pixLEDmap7.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap8_ = pixLEDmap8.copy().scaled(pixSize, int(pixSize * 1.75))
-        pixLEDmap9_ = pixLEDmap9.copy().scaled(pixSize, int(pixSize * 1.75))
+        pixLEDmap0_ = pixLEDmap0.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap1_ = pixLEDmap1.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap2_ = pixLEDmap2.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap3_ = pixLEDmap3.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap4_ = pixLEDmap4.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap5_ = pixLEDmap5.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap6_ = pixLEDmap6.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap7_ = pixLEDmap7.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap8_ = pixLEDmap8.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
+        pixLEDmap9_ = pixLEDmap9.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5))
         self.pixmapLEDNum = {0: pixLEDmap0_, 1: pixLEDmap1_, 2: pixLEDmap2_, 3: pixLEDmap3_,
                         4: pixLEDmap4_, 5: pixLEDmap5_, 6: pixLEDmap6_, 7: pixLEDmap7_,
                         8: pixLEDmap8_, 9: pixLEDmap9_}
@@ -351,7 +359,7 @@ class Ui_MainWindow(Ui_MainWindow):
         if hasattr(self, "pixmapNumPix"):
             self.pixmapNum = {key:value.copy().scaled(int(pixSize * 1.5), int(pixSize * 1.5)) 
                               for key,value in self.pixmapNumPix.items()}
-            self.pixmapLEDNum = {key:value.copy().scaled(pixSize, int(pixSize * 1.75)) 
+            self.pixmapLEDNum = {key:value.copy().scaled(int(pixSize * 1.5 * 208 / 368), int(pixSize * 1.5)) 
                                  for key,value in self.pixmapLEDNumPix.items()}
         else:
             self.importLEDPic(pixSize)
@@ -525,15 +533,14 @@ class Ui_MainWindow(Ui_MainWindow):
         self.language = self.game_setting.get_or_set_value("DEFAULT/language", "en_US", str)
         self.end_then_flag = self.game_setting.get_or_set_value("DEFAULT/end_then_flag", True, bool)
         self.cursor_limit = self.game_setting.get_or_set_value("DEFAULT/cursor_limit", False, bool)
-        match (self.row, self.column, self.minenum):
-            case (8, 8, 10):
-                level = "BEGINNER"
-            case (16, 16, 40):
-                level = "INTERMEDIATE"
-            case (16, 30, 99):
-                level = "EXPERT"
-            case _:
-                level = "CUSTOM"
+        if (self.row, self.column, self.minenum) == BOARD_BEGINNER:
+            level = LEVEL_NAME_BEGINNER
+        elif (self.row, self.column, self.minenum) == BOARD_INTERMEDIATE:
+            level = LEVEL_NAME_INTERMEDIATE
+        elif (self.row, self.column, self.minenum) == BOARD_EXPERT:
+            level = LEVEL_NAME_EXPERT
+        else:
+            level = LEVEL_NAME_CUSTOM
         self.pixSize = self.game_setting.get_or_set_value(f"{level}/pixsize", 20, int)
         self.label.set_rcp(self.row, self.column, self.pixSize)
         self.gameMode = self.game_setting.get_or_set_value(f"{level}/gamemode", 0, int)
@@ -610,7 +617,8 @@ class Ui_MainWindow(Ui_MainWindow):
                 with open(path, 'a', encoding='utf-8') as f:
                     f.write('')
             return True
-        except:
+        except Exception as e:
+            logger.exception("Failed to write to path: %s", path)
             return False
 
 

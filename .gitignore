@@ -152,14 +152,14 @@ gameSetting.ini
 /src/.idea/
 /src/replay/
 src/picture.png
-src/params.onnx
-toollib/frame.csv
+src/media/cat.ico
 /uiFiles/media/
 
 *.avf
 *.rmv
 *.rar
 *.ini
+!pytest.ini
 *.autosave
 *.qm
 *.evf
@@ -172,3 +172,6 @@ src/plugins/*/*.db
 data/*
 src/stats.dat
 src/ms_toollib.pyi
+/src/data
+prompt.md
+/uiFiles/media

@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 
 from .base_config import BaseConfig, ConfigWidgetBase
@@ -49,7 +50,7 @@ class PathConfig(BaseConfig[str]):
                 if description:
                     self._line_edit.setToolTip(description)
 
-                btn = QPushButton("浏览")
+                btn = QPushButton(QCoreApplication.translate("Form", "浏览"))
                 btn.setFixedWidth(50)
                 btn.clicked.connect(self._on_browse)
 
@@ -60,7 +61,7 @@ class PathConfig(BaseConfig[str]):
 
             def _on_browse(self):
                 path = QFileDialog.getExistingDirectory(
-                    self, "选择目录", self._line_edit.text()
+                    self, QCoreApplication.translate("Form", "选择目录"), self._line_edit.text()
                 )
                 if path:
                     self._line_edit.setText(path)

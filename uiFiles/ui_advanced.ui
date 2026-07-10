@@ -90,14 +90,70 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_copy">
+      <property name="title">
+       <string>复制类</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_copy">
+       <item>
+        <widget class="QLabel" name="label_copy_format">
+         <property name="text">
+          <string>Ctrl+C 复制格式</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_copy_format">
+         <item>
+          <property name="text">
+           <string>局面数组</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>.board 字符串</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>.board 文件（粘贴到文件系统）</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_copy_render">
+         <property name="text">
+          <string>Render（仅 .board 格式）</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_copy_render">
+         <item>
+          <property name="text">
+           <string>ascii</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>emoji</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
    <item>
     <widget class="QWidget" name="widget_buttons" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_buttons">

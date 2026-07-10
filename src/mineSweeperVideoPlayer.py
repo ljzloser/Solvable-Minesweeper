@@ -1,18 +1,21 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
 from PyQt5.QtGui import QPixmap
-# from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
+
 from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
-import gameDefinedParameter
-import  videoControl
+from dialogs import gameDefinedParameter
+from dialogs import videoControl
 import ms_toollib as ms
+from config.constants import DISPLAY, FACE_SMILE, FACE_CLICK
+from shared_types.enums import MouseState
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 from mainWindowGUI import MainWindow
+from utils.app_logger import logger
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):
         super(MineSweeperVideoPlayer, self).__init__(MainWindow, args)
-        self.ui_video_control = videoControl.ui_Form(self.r_path, self.game_setting,
+        self.ui_video_control = videoControl.ui_Form(self.game_setting,
                                                      self.mainWindow)
         self.video_time_step = 0.01  # 录像时间的步长，定时器始终是10毫秒
         
@@ -23,6 +26,14 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.videoSetTimePeriod.connect(self.video_set_a_time)
         self.ui_video_control.label_speed.wEvent.connect(self.video_set_speed)
         self.ui_video_control.tabWidget.tabBar().tabBarClicked.connect(self.on_tab_clicked)
+        self.ui_video_control.pushButton_path.clicked[bool].connect(self.toggle_path_trace)
+        self.ui_video_control.pushButton_op.clicked[bool].connect(self.toggle_op)
+        self.show_path_trace = False
+        self.mouse_trace_points = []
+        self.path_trace_left_clicks = set()
+        self.path_trace_right_clicks = set()
+        self.path_trace_double_clicks = set()
+        self.original_pix_size = 0
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
     
@@ -31,16 +42,17 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def action_OpenFile(self, openfile_name=None):
         self.unlimit_cursor()
         if not openfile_name:
+            _translate = QCoreApplication.translate
             openfile_name = QFileDialog.\
-                getOpenFileName(self.mainWindow, '打开文件', str(self.setting_path / 'replay'),
-                                'All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)')
+                getOpenFileName(self.mainWindow, _translate("Form", "打开文件"), str(self.setting_path / 'replay'),
+                                _translate("Form", "All(*.avf *.evf *.rmv *.mvf *.evfs);;Arbiter video(*.avf);;Metasweeper video(*.evf);;Vienna MineSweeper video(*.rmv);;Minesweeper Clone 0.97(*.mvf);;Metasweeper video set(*.evfs)"))
             openfile_name = openfile_name[0]
         # 实例化
         if not openfile_name:
             if self.cursor_limit:
                 self.limit_cursor()
             return
-        self.set_face(14)
+        self.set_face(FACE_SMILE)
 
         video_set = None
         try:
@@ -59,7 +71,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                 # video = video_set[0].evf_video
             else:
                 return
-        except:
+        except Exception:
+            logger.warning(f"Failed to open video file: {openfile_name}")
             return
         
         
@@ -95,8 +108,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     # 控制台中，不添加新标签、连接信号。假如关闭就展示
     # 播放AvfVideo、RmvVideo、EvfVideo、MvfVideo或BaseVideo
     def play_video(self, video, new_tab=False):
-        if self.game_state != 'display':
-            self.game_state = 'display'
+        if self.game_state != DISPLAY:
+            self.game_state = DISPLAY
         self.video_playing = False
         self.timer_video.stop()
         
@@ -174,6 +187,21 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         # 改成录像的国旗
         self.set_country_flag(self.label.ms_board.country)
 
+        # 更新左上角雷数显示
+        self.minenum = video.mine_num
+        self.mineUnFlagedNum = self.minenum
+        self.showMineNum(self.mineUnFlagedNum)
+
+        self.cache_mouse_trace(video)
+        if self.show_path_trace and self.original_pix_size:
+            scale = self.label.pixSize / self.original_pix_size
+            self.label.path_trace_enabled = True
+            self.label.path_trace_points = [
+                (int(x * scale), int(y * scale)) for (x, y) in self.mouse_trace_points]
+            self.label.path_trace_left_clicks = self.path_trace_left_clicks
+            self.label.path_trace_right_clicks = self.path_trace_right_clicks
+            self.label.path_trace_double_clicks = self.path_trace_double_clicks
+
         # self.timer_video.start(10)
         self.video_replay()
         
@@ -196,9 +224,49 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             ...
         
 
+    def cache_mouse_trace(self, video):
+        self.mouse_trace_points.clear()
+        self.path_trace_left_clicks.clear()
+        self.path_trace_right_clicks.clear()
+        self.path_trace_double_clicks.clear()
+        self.original_pix_size = video.pix_size
+        last_pos = (0, 0)
+        for i, rec in enumerate(video.events):
+            if rec.event.is_mouse:
+                m = rec.event.unwrap_mouse()
+                last_pos = (m.x, m.y)
+                if m.mouse == 'lc':
+                    self.path_trace_left_clicks.add(i)
+                elif m.mouse == 'rc':
+                    self.path_trace_right_clicks.add(i)
+                elif m.mouse == 'cc':
+                    self.path_trace_double_clicks.add(i)
+            self.mouse_trace_points.append(last_pos)
+
+    def toggle_path_trace(self, checked):
+        self.show_path_trace = checked
+        self.label.path_trace_enabled = checked
+        if checked and self.mouse_trace_points and self.original_pix_size:
+            scale = self.label.pixSize / self.original_pix_size
+            self.label.path_trace_points = [
+                (int(x * scale), int(y * scale)) for (x, y) in self.mouse_trace_points]
+            self.label.path_trace_left_clicks = self.path_trace_left_clicks
+            self.label.path_trace_right_clicks = self.path_trace_right_clicks
+            self.label.path_trace_double_clicks = self.path_trace_double_clicks
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
+        else:
+            self.label.path_trace_points = []
+        self.label.update()
+
+    def toggle_op(self, checked):
+        self.label.show_opening = checked
+        self.label.update()
+
     def video_playing_step(self):
         # 播放录像时定时器的回调
         self.label.ms_board.current_time = self.video_time
+        if self.show_path_trace and self.mouse_trace_points:
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
         if self.video_time >= self.video_stop_time:
             self.timer_video.stop()
             self.video_playing = False
@@ -206,15 +274,15 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         
         # 回放时修改小黄脸，使用了一个变量做工具箱的补丁
         match self.label.ms_board.mouse_state:
-            case 1 | 7:
-                self.set_face(14)
-            case 2 | 4 | 5 | 6:
-                self.set_face(15)
-            case 3:
-                if self.last_mouse_state_video_playing_step in {5, 6}:
-                    self.set_face(14)
+            case MouseState.UpUp.value | MouseState.DownUpAfterChording.value:
+                self.set_face(FACE_SMILE)
+            case MouseState.UpDown.value | MouseState.DownUp.value | MouseState.Chording.value | MouseState.ChordingNotFlag.value:
+                self.set_face(FACE_CLICK)
+            case MouseState.UpDownNotFlag.value:
+                if self.last_mouse_state_video_playing_step in {MouseState.Chording.value, MouseState.ChordingNotFlag.value}:
+                    self.set_face(FACE_SMILE)
                 else:
-                    self.set_face(15)
+                    self.set_face(FACE_CLICK)
         self.last_mouse_state_video_playing_step = self.label.ms_board.mouse_state
         
         self.score_board_manager.show(self.label.ms_board, index_type=3)
@@ -252,6 +320,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         # 把录像定位到某一个时刻。是拖动进度条的回调
         self.video_time = t / 1000
         self.label.ms_board.current_time = self.video_time
+        if self.show_path_trace and self.mouse_trace_points:
+            self.label.current_trace_event_id = self.label.ms_board.current_event_id
         self.label.update()
         self.score_board_manager.show(self.label.ms_board, index_type=3)
 

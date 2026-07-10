@@ -115,19 +115,9 @@ class Ui_Form(object):
         self.pushButton_play.setText("")
         self.pushButton_play.setObjectName("pushButton_play")
         self.horizontalLayout.addWidget(self.pushButton_play)
-        self.label_2 = QtWidgets.QLabel(self.widget)
-        self.label_2.setMinimumSize(QtCore.QSize(16, 16))
-        self.label_2.setMaximumSize(QtCore.QSize(16, 16))
-        self.label_2.setStyleSheet("border-image: url(media/mul.svg);\n"
-"font: 12pt \"微软雅黑\";\n"
-"color: #50A6EA;")
-        self.label_2.setText("")
-        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout.addWidget(self.label_2)
         self.label_speed = SpeedLabel(self.widget)
-        self.label_speed.setMinimumSize(QtCore.QSize(40, 40))
-        self.label_speed.setMaximumSize(QtCore.QSize(40, 40))
+        self.label_speed.setMinimumSize(QtCore.QSize(60, 40))
+        self.label_speed.setMaximumSize(QtCore.QSize(60, 40))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(16)
@@ -138,10 +128,34 @@ class Ui_Form(object):
         self.label_speed.setStyleSheet("QLabel {border-image: url(media/speed.svg);\n"
 "font: 16pt \"微软雅黑\";\n"
 "color: #50A6EA;}")
-        self.label_speed.setText("1")
+        self.label_speed.setText("1×")
         self.label_speed.setAlignment(QtCore.Qt.AlignCenter)
         self.label_speed.setObjectName("label_speed")
         self.horizontalLayout.addWidget(self.label_speed)
+        self.pushButton_path = QtWidgets.QPushButton(self.widget)
+        self.pushButton_path.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_path.setMaximumSize(QtCore.QSize(40, 40))
+        self.pushButton_path.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(0,0,0,0);\n"
+"    border: none;\n"
+"    image: url(media/path.svg);\n"
+"}")
+        self.pushButton_path.setText("")
+        self.pushButton_path.setCheckable(True)
+        self.pushButton_path.setObjectName("pushButton_path")
+        self.horizontalLayout.addWidget(self.pushButton_path)
+        self.pushButton_op = QtWidgets.QPushButton(self.widget)
+        self.pushButton_op.setMinimumSize(QtCore.QSize(40, 40))
+        self.pushButton_op.setMaximumSize(QtCore.QSize(40, 40))
+        self.pushButton_op.setStyleSheet("QPushButton {\n"
+"    background-color: rgba(0,0,0,0);\n"
+"    border: none;\n"
+"    image: url(media/op.svg);\n"
+"}")
+        self.pushButton_op.setText("")
+        self.pushButton_op.setCheckable(True)
+        self.pushButton_op.setObjectName("pushButton_op")
+        self.horizontalLayout.addWidget(self.pushButton_op)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.doubleSpinBox_time = QtWidgets.QDoubleSpinBox(self.widget)
@@ -190,4 +204,6 @@ class Ui_Form(object):
         self.pushButton_replay.setToolTip(_translate("Form", "重播"))
         self.pushButton_play.setToolTip(_translate("Form", "播放/暂停"))
         self.label_speed.setToolTip(_translate("Form", "滑动滚轮修改播放速度"))
+        self.pushButton_path.setToolTip(_translate("Form", "显示鼠标轨迹"))
+        self.pushButton_op.setToolTip(_translate("Form", "显示空"))
 from ui.uiComponents import SpeedLabel

@@ -4,65 +4,73 @@ from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect, QUrl
 from PyQt5.QtGui import QPixmap, QDesktopServices
 import msgspec
 from textdistance import length
-# from PyQt5.QtWidgets import QLineEdit, QInputDialog, QShortcut
-# from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
-import gameDefinedParameter
+from dialogs import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
 from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent, CloseEvent, ShowPluginManagerEvent
 import superGUI
-import gameAbout
-import gameSettings
-import gameSettingShortcuts
-import gameAdvancedSettings
+from dialogs import gameAbout
+from dialogs import gameSettings
+from dialogs import gameSettingShortcuts
+from dialogs import gameAdvancedSettings
+from utils.board_format import (copy_board_to_clipboard,
+                                parse_board_text)
 import captureScreen
 import mine_num_bar
-import gameRecordPop
-from CheckUpdateGui import CheckUpdateGui
-from githubApi import GitHub, SourceManager
-import win32con
-import win32gui
+from dialogs import gameRecordPop
+from dialogs.CheckUpdateGui import CheckUpdateGui
+from network.githubApi import GitHub, SourceManager
 import utils
 import ms_toollib as ms
-# import configparser
-# from pathlib import Path
-# import time
 import os
-import ctypes
 import hashlib
-import subprocess
-import json
 import uuid
 from pathlib import Path
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import csv
 from datetime import datetime
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QDialog
 from country_name import country_name
 import metasweeper_checksum
 from mainWindowGUI import MainWindow
-from datetime import datetime
-from mineSweeperVideoPlayer import MineSweeperVideoPlayer
+from mainWindowGUIImportExport import MainWindowGUIImportExport
 from ui.ui_import import Ui_Form as Ui_Import
 from ui.uiComponents import RoundQDialog
+from app.game_engine import GameEngine
+from app.board_renderer import BoardRenderer
+from config.constants import (
+    READY, PLAYING, JOKING, WIN, FAIL, STUDY, DISPLAY, SHOW_DISPLAY, SHOW,
+    JOWIN, JOFAIL,
+    MODE_STANDARD, MODE_WIN7, MODE_CLASSIC_NO_GUESS, MODE_STRONG_NO_GUESS,
+    MODE_WEAK_NO_GUESS, MODE_QUASI_NO_GUESS, MODE_STRONG_GUESSABLE, MODE_WEAK_GUESSABLE,
+    FACE_SMILE,
+    BOARD_BEGINNER, BOARD_INTERMEDIATE, BOARD_EXPERT,
+    IDX_BEGINNER, IDX_INTERMEDIATE, IDX_EXPERT, IDX_CUSTOM,
+    MIN_PIX_SIZE, MAX_PIX_SIZE,
+    GAME_EVENT_STATE_MAP, GAME_STATE_ORDER,
+    NO_RECORD,
+)
 
 _translate = QCoreApplication.translate
 
-# 已知的验证程序 MD5（元扫雷 3.2.2）
-_KNOWN_IMPORT_MD5S = {
-    "d5fd61ae1372297aa7008d7b7cd8a13b",
-}
 
 
-class MineSweeperGUI(MineSweeperVideoPlayer):
+
+class MineSweeperGUI(MainWindowGUIImportExport):
 
     def __init__(self, MainWindow: MainWindow, args):
         self.mainWindow = MainWindow
         self.checksum_guard = metasweeper_checksum.ChecksumGuard()
         super(MineSweeperGUI, self).__init__(MainWindow, args)
 
+        self.engine = GameEngine(ms_board=getattr(self.label, 'ms_board', None))
+        self.renderer = BoardRenderer()
+
+
+
         raw = self.game_setting.value('DEFAULT/allowed_controls', '', str)
         self._allowed_controls: set[str] = set(raw.split(',')) if raw else set()
+        self.engine._allowed_controls = self._allowed_controls
 
         self.time_10ms: int = 0  # 已毫秒为单位的游戏时间，全局统一的
         self.showTime(self.time_10ms // 100)
@@ -83,9 +91,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.actionzi_ding_yi.triggered.connect(self.action_CEvent)
 
         def save_evf_file_integrated():
-            if self.game_state != "ready" and self.game_state != "playing" and\
-                self.game_state != "show" and self.game_state != "study" and\
-                    self.game_state != "joking":
+            if self.game_state not in (READY, PLAYING, SHOW, STUDY, JOKING):
                 self.dump_evf_file_data()
                 self.save_evf_file()
         self.action_save.triggered.connect(save_evf_file_integrated)
@@ -109,8 +115,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             lambda: self.trans_language("de_DE"))
         self.japanese_action.triggered.connect(
             lambda: self.trans_language("ja_JP"))
-        self.action_Arbiter_CSV.triggered.connect(self._export_arbiter_csv)
-        self.action_import.triggered.connect(self._import_replays)
 
         # 查看菜单
         self.action_open_replay.triggered.connect(
@@ -128,6 +132,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.frameShortcut7.activated.connect(lambda: self.predefined_Board(6))
         self.frameShortcut8.activated.connect(self.showScores)
         self.frameShortcut9.activated.connect(self.screenShot)
+        self.frameShortcutF3.activated.connect(self.replay_current_board)
         self.shortcut_hidden_score_board.activated.connect(
             self.hidden_score_board)
 
@@ -157,6 +162,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             "row": self.row,
             "column": self.column,
             "minenum": self.minenum,
+            "max_block_len": 0,
         })
         self.score_board_manager.reshow(self.label.ms_board, index_type=1)
         self.score_board_manager.visible()
@@ -185,8 +191,8 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         '''
         修改pixSize后，要调整ui尺寸，导致内部游戏状态变为"ready"
         '''
-        pixSize = max(5, pixSize)
-        pixSize = min(255, pixSize)
+        pixSize = max(MIN_PIX_SIZE, pixSize)
+        pixSize = min(MAX_PIX_SIZE, pixSize)
         pixSize = min(32767//self.column, pixSize)
         pixSize = min(32767//self.row, pixSize)
         if hasattr(self, "_pixSize") and pixSize == self._pixSize:
@@ -195,14 +201,14 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.label.reloadCellPic(pixSize)
 
         board_key = (self.row, self.column, self.minenum)
-        if board_key == (8, 8, 10):
-            idx = 1
-        elif board_key == (16, 16, 40):
-            idx = 2
-        elif board_key == (16, 30, 99):
-            idx = 3
+        if board_key == BOARD_BEGINNER:
+            idx = IDX_BEGINNER
+        elif board_key == BOARD_INTERMEDIATE:
+            idx = IDX_INTERMEDIATE
+        elif board_key == BOARD_EXPERT:
+            idx = IDX_EXPERT
         else:
-            idx = 0
+            idx = IDX_CUSTOM
             for i in range(4, 7):
                 p = self.predefinedBoardPara[i]
                 if board_key == (p.get('row'), p.get('column'), p.get('mine_num')):
@@ -216,11 +222,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         #     pixSize * self.column + 8, pixSize * self.row + 8))
         # self.label.setFixedSize(QtCore.QSize(self.pixSize*self.column + 8, self.pixSize*self.row + 8))
 
-        self.reimportLEDPic(pixSize)  # 重新导入图片，无磁盘io
+        self.reimportLEDPic(pixSize)
         self.label_2.reloadFace(pixSize)
-        self.set_face(14)
+        self.set_face(FACE_SMILE)
         self.showMineNum(self.mineUnFlagedNum)
         self.showTime(0)
+        if hasattr(self, "score_board_manager"):
+            self.score_board_manager.ui.apply_scale(pixSize)
+            msb = getattr(self.score_board_manager, 'ms_board', None)
+            if msb is not None:
+                # 用文件关联打开不同尺寸录像时会发生
+                self.score_board_manager.reshow(msb)
         if hasattr(self, "_pixSize") and pixSize < self._pixSize:
             self._pixSize = pixSize
             self.minimumWindow()
@@ -267,6 +279,18 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
                     self.ui_video_control.QWidget.close()
                     self.label.paint_cursor = False
                     self.label.paintProbability = False
+                    self.label.path_trace_enabled = False
+                    self.label.path_trace_points = []
+                    if hasattr(self, 'show_path_trace'):
+                        self.show_path_trace = False
+                        self.ui_video_control.pushButton_path.blockSignals(True)
+                        self.ui_video_control.pushButton_path.setChecked(False)
+                        self.ui_video_control.pushButton_path.blockSignals(False)
+                    self.label.show_opening = False
+                    if hasattr(self, 'ui_video_control'):
+                        self.ui_video_control.pushButton_op.blockSignals(True)
+                        self.ui_video_control.pushButton_op.setChecked(False)
+                        self.ui_video_control.pushButton_op.blockSignals(False)
                     self.set_country_flag()
                     self.score_board_manager.with_namespace({
                         "is_official": "--",
@@ -287,22 +311,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self._game_state = game_state
 
         # 发送游戏状态变化事件
-        state_map = {
-            "ready": 1,
-            "playing": 2,
-            "win": 3,
-            "fail": 4,
-            "joking": 2,  # joking 也视为游戏中
-            "jowin": 3,
-            "jofail": 4,
-            "show": 5,
-            "study": 6,
-            "display": 7,
-            "showdisplay": 8,
-        }
         event = GameStatusChangeEvent(
-            last_status=state_map.get(last_state, 0),
-            current_status=state_map.get(game_state, 0),
+            last_status=GAME_EVENT_STATE_MAP.get(last_state, 0),
+            current_status=GAME_EVENT_STATE_MAP.get(game_state, 0),
         )
         GameServerBridge.instance().send_event(event)
         self._send_board_update_event()
@@ -352,8 +363,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 发信号给插件，游戏结束了
         board = self.label.ms_board.board
         event = GameFinishedEvent(
-            game_state = ['ready', 'study', 'show', 'playing', 'joking', 'fail', 
-                          'win', 'jofail', 'jowin', 'display', 'showdisplay'].index(new_game_state),
+            game_state = GAME_STATE_ORDER.index(new_game_state),
             nf = self.label.ms_board.rce == 0,
             row = self.label.ms_board.row,
             column = self.label.ms_board.column,
@@ -447,25 +457,23 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.try_append_evfs(new_game_state)
 
 
+    def _sync_engine(self):
+        self.engine._row = self.row
+        self.engine._column = self.column
+        self.engine._minenum = self.minenum
+        self.engine._game_mode = self.gameMode
+        self.engine._pixSize = self.pixSize
+        self.engine.board_constraint = self.board_constraint
+        self.engine.attempt_times_limit = self.attempt_times_limit
+        self.engine.ms_board = getattr(self.label, 'ms_board', self.engine.ms_board)
+
     def layMine(self, i, j):
-
-        xx = self.row
-        yy = self.column
-        num = self.minenum
-        # 0，4, 5, 6, 7, 8, 9, 10代表：标准0、win74、经典无猜5、强无猜6、
-        # 弱无猜7、准无猜8、强可猜9、弱可猜10
-        if self.gameMode == 5 or self.gameMode == 6 or self.gameMode == 9:
-            # 根据模式生成局面
-            Board, _ = utils.laymine_solvable(self.board_constraint,
-                                              self.attempt_times_limit, (xx, yy, num, i, j))
-        elif self.gameMode == 0 or self.gameMode == 7 or self.gameMode == 8 or self.gameMode == 10:
-            Board, _ = utils.laymine(self.board_constraint,
-                                     self.attempt_times_limit, (xx, yy, num, i, j))
-        elif self.gameMode == 4:
-            Board, _ = utils.laymine_op(self.board_constraint,
-                                        self.attempt_times_limit, (xx, yy, num, i, j))
-
-        self.label.ms_board.board = Board
+        self._sync_engine()
+        used_pending = self.engine.layMine(i, j)
+        if used_pending:
+            self.game_state = JOKING
+            self.gameMode = self.engine.gameMode
+        return used_pending
 
     def timeCount(self):
         # 10ms时间步进的回调，改计数器、改右上角时间
@@ -495,131 +503,17 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.score_board_manager.show(self.label.ms_board, index_type=1)
 
     def ai(self, i, j):
-        # 0，4, 5, 6, 7, 8, 9, 10代表：标准、win7、
-        # 经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
-        # 根据模式处理一次点击的全部流程
-        # （i，j）一定是未打开状态、为索引
-        if self.gameMode == 0 or self.gameMode == 4 or self.gameMode == 5:
-            return
-        elif self.gameMode == 6:
-            if self.label.ms_board.board[i][j] >= 0 and \
-                    not ms.is_able_to_solve(self.label.ms_board.game_board, (i, j)):
-                board = self.label.ms_board.board.into_vec_vec()
-                board[i][j] = -1
-                self.label.ms_board.board = board
-            return
-        elif self.gameMode == 7:
-            code = ms.is_guess_while_needless(
-                self.label.ms_board.game_board, (i, j))
-            if code == 3:
-                board = self.label.ms_board.board.into_vec_vec()
-                board[i][j] = -1
-                self.label.ms_board.board = board
-            elif code == 2:
-                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
-                                                         self.label.ms_board.game_board, [(i, j)])
-                self.label.ms_board.board = board
-            return
-        elif self.gameMode == 8:
-            code = ms.is_guess_while_needless(
-                self.label.ms_board.game_board, (i, j))
-            if code == 2:
-                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
-                                                         self.label.ms_board.game_board, [(i, j)])
-                self.label.ms_board.board = board
-            return
-        elif self.gameMode == 9 or self.gameMode == 10:
-            if self.label.ms_board.board[i][j] == -1:
-                # 可猜调整的核心逻辑
-                board, flag = utils.enumerateChangeBoard(self.label.ms_board.board,
-                                                         self.label.ms_board.game_board, [(i, j)])
+        self._sync_engine()
+        self.engine.ai(i, j)
+        self.score_board_manager.with_namespace({
+            "max_block_len": self.engine._max_block_len,
+        })
 
-                self.label.ms_board.board = board
-            return
-
-    # 双击时进入，可以双击猜雷
-    # 此处架构可以改进，放到工具箱里
     def chording_ai(self, i, j):
-        # 0，4, 5, 6, 7, 8, 9, 10代表：标准、win7、
-        # 经典无猜、强无猜、弱无猜、准无猜、强可猜、弱可猜
-        # i,j为索引
-        if not self.cell_is_in_board(i, j):
-            return
-        if self.label.ms_board.mouse_state != 5 and self.label.ms_board.mouse_state != 6:
-            return
-        if self.label.ms_board.game_board[i][j] >= 10 or\
-                self.label.ms_board.game_board[i][j] == 0:
-            return
-        if self.gameMode == 0 or self.gameMode == 4 or self.gameMode == 5:
-            return
-        not_mine_round = []  # 没有标雷，且非雷
-        is_mine_round = []  # 没有标雷，且是雷
-        flag_not_mine_round = []  # 标雷，且非雷
-        flag_is_mine_round = []  # 标雷，且是雷
-        for ii in range(max(0, i-1), min(self.row, i+2)):
-            for jj in range(max(0, j-1), min(self.column, j+2)):
-                if (ii, jj) != (i, j):
-                    if self.label.ms_board.game_board[ii][jj] == 10:
-                        if self.label.ms_board.board[ii][jj] == -1:
-                            is_mine_round.append((ii, jj))
-                        else:
-                            not_mine_round.append((ii, jj))
-                    elif self.label.ms_board.game_board[ii][jj] == 11:
-                        if self.label.ms_board.board[ii][jj] == -1:
-                            flag_is_mine_round.append((ii, jj))
-                        else:
-                            flag_not_mine_round.append((ii, jj))
-        if len(flag_is_mine_round) + len(flag_not_mine_round) !=\
-                self.label.ms_board.board[i][j]:
-            # 不满足双击条件
-            return
-        board = self.label.ms_board.board.into_vec_vec()
-        if self.gameMode == 6:
-            for (x, y) in is_mine_round + not_mine_round:
-                if not ms.is_able_to_solve(self.label.ms_board.game_board, (x, y)):
-                    board[x][y] = -1
-            self.label.ms_board.board = board
-            return
-        elif self.gameMode == 7:
-            must_guess = True
-            for (x, y) in is_mine_round + not_mine_round:
-                code = ms.is_guess_while_needless(
-                    self.label.ms_board.game_board, (x, y))
-                if code == 3:
-                    must_guess = False
-                    break
-            if must_guess:
-                board, flag = utils.enumerateChangeBoard(board,
-                                                         self.label.ms_board.game_board,
-                                                         not_mine_round + is_mine_round)
-                self.label.ms_board.board = board
-            else:
-                for (x, y) in is_mine_round + not_mine_round:
-                    board[x][y] = -1
-                self.label.ms_board.board = board
-        elif self.gameMode == 8:
-            must_guess = True
-            for (x, y) in is_mine_round + not_mine_round:
-                code = ms.is_guess_while_needless(
-                    self.label.ms_board.game_board, (x, y))
-                if code == 3:
-                    must_guess = False
-                    break
-            if must_guess:
-                board, flag = utils.enumerateChangeBoard(board,
-                                                         self.label.ms_board.game_board,
-                                                         not_mine_round + is_mine_round)
-                self.label.ms_board.board = board
-        elif self.gameMode == 9 or self.gameMode == 10:
-            board, flag = utils.enumerateChangeBoard(board,
-                                                     self.label.ms_board.game_board,
-                                                     not_mine_round + is_mine_round)
-            self.label.ms_board.board = board
+        self._sync_engine()
+        self.engine.chording_ai(i, j)
 
     def mineNumWheel(self, i):
-        '''
-        在雷上滚轮，调雷数
-        '''
         if self.game_state == 'ready':
             if i > 0:
                 if self.minenum < self.row * self.column - 1:
@@ -743,6 +637,18 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # self.label.paint_cursor = False
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
 
+    def replay_current_board(self):
+        if self.game_state not in (WIN, FAIL, DISPLAY, SHOW_DISPLAY, JOWIN, JOFAIL):
+            return
+        board = self.label.ms_board.board.into_vec_vec() if hasattr(self.label.ms_board.board, 'into_vec_vec') else self.label.ms_board.board
+        gm = getattr(self.label.ms_board, 'mode', self.gameMode)
+        self.gameMode = gm
+        self.engine.pending_boards.append({
+            "board": board,
+            "game_mode": gm,
+        })
+        self.gameRestart()
+
     # 游戏结束画残局，改状态。前端的游戏结束逻辑
     def gameFinished(self):
         if self.label.ms_board.game_board_state == 3 and self.end_then_flag:
@@ -806,11 +712,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.try_record_pop()
 
     def checksum_module_ok(self):
-        # 检查校验和模块的签名
-        # 调试的时候不会自动存录像，除非将此处改为return True
-        # return True
-        return hashlib.sha256(bytes(metasweeper_checksum.get_self_key())).hexdigest() ==\
-            '590028493bb58a25ffc76e2e2ad490df839a1f449435c35789d3119ca69e5d4f'
+        return GameEngine.checksum_module_ok()
 
     # 搜集数据，生成evf文件的二进制数据，但是不保存
     def dump_evf_file_data(self):
@@ -885,36 +787,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     # 拼接evf录像的文件名，无后缀
     def cal_evf_filename(self, absolute=True) -> str:
-        if (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (8, 8, 10):
-            filename_level = "b_"
-        elif (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (16, 16, 40):
-            filename_level = "i_"
-        elif (self.label.ms_board.row, self.label.ms_board.column, self.label.ms_board.mine_num) == (16, 30, 99):
-            filename_level = "e_"
-        else:
-            filename_level = "c_"
-        if self.game_state == "display" or self.game_state == "showdisplay":
-            self.label.ms_board.current_time = 999999.9
-        if absolute:
-            file_name = self.replay_path + '\\'
-        else:
-            file_name = ""
-        file_name += filename_level +\
-            f'{self.label.ms_board.mode}' + '_' +\
-            f'{self.label.ms_board.rtime:.3f}' +\
-            '_' + f'{self.label.ms_board.bbbv}' +\
-            '_' + f'{self.label.ms_board.bbbv_s:.3f}' +\
-            '_' + self.label.ms_board.player_identifier
-
-        if not self.label.ms_board.is_completed:
-            file_name += "_fail"
-        if not self.label.ms_board.is_fair:
-            file_name += "_cheat"
-        if self.label.ms_board.software[0] != "元":
-            file_name += "_trans"
-        elif not self.checksum_module_ok():
-            file_name += "_fake"
-        return file_name
+        return self.engine.cal_evf_filename(
+            self.label.ms_board, self.game_state,
+            self.label.ms_board.player_identifier,
+            self.replay_path, absolute)
 
     # 保存evfs文件。先保存后一个文件，再删除前一个文件。
     def save_evfs_file(self):
@@ -1109,106 +985,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
         if len(del_items) < 9:
             ui = gameRecordPop.ui_Form(
-                self.r_path, del_items, b.bbbv, nf_items, self.mainWindow)
+                del_items, b.bbbv, nf_items, self.mainWindow)
             ui.label_16.setText(mode_text)
             ui.Dialog.show()
             self._popup_dialog = ui
             ui.Dialog.finished.connect(lambda _: setattr(self, '_popup_dialog', None))
 
-
-    def _export_arbiter_csv(self):
-        '''
-        # 导出 Arbiter CSV，只导出胜利、标准、正式、公平、非自定义的记录
-        '''
-        dat_path = self.setting_path / 'stats.dat'
-        if not dat_path.exists() or dat_path.stat().st_size == 0:
-            QMessageBox.warning(self.mainWindow, "导出失败", "stats.dat 不存在或为空")
-            return
-
-        safe_name = self.player_identifier.replace(' ', '_')
-        default_name = f"{safe_name}_stats.csv"
-        save_path, _ = QFileDialog.getSaveFileName(
-            self.mainWindow, "导出 Arbiter CSV",
-            str(self.setting_path / default_name),
-            "CSV文件 (*.csv)"
-        )
-        if not save_path:
-            return
-
-        records = []
-        with open(dat_path, 'rb') as f:
-            f.read(1)  # version byte
-            while True:
-                len_bytes = f.read(2)
-                if not len_bytes or len(len_bytes) < 2:
-                    break
-                blob_length = int.from_bytes(len_bytes, 'big')
-                blob = f.read(blob_length)
-                if not blob or len(blob) < blob_length:
-                    break
-
-                nonce = blob[:12]
-                tag = blob[12:28]
-                ciphertext = blob[28:]
-
-                try:
-                    cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-                    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-                    records.append(utils.StatsRecord.decode(plaintext))
-                except Exception:
-                    continue
-
-        if not records:
-            QMessageBox.warning(self.mainWindow, "导出失败", "未找到有效的记录")
-            return
-
-        headers = [
-            "Day", "Month", "Year", "Hour", "Min", "Sec", "mode", "Time",
-            "BBBV", "BBBVs", "style",
-            "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8",
-            "Lcl", "Rcl", "Dcl", "Leff", "Reff", "Deff",
-            "Openings", "Islands", "Path", "GZiNi", "HZiNi"
-        ]
-
-        with open(save_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(headers)
-            
-            record_num = 0
-            for rec in records:
-                if rec.game_state != 6 or rec.mode != 0:
-                    continue  # 只导出胜利的标准记录
-                if not (rec.is_official and rec.is_fair):
-                    continue  # 只导出正式且公平的记录
-
-                if (rec.row, rec.column, rec.mine_num) == (8, 8, 10):
-                    mode = "BEG"
-                elif (rec.row, rec.column, rec.mine_num) == (16, 16, 40):
-                    mode = "INT"
-                elif (rec.row, rec.column, rec.mine_num) == (16, 30, 99):
-                    mode = "EXP"
-                else:
-                    continue
-
-                dt = datetime.fromtimestamp(rec.start_time / 1_000_000 + rec.rtime_ms / 1000.0)
-
-                style = "NF" if rec.rce == 0 else "Flag"
-                list_board = utils.board_bytes_to_board(rec.row, rec.column, rec.board_bytes)
-                board = ms.Board(list_board)
-
-                writer.writerow([
-                    dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second,
-                    mode, rec.rtime_ms / 1000.0, rec.bbbv, rec.bbbv_solved, style,
-                    board.cell0, board.cell1, board.cell2, board.cell3, board.cell4, 
-                    board.cell5, board.cell6, board.cell7, board.cell8,
-                    rec.left, rec.right, rec.double,
-                    rec.lce, rec.rce, rec.dce,
-                    board.op, board.isl, rec.path, rec.zini, board.hzini,
-                ])
-                record_num += 1
-
-        QMessageBox.information(self.mainWindow, "导出成功",
-                                f"已导出 {record_num} 条记录到\n{save_path}")
 
     # 根据条件是否满足，尝试追加evfs文件
     # 当且仅当game_state发生变化，且旧状态为"playing"时调用（即使点一下就获胜也会经过"playing"）
@@ -1271,12 +1053,10 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.save_evfs_file()
 
     def showMineNum(self, n):
-        # 显示剩余雷数，雷数大于等于0，小于等于999，整数
-
         self.mineNumShow = n
         if n >= 0 and n <= 999:
-            self.label_11.setPixmap(self.pixmapLEDNum[n//100])
-            self.label_12.setPixmap(self.pixmapLEDNum[n//10 % 10])
+            self.label_11.setPixmap(self.pixmapLEDNum[n // 100])
+            self.label_12.setPixmap(self.pixmapLEDNum[n // 10 % 10])
             self.label_13.setPixmap(self.pixmapLEDNum[n % 10])
         elif n < 0:
             self.label_11.setPixmap(self.pixmapLEDNum[0])
@@ -1288,10 +1068,9 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.label_13.setPixmap(self.pixmapLEDNum[9])
 
     def showTime(self, t):
-        # 显示剩余时间，时间数大于等于0，小于等于999秒，整数
         if t >= 0 and t <= 999:
-            self.label_31.setPixmap(self.pixmapLEDNum[t//100])
-            self.label_32.setPixmap(self.pixmapLEDNum[t//10 % 10])
+            self.label_31.setPixmap(self.pixmapLEDNum[t // 100])
+            self.label_32.setPixmap(self.pixmapLEDNum[t // 10 % 10])
             self.label_33.setPixmap(self.pixmapLEDNum[t % 10])
             return
         elif t >= 1000:
@@ -1299,6 +1078,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     def predefined_Board(self, k):
         # 按快捷键123456时的回调
+        self.game_state = 'ready'
         row = self.predefinedBoardPara[k]['row']
         column = self.predefinedBoardPara[k]['column']
         mine_num = self.predefinedBoardPara[k]['mine_num']
@@ -1346,6 +1126,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         ui.Dialog.show()
         ui.Dialog.exec_()
         if ui.alter:
+            self.game_state = 'ready'
             self.setBoard_and_start(ui.row, ui.column, ui.minenum)
             # self.score_board_manager.with_namespace({
             #     "row": self.row,
@@ -1383,6 +1164,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.gameStart()
         else:
             self.gameRestart()
+        self.score_board_manager.show(self.label.ms_board, index_type=1)
 
     def action_NEvent(self):
         # 游戏设置
@@ -1413,14 +1195,13 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             self.attempt_times_limit = ui.attempt_times_limit
 
             board_key = (self.row, self.column, self.minenum)
-            if board_key == (8, 8, 10):
-                idx = 1
-            elif board_key == (16, 16, 40):
-                idx = 2
-            elif board_key == (16, 30, 99):
-                idx = 3
-            else:
-                idx = 0
+            idx = IDX_CUSTOM
+            if board_key == BOARD_BEGINNER:
+                idx = IDX_BEGINNER
+            elif board_key == BOARD_INTERMEDIATE:
+                idx = IDX_INTERMEDIATE
+            elif board_key == BOARD_EXPERT:
+                idx = IDX_EXPERT
             self.predefinedBoardPara[idx]['attempt_times_limit'] = self.attempt_times_limit
             self.predefinedBoardPara[idx]['board_constraint'] = self.board_constraint
             self.predefinedBoardPara[idx]['gamemode'] = ui.gameMode
@@ -1455,12 +1236,13 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         # 打开鼠标设置的第三个菜单
         try:
             os.system("start rundll32.exe shell32.dll,Control_RunDLL main.cpl,,2")
-        except:
-            ...
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to open mouse settings")
 
     def action_AEvent(self):
         # 关于
-        ui = gameAbout.ui_Form(self.r_path, self.mainWindow)
+        ui = gameAbout.ui_Form(self.mainWindow)
         ui.Dialog.setModal(True)
         ui.Dialog.show()
         ui.Dialog.exec_()
@@ -1477,7 +1259,7 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             }
         }
         update_dialog = CheckUpdateGui(GitHub(SourceManager(
-            data, "Github"), superGUI.version, "(\d+\.\d+\.\d+)"), parent=self)
+            data, "Github"), superGUI.version, r"(\d+\.\d+\.\d+)"), parent=self)
         update_dialog.setModal(True)
         update_dialog.show()
         update_dialog.exec_()
@@ -1654,17 +1436,11 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         self.game_setting.sync()
 
     def is_official(self) -> bool:
-        # 局面开始时，判断一下局面是设置是否正式。
-        # 极端小的3BV依然是合法的，而网站是否认同不关软件的事。
         if not self.is_fair():
             return False
-        # 检查获胜，且标准模式
         return self.label.ms_board.game_board_state == 3 and self.gameMode == 0
 
     def is_fair(self) -> bool:
-        '''
-        有任何局面约束或反控就为不fair
-        '''
         if self.board_constraint:
             return False
         if self._allowed_controls:
@@ -1672,15 +1448,12 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         return self.game_state in ("win", "fail", "playing")
 
     def cell_is_in_board(self, i, j):
-        # 点在局面内，单位是格不是像素
-        return i >= 0 and i < self.row and j >= 0 and j < self.column
+        return 0 <= i < self.row and 0 <= j < self.column
 
     def pos_is_in_board(self, i, j) -> bool:
-        # 点在局面内，单位是像素不是格
-        return i >= 0 and i < self.row * self.pixSize and j >= 0 and j < self.column * self.pixSize
+        return 0 <= i < self.row * self.pixSize and 0 <= j < self.column * self.pixSize
 
     def set_face(self, face_type):
-        # 设置脸 14smile；15click
         pixmap = QPixmap(self.pixmapNum[face_type])
         self.label_2.setPixmap(pixmap)
         self.label_2.setScaledContents(True)
@@ -1697,55 +1470,27 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
 
     # 将鼠标区域限制在游戏界面中
     def limit_cursor(self):
-        widget_pos = self.label.mapToGlobal(self.label.rect().topLeft())
-        widget_size = self.label.size()
-        # 计算限制区域
-        rect = QRect(widget_pos, widget_size)
-        self._clip_mouse(rect)
-        # 设置窗口置顶
-        hwnd = self.mainWindow.winId()
-        win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                              win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        self.renderer.limit_cursor(self.label, self.mainWindow)
 
     def unlimit_cursor(self):
-        '''
-        取消将鼠标区域限制在游戏界面中。
-        '''
-        ctypes.windll.user32.ClipCursor(None)
-        # 取消窗口置顶
-        hwnd = self.mainWindow.winId()
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-                              win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-
-    def _clip_mouse(self, rect):
-        # 定义RECT结构体
-        class RECT(ctypes.Structure):
-            _fields_ = [("left", ctypes.c_long),
-                        ("top", ctypes.c_long),
-                        ("right", ctypes.c_long),
-                        ("bottom", ctypes.c_long)]
-        # 创建RECT实例
-        r = RECT(rect.left(), rect.top(),
-                 rect.right(), rect.bottom())
-        # 调用Windows API函数ClipCursor来限制光标
-        ctypes.windll.user32.ClipCursor(ctypes.byref(r))
+        self.renderer.unlimit_cursor(self.mainWindow)
 
     def closeEvent_(self):
         self.unlimit_cursor()
         self.game_setting.set_value(
-            "DEFAULT/mainWinTop", str(self.mainWindow.y()))
+            "DEFAULT/mainwintop", str(self.mainWindow.y()))
         self.game_setting.set_value(
-            "DEFAULT/mainWinLeft", str(self.mainWindow.x()))
+            "DEFAULT/mainwinleft", str(self.mainWindow.x()))
         self.game_setting.set_value("DEFAULT/row", str(self.row))
         self.game_setting.set_value("DEFAULT/column", str(self.column))
         self.game_setting.set_value("DEFAULT/minenum", str(self.minenum))
 
         board_key = (self.row, self.column, self.minenum)
-        if board_key == (8, 8, 10):
+        if board_key == BOARD_BEGINNER:
             section = "BEGINNER"
-        elif board_key == (16, 16, 40):
+        elif board_key == BOARD_INTERMEDIATE:
             section = "INTERMEDIATE"
-        elif board_key == (16, 30, 99):
+        elif board_key == BOARD_EXPERT:
             section = "EXPERT"
         else:
             section = "CUSTOM"
@@ -1758,171 +1503,97 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         event = CloseEvent()
         GameServerBridge.instance().send_event(event)
 
-    # ═══════════════════════════════════════════════════════════
-    # 导入录像（从其他版本导入历史记录到 stats.dat）
-    # ═══════════════════════════════════════════════════════════
+    def copy_board(self):
+        if self.game_state in ("playing", "ready"):
+            return
+        try:
+            board = self.label.ms_board.board
+            if isinstance(board, ms.SafeBoard):
+                board = board.into_vec_vec()
+            game_board = self.label.ms_board.game_board
+        except AttributeError:
+            return
+        if not board:
+            return
+        copy_format = self.game_setting.value("DEFAULT/copy_format", 1, int)
+        copy_render = self.game_setting.value("DEFAULT/copy_render", "ascii", str)
+        copy_board_to_clipboard(
+            board, game_board,
+            self.row, self.column, self.minenum,
+            self.gameMode, copy_format,
+            author=self.player_identifier, render=copy_render,
+        )
 
-    def _import_replays(self):
-        """导入其他版本录像"""
-        dialog = ImportDialog(self.mainWindow)
-        dialog.set_import_callback(self._import_workflow)
-        dialog.exec_()
+    def paste_board(self):
+        if self.game_state not in (
+            "study", "ready", "fail", "win",
+            "jofail", "jowin", "display", "showdisplay",
+        ):
+            return
 
-    def _import_workflow(self, exe_path: str, replay_path: str,
-                         progress_bar, label) -> bool:
-        """完整导入流程（在对话框内执行，带进度条）"""
-        from PyQt5.QtWidgets import QApplication
+        text = QApplication.clipboard().text()
+        game_board = mines = None
 
-        exe = Path(exe_path)
-        rp = Path(replay_path)
-        if not exe.exists() or not rp.exists():
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "路径不存在"))
-            return False
+        if text:
+            game_board, mines, source = parse_board_text(text)
 
-        progress_bar.setRange(0, 1)
-        progress_bar.setValue(0)
-        label.setText(_translate("Form", "正在验证程序..."))
-        label.setVisible(True)
-        QApplication.processEvents()
+        if not game_board:
+            mime = QApplication.clipboard().mimeData()
+            if mime.hasUrls():
+                for url in mime.urls():
+                    if url.isLocalFile() and url.toLocalFile().endswith(".board"):
+                        try:
+                            with open(url.toLocalFile(), "r", encoding="utf-8") as f:
+                                game_board, mines, source = parse_board_text(f.read())
+                            if game_board:
+                                break
+                        except OSError:
+                            continue
+
+        if not game_board:
+            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "粘贴失败"), _translate("MainWindow", "剪贴板内容无法识别为扫雷局面"))
+            return
+
+        rows, cols = len(game_board), len(game_board[0])
+        if mines <= 0:
+            mines = max(1, rows * cols // 6)
+        self.set_board_params(rows, cols, mines)
+        self.label.paintProbability = True
+        self.label.set_rcp(rows, cols, self.pixSize)
+        self.label.ms_board.reset(rows, cols, self.pixSize)
+
+        if self.game_state == "display" or self.game_state == "showdisplay":
+            self.video_playing = False
+            self.timer_video.stop()
+
+        self.timer_10ms.stop()
+        self.score_board_manager.invisible()
 
         try:
-            actual_md5 = hashlib.md5(exe.read_bytes()).hexdigest()
-        except Exception:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "无法读取验证程序"))
-            return False
+            self.num_bar_ui.QWidget.close()
+        except AttributeError:
+            pass
+        self.mineNumShow = mines if mines > 0 else max(1, rows * cols // 6)
+        self.num_bar_ui = mine_num_bar.ui_Form(
+            (self.mineNumShow, self.mineNumShow, self.mineNumShow),
+            self.pixSize * rows, self.mainWindow,
+        )
+        self.num_bar_ui.QWidget.barSetMineNum.connect(self.showMineNum)
+        self.num_bar_ui.QWidget.barSetMineNumCalPoss.connect(
+            self.render_poss_on_board)
+        self.num_bar_ui.setSignal()
+        QTimer.singleShot(1, self.num_bar_ui.QWidget.show)
 
-        if actual_md5 not in _KNOWN_IMPORT_MD5S:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "未知的验证程序版本"))
-            return False
+        self.game_state = "study"
+        self.set_face(14)
 
-        label.setText(_translate("Form", "正在验证录像..."))
-        QApplication.processEvents()
-
-        def on_parse_progress(cur, total):
-            progress_bar.setRange(0, total)
-            progress_bar.setValue(cur)
-            label.setText(_translate("Form", "正在解析录像 {cur}/{total}...")
-                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
-            QApplication.processEvents()
-
-        preview = self._validate_with_exe(exe, replay_path,
-                                          progress_callback=on_parse_progress)
-        if preview is None:
-            QMessageBox.warning(self.mainWindow, _translate("MainWindow", "导入失败"),
-                                _translate("MainWindow", "验证失败"))
-            return False
-
-        if not preview["entries"]:
-            QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入"),
-                                    _translate("MainWindow", "没有新的录像需要导入"))
-            return True
-
-        entries = preview["entries"]
-
-        def on_write_progress(cur, total):
-            progress_bar.setRange(0, total)
-            progress_bar.setValue(cur)
-            label.setText(_translate("Form", "正在写入 stats.dat  {cur}/{total}...")
-                          .replace("{cur}", str(cur)).replace("{total}", str(total)))
-            QApplication.processEvents()
-
-        count = self._do_import_replays(preview, progress_callback=on_write_progress)
-
-        label.setText(_translate("Form", "完成！"))
-        progress_bar.setValue(progress_bar.maximum())
-        QApplication.processEvents()
-
-        msg = _translate("MainWindow", "成功导入 {n} 条录像").replace("{n}", str(count))
-        QMessageBox.information(self.mainWindow, _translate("MainWindow", "导入成功"), msg)
-        return True
-
-    def _validate_with_exe(self, exe: Path, replay_path: str,
-                           progress_callback: callable = None) -> dict | None:
-        """运行验证程序并解析结果"""
-        try:
-            cmd = [str(exe), "-c", replay_path]
-            result = subprocess.run(cmd, capture_output=True, timeout=120)
-            if result.returncode != 0:
-                return None
-
-            out_path = exe.parent / "_internal" / "out.json"
-            if not out_path.exists():
-                return None
-
-            report = json.loads(out_path.read_bytes())
-            if report.get("error"):
-                return None
-
-            stats_md5s = self._read_stats_dat_short_md5s()
-
-            data = report.get("data", [])
-            total_valid = sum(1 for d in data if d.get("status") == 0)
-            processed = 0
-            entries = []
-            for d in data:
-                if d.get("status") != 0:
-                    continue
-                processed += 1
-                if progress_callback:
-                    progress_callback(processed, total_valid)
-                fp = d["file"]
-                fp_path = Path(fp)
-                if not fp_path.is_absolute():
-                    rp = Path(replay_path)
-                    fp_path = (rp if rp.is_dir() else rp.parent) / fp
-                try:
-                    v = ms.EvfVideo(str(fp_path))
-                    v.parse()
-                    v.analyse()
-
-                    with open(str(fp_path), "rb") as fh:
-                        file_bytes = fh.read()
-                    short_md5 = hashlib.md5(file_bytes).digest()[:8]
-
-                    if short_md5 in stats_md5s:
-                        continue
-
-                    entries.append({
-                        "short_md5": short_md5,
-                        "record": utils.StatsRecord(
-                            game_state=6,
-                            row=v.row,
-                            column=v.column,
-                            mine_num=v.mine_num,
-                            rtime_ms=int(v.rtime * 1000),
-                            left=getattr(v, "left", 0),
-                            right=getattr(v, "right", 0),
-                            double=getattr(v, "double", 0),
-                            rce=getattr(v, "rce", 0),
-                            lce=getattr(v, "lce", 0),
-                            dce=getattr(v, "dce", 0),
-                            bbbv=getattr(v, "bbbv", 0),
-                            bbbv_solved=getattr(v, "bbbv_solved", 0),
-                            zini=getattr(v, "zini", 0),
-                            flag=getattr(v, "flag", 0),
-                            path=getattr(v, "path", 0.0),
-                            start_time=v.start_time,
-                            mode=getattr(v, "mode", 0),
-                            is_official=getattr(v, "is_official", True),
-                            is_fair=getattr(v, "is_fair", True),
-                            op=getattr(v, "op", 0),
-                            isl=getattr(v, "isl", 0),
-                            pluck=getattr(v, "pluck", 0.0),
-                            short_md5=short_md5,
-                            board_bytes=utils.board_list_to_bytes(v.board),
-                        ),
-                    })
-                except Exception:
-                    continue
-
-            return {"entries": entries}
-        except subprocess.TimeoutExpired:
-            return None
-        except Exception:
-            return None
+        game_board = [[cell if 0 <= cell <= 8 else 10 for cell in row] for row in game_board]
+        self.label.ms_board.game_board = game_board
+        self.label.ms_board.mouse_state = 1
+        self.label.ms_board.game_board_state = 1
+        self.showMineNum(self.mineNumShow)
+        self.render_poss_on_board()
+        self.minimumWindow()
 
     def _read_stats_dat_short_md5s(self) -> set[bytes]:
         """读取 stats.dat 中所有记录的 short_md5"""
@@ -1954,33 +1625,6 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
             pass
         return md5s
 
-    def _do_import_replays(self, preview: dict, progress_callback: callable = None) -> int:
-        """将验证通过的录像写入 stats.dat，返回成功条数"""
-        entries = preview["entries"]
-        count = 0
-        dat_path = self.setting_path / "stats.dat"
-
-        for i, entry in enumerate(entries):
-            if progress_callback:
-                progress_callback(i + 1, len(entries))
-            record = entry["record"]
-            binary_data = record.encode()
-            nonce = get_random_bytes(12)
-            cipher = AES.new(superGUI.STATS_DAT_KEY, AES.MODE_GCM, nonce=nonce)
-            ciphertext, tag = cipher.encrypt_and_digest(binary_data)
-
-            if (not dat_path.exists()) or dat_path.stat().st_size == 0:
-                with open(dat_path, "wb") as f:
-                    f.write((0).to_bytes(1, byteorder="big"))
-
-            with open(dat_path, "ab") as f:
-                blob = nonce + tag + ciphertext
-                f.write(len(blob).to_bytes(2, byteorder="big", signed=False))
-                f.write(blob)
-
-            count += 1
-
-        return count
 
     def action_OpenPluginDialog(self):
         try:
@@ -1989,66 +1633,3 @@ class MineSweeperGUI(MineSweeperVideoPlayer):
         except Exception:
             pass
 
-
-class ImportDialog(Ui_Import):
-    """导入录像对话框：选择验证程序+录像路径，带进度条"""
-
-    def __init__(self, parent=None):
-        self.Dialog = RoundQDialog(parent)
-        self.setupUi(self.Dialog)
-        self.pushButton_browse_exe.clicked.connect(self._browse_exe)
-        self.pushButton_browse_file.clicked.connect(self._browse_replay_file)
-        self.pushButton_browse_folder.clicked.connect(self._browse_replay_folder)
-        self.pushButton_ok.clicked.connect(self._on_ok)
-        self.pushButton_cancel.clicked.connect(self.Dialog.close)
-        self._callback = None
-        self.progressBar.setVisible(False)
-        self.label_progress.setVisible(False)
-
-    def set_import_callback(self, cb):
-        self._callback = cb
-
-    def _browse_exe(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self.Dialog, _translate("Form", "选择验证程序"), "",
-            _translate("Form", "程序 (*.exe);;所有文件 (*)"))
-        if path:
-            self.lineEdit_exe.setText(path)
-
-    def _browse_replay_file(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self.Dialog, _translate("Form", "选择录像"), "",
-            _translate("Form", "录像文件 (*.evf *.evfs);;所有文件 (*)"))
-        if path:
-            self.lineEdit_replay.setText(path)
-
-    def _browse_replay_folder(self):
-        path = QFileDialog.getExistingDirectory(
-            self.Dialog, _translate("Form", "选择录像文件夹"))
-        if path:
-            self.lineEdit_replay.setText(path)
-
-    def _on_ok(self):
-        exe_path = self.lineEdit_exe.text().strip()
-        replay_path = self.lineEdit_replay.text().strip()
-        if not exe_path or not replay_path:
-            QMessageBox.warning(
-                self.Dialog, _translate("Form", "提示"),
-                _translate("Form", "请选择验证程序和录像路径"))
-            return
-        self.lineEdit_exe.setEnabled(False)
-        self.lineEdit_replay.setEnabled(False)
-        self.pushButton_browse_exe.setEnabled(False)
-        self.pushButton_browse_file.setEnabled(False)
-        self.pushButton_browse_folder.setEnabled(False)
-        self.pushButton_ok.setEnabled(False)
-        self.pushButton_cancel.setEnabled(False)
-        self.progressBar.setVisible(True)
-        self.label_progress.setVisible(True)
-        from PyQt5.QtWidgets import QApplication
-        QApplication.processEvents()
-        self._callback(exe_path, replay_path, self.progressBar, self.label_progress)
-        self.Dialog.close()
-
-    def exec_(self):
-        return self.Dialog.exec_()

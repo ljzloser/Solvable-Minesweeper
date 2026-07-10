@@ -4,10 +4,11 @@
 
 from __future__ import annotations
 
-from ast import List
+import json
 import sqlite3
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from PyQt5.QtCore import Qt, QCoreApplication, pyqtSignal
@@ -17,10 +18,14 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QMenu,
     QTableView,
+    QAbstractItemView,
+    QApplication,
     QMessageBox,
     QFileDialog,
     QHeaderView,
 )
+
+from shared_types.enums import BaseDiaPlayEnum
 
 from plugin_manager.app_paths import get_executable_dir
 
@@ -35,6 +40,8 @@ class HistoryTable(QWidget):
 
     # 信号：列显示配置变化 (show_fields_json)
     show_fields_changed = pyqtSignal(str)
+
+    NF_COLUMN_WIDTH = 50
 
     HEADERS = [
         "replay_id",
@@ -91,11 +98,28 @@ class HistoryTable(QWidget):
         self.table.setModel(self.model)
         self.table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table.setSelectionBehavior(QTableView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.model.modelReset.connect(self._apply_column_widths)
+        self._apply_column_widths()
 
     def load(self, data: list[HistoryData]):
         self.model.update_data(data)
+
+    def _apply_column_widths(self):
+        visible_headers = getattr(self.model, "_visible_headers", [])
+
+        if "board" in visible_headers:
+            col = visible_headers.index("board")
+            self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Fixed)
+            width = self.table.fontMetrics().width('中' * 30 + '  ')
+            self.table.setColumnWidth(col, width)
+
+        if "nf" in visible_headers:
+            col = visible_headers.index("nf")
+            self.table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Fixed)
+            self.table.setColumnWidth(col, self.NF_COLUMN_WIDTH)
 
     def refresh(self):
         parent_widget = self.parent()
@@ -106,6 +130,7 @@ class HistoryTable(QWidget):
         menu = QMenu(self)
         menu.addAction(_translate("Form", "播放"), self.play_row)
         menu.addAction(_translate("Form", "导出"), self.export_row)
+        menu.addAction(_translate("Form", "复制JSON"), self.export_row_json)
         menu.addAction(_translate("Form", "刷新"), self.refresh)
         menu.exec_(self.table.mapToGlobal(pos))
 
@@ -158,7 +183,7 @@ class HistoryTable(QWidget):
             subprocess.Popen([str(exe), str(temp_filename)])
         else:
             QMessageBox.warning(
-                self, "错误", "找不到主程序 (main.py 或 metaminesweeper.exe)"
+                self, _translate("Form", "错误"), _translate("Form", "找不到主程序 (main.py 或 metaminesweeper.exe)")
             )
 
     def export_row(self):
@@ -170,3 +195,54 @@ class HistoryTable(QWidget):
         )
         if file_path:
             self.save_evf(file_path)
+
+    def export_row_json(self):
+        row_idx = self.table.currentIndex().row()
+        if row_idx < 0:
+            return
+        data = self.model._data[row_idx]
+        result = {}
+        for field in HistoryData.fields():
+            value = getattr(data, field)
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            elif isinstance(value, BaseDiaPlayEnum):
+                value = value.value
+            elif field == "board" and isinstance(value, str):
+                try:
+                    value = json.loads(value)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            result[field] = value
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self._compact_json(result))
+
+    @staticmethod
+    def _compact_json(obj, indent=0):
+        pad = "  "
+        if isinstance(obj, dict):
+            if not obj:
+                return "{}"
+            items = []
+            for k, v in obj.items():
+                val = HistoryTable._compact_json(v, indent + 1)
+                items.append(f'{pad * (indent + 1)}"{k}": {val}')
+            return "{\n" + ",\n".join(items) + "\n" + pad * indent + "}"
+        if isinstance(obj, list) and obj and isinstance(obj[0], list):
+            inner = ", ".join(json.dumps(row, ensure_ascii=False) for row in obj)
+            return "[\n" + pad * (indent + 1) + inner + "\n" + pad * indent + "]"
+        if isinstance(obj, list):
+            if not obj:
+                return "[]"
+            inner = ",\n".join(
+                pad * (indent + 1) + HistoryTable._compact_json(item, indent + 1)
+                for item in obj
+            )
+            return "[\n" + inner + "\n" + pad * indent + "]"
+        if isinstance(obj, bool):
+            return "true" if obj else "false"
+        if obj is None:
+            return "null"
+        if isinstance(obj, (int, float)):
+            return json.dumps(obj)
+        return json.dumps(obj, ensure_ascii=False)

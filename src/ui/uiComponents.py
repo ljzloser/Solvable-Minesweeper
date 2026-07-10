@@ -7,14 +7,13 @@ Created on Wed Aug 11 20:04:25 2021
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import  QWidget, QDialog, QComboBox
 from PyQt5.QtCore import Qt, QRectF
-# from PyQt5.Qt import  QApplication, QDialog
 from PyQt5.QtGui import QPainter, QPainterPath
-# from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QImage, QPainterPath
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QCompleter
 from PyQt5.QtCore import QStringListModel, QSortFilterProxyModel
+from utils.path_utils import resource_path
 # ui相关的小组件，非窗口
 
 GLOBAL_QSS = """
@@ -183,11 +182,9 @@ class StatusLabel (QtWidgets.QLabel):
         self.setMinimumSize(QtCore.QSize(int(pixSize * 1.5), int(pixSize * 1.5)))
         self.setMaximumSize(QtCore.QSize(int(pixSize * 1.5), int(pixSize * 1.5)))
 
-    def setPath(self, r_path):
-        # 告诉脸，相对路径
-        # game_setting_path = str(r_path.with_name('gameSetting.ini'))
-        self.smileface_path = str(r_path.with_name('media').joinpath('smileface.svg'))
-        self.smilefacedown_path = str(r_path.with_name('media').joinpath('smilefacedown.svg'))
+    def setPath(self):
+        self.smileface_path = str(resource_path('media').joinpath('smileface.svg'))
+        self.smilefacedown_path = str(resource_path('media').joinpath('smilefacedown.svg'))
 
         # config = configparser.ConfigParser()
         # config.read(game_setting_path, encoding='utf-8')
@@ -227,7 +224,7 @@ class SpeedLabel(QtWidgets.QLabel):
             if self.speed_gear_id < 0:
                 self.speed_gear_id = 0
         text = self.speed_gear[self.speed_gear_id]
-        self.setText(text)
+        self.setText(text + "×")
         self.wEvent.emit(float(text))
 
 
