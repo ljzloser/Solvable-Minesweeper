@@ -229,8 +229,10 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         self.showTime(0)
         if hasattr(self, "score_board_manager"):
             self.score_board_manager.ui.apply_scale(pixSize)
-            if self.score_board_manager.ms_board is not None:
-                self.score_board_manager.reshow(self.score_board_manager.ms_board)
+            msb = getattr(self.score_board_manager, 'ms_board', None)
+            if msb is not None:
+                # 用文件关联打开不同尺寸录像时会发生
+                self.score_board_manager.reshow(msb)
         if hasattr(self, "_pixSize") and pixSize < self._pixSize:
             self._pixSize = pixSize
             self.minimumWindow()
