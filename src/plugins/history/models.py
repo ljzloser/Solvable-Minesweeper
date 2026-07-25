@@ -114,7 +114,7 @@ class HistoryData:
     row: int = 0
     column: int = 0
     mine_num: int = 0
-    rtime: float = 0
+    rtime: float = 0.0
     left: int = 0
     right: int = 0
     double: int = 0

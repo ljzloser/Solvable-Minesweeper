@@ -170,29 +170,28 @@ class FilterValueDelegate(QStyledItemDelegate):
     def _create_editor_by_type(self, parent, field_value, compare, field_name):
         """根据字段类型创建编辑器"""
         from shared_types.enums import BaseDiaPlayEnum
-
-        # 如果是包含/不包含比较符，使用 LineEdit
-        if compare.value in (CompareSymbol.Contains, CompareSymbol.NotContains):
-            return QLineEdit(parent)
+        editor = None
+        # 如果是包含/不包含比较符，使用 LineEdit,先注释后面会有大用
+        # if compare.value in (CompareSymbol.Contains, CompareSymbol.NotContains):
+        #     editor = QLineEdit(parent)
 
         if isinstance(field_value, BaseDiaPlayEnum):
             editor = QComboBox(parent)
             editor.addItems([e.display_name for e in field_value.__class__])
-            return editor
         elif isinstance(field_value, int):
-            return QSpinBox(parent)
+            editor = QSpinBox(parent)
+            editor.setRange(-2147483648, 2147483647)
         elif isinstance(field_value, float):
             editor = QDoubleSpinBox(parent)
             editor.setDecimals(self._float_decimals)
             editor.setRange(-1e15, 1e15)
-            return editor
         elif isinstance(field_value, datetime):
             editor = QDateTimeEdit(parent)
             editor.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
             editor.setCalendarPopup(True)
-            return editor
         else:
-            return QLineEdit(parent)
+            editor = QLineEdit(parent)
+        return editor
 
     def createEditor(self, parent, option, index):
         field_value, compare, field_name = self._get_field_info(index)
