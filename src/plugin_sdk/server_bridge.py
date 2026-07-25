@@ -205,4 +205,6 @@ class GameServerBridge(QObject):
         Args:
             event: 事件对象
         """
+        if self._server._pub_socket is None:  # type: ignore[attr-defined]
+            return  # 服务未启动，跳过（如命令行加载录像时）
         self._server.publish(event.__class__, event)

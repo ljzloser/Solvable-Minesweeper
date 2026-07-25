@@ -227,10 +227,6 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         self.set_face(FACE_SMILE)
         self.showMineNum(self.mineUnFlagedNum)
         self.showTime(0)
-        if hasattr(self, "score_board_manager"):
-            self.score_board_manager.ui.apply_scale(pixSize)
-            if self.score_board_manager.ms_board is not None:
-                self.score_board_manager.reshow(self.score_board_manager.ms_board)
         if hasattr(self, "_pixSize") and pixSize < self._pixSize:
             self._pixSize = pixSize
             self.minimumWindow()
@@ -602,6 +598,8 @@ class MineSweeperGUI(MainWindowGUIImportExport):
 
     # 点击脸时调用，或尺寸不变时重开
     def gameRestart(self, e=None):  # 画界面，但是不埋雷，改数据而不是重新生成label
+        if self.game_state == 'show':
+            return
         if e:
             # 点脸周围时，会传入一个e参数
             if not (self.MinenumTimeWigdet.width() >= e.localPos().x() >= 0 and 0 <= e.localPos().y() <= self.MinenumTimeWigdet.height()):
@@ -1076,6 +1074,8 @@ class MineSweeperGUI(MainWindowGUIImportExport):
 
     def predefined_Board(self, k):
         # 按快捷键123456时的回调
+        if self.game_state == 'show':
+            return
         self.game_state = 'ready'
         row = self.predefinedBoardPara[k]['row']
         column = self.predefinedBoardPara[k]['column']

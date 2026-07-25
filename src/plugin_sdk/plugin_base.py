@@ -6,7 +6,7 @@
 |- 界面交互能力（可选的 PyQt 界面）
 
 注意：插件共享同一个 ZMQClient，事件通过 EventDispatcher 内部分发
-每个插件运行在独立线程中（QThread），通过内部队列串行消费事件，保证线程安全
+每个插件运行在独立线程中（QObject + moveToThread），通过 Qt 事件循环串行消费事件，保证线程安全
 """
 
 from __future__ import annotations
@@ -20,7 +20,6 @@ from lib_zmq_plugins.shared.base import BaseEvent, CommandResponse, get_event_ta
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen, QColor, QBrush, QFont
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
 
-from collections import deque
 from concurrent.futures import Future
 import threading
 from abc import abstractmethod
@@ -190,16 +189,16 @@ class PluginInfo(Generic[ConfigT]):
     required_controls: list[type] = field(default_factory=list)
 
 
-class BasePlugin(QThread, Generic[ConfigT]):
+class BasePlugin(QObject, Generic[ConfigT]):
     """
-    插件基类（继承 QThread，每个插件运行在独立线程中）
+    插件基类（QObject + moveToThread，每个插件运行在独立线程中）
 
     每个插件同时具备后台数据处理和界面交互能力：
     - 后台部分：订阅事件、处理数据、发送控制指令（在独立线程中执行）
     - 界面部分：可选的 PyQt 界面组件（需通过 run_on_gui 安全访问）
 
-    所有插件共享同一个 ZMQClient，事件通过 EventDispatcher 投递到各插件的队列。
-    每个插件的 handler 在自己的线程中**串行**执行，天然线程安全。
+    所有插件共享同一个 ZMQClient，事件通过 EventDispatcher 投递到各插件。
+    每个插件的 handler 在自己的线程中通过 Qt 事件循环**串行**执行，天然线程安全。
 
     子类必须实现 ``plugin_info()`` 类方法来声明元信息::
 
@@ -217,9 +216,11 @@ class BasePlugin(QThread, Generic[ConfigT]):
     gui_call = pyqtSignal(object, object, object)
     ready = pyqtSignal(object)  # 插件就绪信号（参数：插件实例）
     config_changed = pyqtSignal(str, object)  # 配置变化信号（参数：字段名, 新值）
+
+    # ── 事件投递信号（替代 deque 队列，QueuedConnection 天然串行）──
+    _event_dispatch = pyqtSignal(object, object)  # handler, event
+
     _other_info: ConfigT
-    # 队列最大容量（背压控制）
-    MAX_QUEUE_SIZE = 4096
 
     @classmethod
     @abstractmethod
@@ -227,7 +228,7 @@ class BasePlugin(QThread, Generic[ConfigT]):
         """返回插件元信息。子类必须重写此方法。"""
 
     def __init__(self, info: PluginInfo):
-        QThread.__init__(self)
+        QObject.__init__(self)
 
         # 抽象检查：确保子类实现了 plugin_info()
         if type(self).plugin_info is BasePlugin.plugin_info:
@@ -236,9 +237,10 @@ class BasePlugin(QThread, Generic[ConfigT]):
                 f"without implementing 'plugin_info()' classmethod"
             )
 
-        self.setObjectName(f"plugin-{info.name}")
-        # 保存线程名，在 run() 启动时设到底层 Python 线程
-        self._thread_name = f"plugin-{info.name}"
+        # 创建专属线程，将自身移入
+        self._thread = QThread()
+        self._thread.setObjectName(f"plugin-{info.name}")
+        self.moveToThread(self._thread)
 
         self._info = info
         self._client: ZMQClient | None = None
@@ -246,16 +248,19 @@ class BasePlugin(QThread, Generic[ConfigT]):
         self._widget: QWidget | None = None
         self._lifecycle = PluginLifecycle.NEW
 
-        # ── 队列基础设施 ──
-        self._event_queue: deque[tuple[Callable[[Any], None], Any]] = deque()
-        self._queue_lock = threading.Lock()
-        self._queue_event = threading.Event()   # 用于通知新事件入队
-        self._stop_requested = threading.Event()
+        # ── 线程安全基础设施 ──
         self._resource_lock = threading.RLock()  # 保护内部共享状态
+
+        # 连接事件投递信号（QueuedConnection 保证跨线程安全、串行执行）
+        self._event_dispatch.connect(
+            self._handle_event, Qt.ConnectionType.QueuedConnection)  # type: ignore
 
         # 连接 gui_call 信号到槽（QueuedConnection 跨线程安全）
         self.gui_call.connect(
             self._on_gui_call, Qt.ConnectionType.QueuedConnection)  # type: ignore
+
+        # 线程启动时执行初始化
+        self._thread.started.connect(self._on_thread_started)
 
         # 每个插件拥有独立的 loguru logger（日志写入 plugins/<name>.log）
         from plugin_manager.logging_setup import get_plugin_logger
@@ -424,22 +429,18 @@ class BasePlugin(QThread, Generic[ConfigT]):
             self.logger.error(f"GUI callback error: {e}", exc_info=True)
 
     # ═══════════════════════════════════════════════════════════════════
-    # 线程入口（子类不应覆写）
+    # 线程入口（Qt 事件循环驱动，子类不应覆写）
     # ═══════════════════════════════════════════════════════════════════
 
-    def run(self) -> None:
+    @pyqtSlot()
+    def _on_thread_started(self) -> None:
         """
-        插件线程主循环：从队列中取出事件并调用对应的 handler
+        插件线程启动回调：执行 on_initialized()
 
-        此方法由 QThread.start() 调用，子类不应覆写。
-        循环逻辑：等待事件 → 取出 → 执行 handler → 异常隔离 → 继续等待
+        由 QThread.started 信号触发，在插件线程中执行。
         """
-        # 设置 Python 线程名（调试时在 IDE 线程面板/日志中可见）
-        threading.current_thread().name = self._thread_name
-
         self.logger.debug(f"Plugin thread started: {self.name}")
 
-        # 在插件线程中执行初始化回调（可能包含耗时操作：DB、网络等）
         try:
             self.on_initialized()
             self._lifecycle = PluginLifecycle.READY
@@ -450,48 +451,20 @@ class BasePlugin(QThread, Generic[ConfigT]):
                 exc_info=True,
             )
 
-        # 初始化期间可能已收到关闭请求，提前退出
-        if self._stop_requested.is_set():
-            try:
-                self.on_shutdown()
-            except Exception as e:
-                self.logger.error(
-                    f"on_shutdown error in '{self.name}': {e}",
-                    exc_info=True,
-                )
-            return
+    @pyqtSlot(object, object)
+    def _handle_event(self, handler: Callable[[Any], None], event: Any) -> None:
+        """
+        在插件线程中串行执行事件处理（Qt 事件循环保证串行）
 
-        while not self._stop_requested.is_set():
-            # 等待新事件入队或停止信号
-            self._queue_event.wait(timeout=0.5)
-
-            # 批量处理队列中的所有事件
-            while not self._stop_requested.is_set():
-                with self._queue_lock:
-                    if not self._event_queue:
-                        break
-                    handler, event = self._event_queue.popleft()
-
-                try:
-                    handler(event)
-                except Exception as e:
-                    self.logger.error(
-                        f"Handler error in '{self.name}': {e}",
-                        exc_info=True,
-                    )
-
-            self._queue_event.clear()
-
-        # 在插件线程中执行清理回调（可能包含耗时操作：DB 关闭、保存数据等）
+        由 _event_dispatch 信号触发，QueuedConnection 保证跨线程安全。
+        """
         try:
-            self.on_shutdown()
+            handler(event)
         except Exception as e:
             self.logger.error(
-                f"on_shutdown error in '{self.name}': {e}",
+                f"Handler error in '{self.name}': {e}",
                 exc_info=True,
             )
-
-        self.logger.debug(f"Plugin thread stopped: {self.name}")
 
     # ═══════════════════════════════════════════════════════════════════
     # 生命周期
@@ -515,9 +488,8 @@ class BasePlugin(QThread, Generic[ConfigT]):
         # 连接控制授权变更信号
         self._connect_control_auth_signal()
 
-        # 启动插件的事件处理线程（on_initialized 在 run 中执行）
-        self._stop_requested.clear()
-        self.start()
+        # 启动插件的事件处理线程（Qt 事件循环自动运行）
+        self._thread.start()
         self.logger.debug(f"Plugin thread launched: {self.name}")
 
     def _connect_control_auth_signal(self) -> None:
@@ -554,18 +526,24 @@ class BasePlugin(QThread, Generic[ConfigT]):
         with self._resource_lock:
             self._lifecycle = PluginLifecycle.SHUTTING_DOWN
 
-        # 通知线程退出
-        self._stop_requested.set()
-        self._queue_event.set()  # 唤醒可能阻塞的 wait()
+        # 在插件线程中执行清理回调
+        # 使用 QMetaObject.invokeMethod 确保在插件线程执行
+        from PyQt5.QtCore import QMetaObject, Qt, Q_ARG
+        try:
+            QMetaObject.invokeMethod(
+                self, "_do_shutdown", Qt.ConnectionType.BlockingQueuedConnection)
+        except Exception as e:
+            # 如果线程已停止，BlockingQueuedConnection 会失败，直接调用
+            self.logger.debug(f"Fallback to direct shutdown: {e}")
+            self._do_shutdown()
+
+        # 退出线程事件循环
+        self._thread.quit()
 
         # 等待线程结束（最多 2 秒）
-        # on_shutdown 已在 run() 末尾的插件线程中执行
-        if not self.wait(2000):
+        if not self._thread.wait(2000):
             self.logger.debug(
                 f"Plugin thread did not stop in time: {self.name}")
-            self.terminate()  # 强制终止
-            # 注意：强制终止可能导致未完成的 Future 永久阻塞
-            # 调用方应设置超时并处理 TimeoutError 异常
 
         if self._event_dispatcher:
             self._event_dispatcher.unsubscribe_all(self)
@@ -588,15 +566,23 @@ class BasePlugin(QThread, Generic[ConfigT]):
                 pass
             self._widget = None
 
-        # 清空队列残留事件
-        with self._queue_lock:
-            self._event_queue.clear()
-
         # 保存插件配置
         self.save_config()
 
         with self._resource_lock:
             self._lifecycle = PluginLifecycle.STOPPED
+
+    @pyqtSlot()
+    def _do_shutdown(self) -> None:
+        """在插件线程中执行清理回调"""
+        try:
+            self.on_shutdown()
+        except Exception as e:
+            self.logger.error(
+                f"on_shutdown error in '{self.name}': {e}",
+                exc_info=True,
+            )
+        self.logger.debug(f"Plugin thread stopping: {self.name}")
 
     # ═══════════════════════════════════════════════════════════════════
     # 内部事件投递（由 EventDispatcher 调用）
@@ -604,22 +590,17 @@ class BasePlugin(QThread, Generic[ConfigT]):
 
     def _enqueue_event(self, handler: Callable[[Any], None], event: Any) -> bool:
         """
-        将事件投递到插件队列（由 EventDispatcher 调用）
+        将事件投递到插件（由 EventDispatcher 调用）
 
-        此方法是非阻塞的，立即返回。
+        通过 _event_dispatch 信号投递，QueuedConnection 保证：
+        - 跨线程安全
+        - 在插件线程中串行执行
+        - 非阻塞，立即返回
 
         Returns:
-            True 表示成功入队，False 表示队列已满被丢弃
+            True（始终成功，Qt 信号无内置背压）
         """
-        with self._queue_lock:
-            if len(self._event_queue) >= self.MAX_QUEUE_SIZE:
-                self.logger.debug(
-                    f"Event queue full ({self.MAX_QUEUE_SIZE}), dropping event"
-                )
-                return False
-            self._event_queue.append((handler, event))
-
-        self._queue_event.set()
+        self._event_dispatch.emit(handler, event)
         return True
 
     # ═══════════════════════════════════════════════════════════════════
@@ -964,13 +945,8 @@ class BasePlugin(QThread, Generic[ConfigT]):
             except Exception as e:
                 future.set_exception(e)
 
-        # 投递到服务提供者的队列
-        success = provider._enqueue_event(_execute_in_provider_thread, None)
-        if not success:
-            raise RuntimeError(
-                f"Failed to enqueue service call: {protocol.__name__}.{method} "
-                "(provider queue full)"
-            )
+        # 投递到服务提供者的线程
+        provider._enqueue_event(_execute_in_provider_thread, None)
 
         # 等待结果
         return future.result(timeout=timeout)
@@ -1019,12 +995,7 @@ class BasePlugin(QThread, Generic[ConfigT]):
             except Exception as e:
                 future.set_exception(e)
 
-        success = provider._enqueue_event(_execute_in_provider_thread, None)
-        if not success:
-            future.set_exception(RuntimeError(
-                f"Failed to enqueue service call: {protocol.__name__}.{method} "
-                "(provider queue full)"
-            ))
+        provider._enqueue_event(_execute_in_provider_thread, None)
 
         return future
 
@@ -1063,7 +1034,7 @@ class BasePlugin(QThread, Generic[ConfigT]):
     def enable(self) -> None:
         """启用插件"""
         self._info.enabled = True
-        if self._lifecycle == PluginLifecycle.STOPPED or not self.isRunning():
+        if self._lifecycle == PluginLifecycle.STOPPED or not self._thread.isRunning():
             self.initialize()
 
     def disable(self) -> None:

@@ -11,9 +11,14 @@
 
 ## Introduction
 
-**Meta Minesweeper** is developed by experienced professional Minesweeper players and software engineers. It is not a simple clone of traditional Minesweeper, but a complete modernization in **algorithms, performance, extensibility, and tooling**.
+**Metasweeper** is developed by experienced professional Minesweeper players and software engineers. It is not a simple clone of traditional Minesweeper, but a complete modernization in **algorithms, performance, extensibility, and tooling**.
 
 Its replay formats are officially recognized by the [Open Minesweeper Network](https://openms.top) and included in international leaderboards.
+
+<div align="center">
+<img src="readme_pic/main_screenshot.png" width="700" alt="Main window screenshot"/>
+<p align="center"><em>Main window — multi-tab replay player + programmable counter</em></p>
+</div>
 
 ## Key Advantages & Technical Highlights
 
@@ -25,6 +30,11 @@ Powered by the `ms_toollib` toolbox, Meta Minesweeper’s core strength comes fr
 * **Unified board state machine**: abstracts the game board into a formal automaton, improving algorithm composability and extensibility.
 * **Probability inference engine**: computes the probability of any tile containing a mine, with speed second only to JSMinesweeper.
 * **Optical Board Recognition (OBR)**: reconstructs board states from screenshots of *any* Minesweeper application for cross-software intelligent analysis.
+
+<div align="center">
+<img src="readme_pic/obr_probability.png" width="600" alt="Probability & OBR"/>
+<p align="center"><em>Press Space for per-tile mine probability; Ctrl+Space to OBR from screenshot</em></p>
+</div>
 
 ---
 
@@ -50,7 +60,13 @@ One of the most feature-complete and modernized Minesweeper implementations avai
 * **Space**: compute mine probability for every tile.
 * **Ctrl + Space**: screenshot + OBR to compute probabilities for external Minesweeper applications.
 * **Board filter**: complex filtering based on custom strategies.
-* **Performance metrics**: built-in 3BV/s, STNB, RQP, and custom formulas.
+* **Programmable counter**: 30+ built-in metrics (3BV/s, STNB, RQP, pluck, ZiNi, etc.) with **full Python expression syntax** for custom formulas.
+* **Drag & drop** replay files directly onto the window to start playback.
+
+<div align="center">
+<img src="readme_pic/counter_custom.png" height="400" alt="Programmable counter"/>
+<p align="center"><em>Programmable counter — full Python expression syntax for custom metrics</em></p>
+</div>
 
 ---
 
@@ -58,14 +74,51 @@ One of the most feature-complete and modernized Minesweeper implementations avai
 
 Meta Minesweeper is not just a game but a full analysis platform.
 
-* Advanced replay player with high-level analysis and real-time probabilities.
+* **Multi-tab replay player**: open multiple replays simultaneously, switch freely between tabs, and draw mouse traces during playback.
 * Supports **avf / rmv / mvf / [evf](https://github.com/eee555/ms_toollib/blob/main/evf标准.md)** formats.
-* Supports **[evfs](https://github.com/eee555/ms_toollib/blob/main/evfs标准.md)** replay-set format.
+* Supports **[evfs](https://github.com/eee555/ms_toollib/blob/main/evfs标准.md)** replay-set format with multi-select export to individual evf files.
 * Resistant to common cheating methods (e.g., speed-gear tools).
-* Internationalization: Chinese, English, German, Polish, etc.
+* Internationalization: Chinese, English, German, Polish, Japanese, etc.
+* **CLI verification**: use the `-c` flag to batch-verify replay file integrity.
 
-Meta Minesweeper is actively developed and typically releases **every 3–12 months**.
-Issues, PRs, stars, and forks are all welcome.
+<div align="center">
+<img src="readme_pic/replay_player.png" width="700" alt="Multi-tab replay player"/>
+<p align="center"><em>Multi-tab replay player — play, switch, and analyze multiple replays simultaneously</em></p>
+</div>
+
+<div align="center">
+<img src="readme_pic/replay_player_trace.png" width="700" alt="Replay player with trace"/>
+<p align="center"><em>Replay player can display mouse traces and real-time probabilities</em></p>
+</div>
+
+---
+
+### (5) Plugin System & Ecosystem
+
+The **Plugin Manager** runs on a ZMQ event bus, fully decoupled from the main process — a plugin can crash without affecting the game.
+
+* **History plugin**: automatically records every game session; right-click to copy any record as JSON; import/export in stats.dat / meta.dat / textstats.csv formats.
+* **LLM Controller plugin**: control the game via natural language through a large language model ("open intermediate", "flag this tile", etc.).
+* **XianNiUpgrade plugin**: XP / level-up / lottery system that gamifies Minesweeper practice, with intelligent replay absorption.
+* **Advanced settings panel**: central management for plugin authorization, event subscriptions, board update security toggles, and more.
+* The plugin SDK is fully open — anyone can write custom plugins and hook into the event bus.
+
+<div align="center">
+<img src="readme_pic/plugin_manager.png" width="600" alt="Plugin manager"/>
+<p align="center"><em>Plugin manager — History, LLM Controller, XianNiUpgrade</em></p>
+</div>
+
+<div align="center">
+<img src="readme_pic/plugin_manager_2.png" width="600" alt="LLM Controller plugin"/>
+<p align="center"><em>LLM Controller plugin — reverse-control minesweeper with natural language via a large language model</em></p>
+</div>
+
+<div align="center">
+<img src="readme_pic/plugin_manager_3.png" width="600" alt="XianNiUpgrade plugin"/>
+<p align="center"><em>XianNiUpgrade plugin — cultivates your mining realm and upgrades your artifact</em></p>
+</div>
+
+---
 
 ## Reference Links
 
@@ -153,7 +206,7 @@ Featured on llamasweeper.com (4.5 stars):
 
 Official Minesweeper software of OpenMS: [https://openms.top](https://openms.top)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=eee555/Metasweeper\&type=Date)](https://star-history.com/?repos=eee555/Metasweeper#repos=eee555/Metasweeper&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=eee555/Metasweeper&type=Date)](https://star-history.com/?repos=eee555/Metasweeper#repos=eee555/Metasweeper&eee555/Metasweeper&Date)
 
 ## Sponsorship
 
@@ -191,6 +244,20 @@ Per project rules, donations are distributed among contributors proportionally t
 |  *Song  | ¥72.60 | 2024-04-04 |  WeChat |    Pending   |
 
 ## Download Links
+
+### v3.3.3
+
+Uncaught exceptions now show a dialog with full traceback instead of silently crashing. Bug fixes: copying board to matrix produced all-zero data; plugin manager no longer allows multiple instances; file-association replay opening crash; game crash after modifying config via custom menu after starting; double-button mine activation crash.
+Links:
+[https://gitee.com/ee55/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe)
+[https://github.com/eee555/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.3/Metasweeper-3.3.3.exe)
+
+### v3.3.2
+
+Mouse traces can now be drawn during replay playback. Added Ctrl+C to copy .board data as ASCII/emoji rendering; Ctrl+V to quickly enter research mode or paste a copied board. Counter now scales with the main window. Probability algorithm improved ~100× faster. Adjustable guess-free mine-planting algorithm improved for both speed and 100% success rate (16×30/200 mines: single planting ≤200ms). F3 to restart current game. RQP and QG now compute correctly; added max_block_len. History plugin: right-click context menu to copy a game's data as JSON. Import stats.dat from older versions. Export meta.dat, meta.all.dat, textstats.csv. Bug fixes: v3.2.2 MD5 incorrect; counter keys cannot contain uppercase letters; plugin data could attempt writing to unwritable directories; number-key difficulty switching caused crashes; replay controller image resources missing; history plugin showed "0 rows 0 pages" on first open; mine count display incorrect during replay; non-standard modes gave no XP in XianNiUpgrade; weak guessable mode could fail to re-plant mines.
+Links:
+[https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://gitee.com/ee55/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)
+[https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe](https://github.com/eee555/Metasweeper/releases/download/3.3.2/Metasweeper-3.3.2.exe)
 
 ### v3.3.1
 
@@ -322,4 +389,9 @@ Links: [https://wws.lanzoui.com/iS3wImv2y5e](https://wws.lanzoui.com/iS3wImv2y5e
 Algorithm improvements: 37,525 boards/s in advanced mode (~3× Arbiter), 15.7 boards/s guess-free; polar chart for skill metrics; feature cleanup.
 Links: [https://wws.lanzoui.com/iq9Ocm8zdtc](https://wws.lanzoui.com/iq9Ocm8zdtc)
 [https://wws.lanzous.com/iq9Ocm8zdtc](https://wws.lanzous.com/iq9Ocm8zdtc)
+
+---
+
+
+Meta Minesweeper is actively evolving, typically with a new release every **3–12 months**. Issues, PRs, Stars, and Forks are all welcome — your participation shapes the future of an open-source minesweeper ecosystem.
 
