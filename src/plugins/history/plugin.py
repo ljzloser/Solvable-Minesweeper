@@ -272,11 +272,19 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                         f"已创建 history_view，包含 {len(columns)} 个计算列"
                     )
                 except sqlite3.Error as e:
-                    # 视图创建失败（表达式错误），跳过
-                    self.logger.warning(f"创建 history_view 失败: {e}")
+                    # 视图创建失败（表达式错误），回退到基础视图
+                    cursor.execute(
+                        "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
+                    )
+                    conn.commit()
+                    self.logger.warning(f"创建 history_view 失败，回退到基础视图: {e}")
             else:
+                # 无计算列，创建基础视图
+                cursor.execute(
+                    "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
+                )
                 conn.commit()
-                self.logger.info("无计算列，已删除 history_view")
+                self.logger.info("无计算列，已创建基础 history_view")
         finally:
             conn.close()
 
@@ -314,6 +322,11 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                     )
                     conn.commit()
                     self.logger.info("已添加 compressed 列")
+                # 确保基础视图存在
+                cursor.execute(
+                    "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
+                )
+                conn.commit()
                 conn.close()
                 return
             self.logger.info("旧 schema，迁移中…")
@@ -363,6 +376,11 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 compressed          INTEGER DEFAULT 0
             )
         """
+        )
+        conn.commit()
+        # 创建基础视图（始终存在，方便查询统一使用 history_view）
+        cursor.execute(
+            "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
         )
         conn.commit()
         conn.close()
