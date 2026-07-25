@@ -17,6 +17,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from .db import db_connection
+
 import msgspec
 from PyQt5.QtCore import QCoreApplication, QThread, pyqtSignal
 from PyQt5.QtWidgets import QWidget
@@ -33,41 +35,39 @@ class _CompressionMigrateWorker(QThread):
         self._batch_size = batch_size
 
     def run(self):
-        conn = sqlite3.connect(self._db_path)
-        try:
-            cursor = conn.cursor()
-            # 检查 compressed 列是否存在
-            cursor.execute("PRAGMA table_info(history)")
-            cols = {row[1] for row in cursor.fetchall()}
-            if "compressed" not in cols:
-                return  # schema 还没升级，跳过
+        with db_connection(self._db_path, register_custom_functions=False) as conn:
+            try:
+                cursor = conn.cursor()
+                # 检查 compressed 列是否存在
+                cursor.execute("PRAGMA table_info(history)")
+                cols = {row[1] for row in cursor.fetchall()}
+                if "compressed" not in cols:
+                    return  # schema 还没升级，跳过
 
-            while True:
-                cursor.execute(
-                    "SELECT replay_id, raw_data FROM history "
-                    "WHERE compressed = 0 AND raw_data IS NOT NULL "
-                    "LIMIT ?",
-                    (self._batch_size,),
-                )
-                rows = cursor.fetchall()
-                if not rows:
-                    break
-                for replay_id, raw_data in rows:
-                    if raw_data is None:
-                        continue
-                    compressed_data = compress(raw_data)
+                while True:
                     cursor.execute(
-                        "UPDATE history SET raw_data = ?, compressed = 1 "
-                        "WHERE replay_id = ?",
-                        (compressed_data, replay_id),
+                        "SELECT replay_id, raw_data FROM history "
+                        "WHERE compressed = 0 AND raw_data IS NOT NULL "
+                        "LIMIT ?",
+                        (self._batch_size,),
                     )
-                conn.commit()
-            # 所有记录压缩完成，VACUUM 回收磁盘空间
-            cursor.execute("VACUUM")
-        except Exception:
-            pass  # 静默失败，下次启动继续
-        finally:
-            conn.close()
+                    rows = cursor.fetchall()
+                    if not rows:
+                        break
+                    for replay_id, raw_data in rows:
+                        if raw_data is None:
+                            continue
+                        compressed_data = compress(raw_data)
+                        cursor.execute(
+                            "UPDATE history SET raw_data = ?, compressed = 1 "
+                            "WHERE replay_id = ?",
+                            (compressed_data, replay_id),
+                        )
+                    conn.commit()
+                # 所有记录压缩完成，VACUUM 回收磁盘空间
+                cursor.execute("VACUUM")
+            except Exception:
+                pass  # 静默失败，下次启动继续
 
 
 class HistoryConfig(OtherInfoBase):
@@ -103,6 +103,41 @@ class HistoryConfig(OtherInfoBase):
     saved_computed_columns = TextConfig(
         default="[]",
         label="saved_computed_columns",
+        visible=False,
+    )
+
+    saved_custom_functions = TextConfig(
+        default='''\
+def py_safe_div(a, b):
+    """安全除法，除零或空值返回 0（SQLite 除零会报错）"""
+    if a is None or b is None or b == 0:
+        return 0.0
+    return a / b
+
+def py_safe_mod(a, b):
+    """安全取模，除零或空值返回 0（SQLite %0 会报错）"""
+    if a is None or b is None or b == 0:
+        return 0
+    return a % b
+
+def py_days_since(ts_us):
+    """微秒时间戳距今天数（SQLite 无内置，需 julianday 嵌套且不处理 NULL）"""
+    if ts_us is None:
+        return None
+    import time
+    return (time.time() * 1_000_000 - ts_us) / 86_400_000_000
+
+def py_months_since(ts_us):
+    """微秒时间戳距今月数（SQLite 完全无法计算月差）"""
+    if ts_us is None:
+        return None
+    from datetime import datetime
+    then = datetime.fromtimestamp(ts_us / 1_000_000)
+    now = datetime.now()
+    return (now.year - then.year) * 12 + now.month - then.month
+
+''',
+        label="saved_custom_functions",
         visible=False,
     )
 
@@ -146,6 +181,10 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
     def __init__(self, info):
         super().__init__(info)
+        # 尽早加载自定义函数脚本，确保后续所有 db_connection 都能注册
+        if self.other_info and self.other_info.saved_custom_functions:
+            from .db import set_custom_script
+            set_custom_script(self.other_info.saved_custom_functions)
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(GameFinishedEvent, self._on_video_save)
@@ -177,11 +216,19 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         self._widget.computed_columns_changed.connect(
             self.set_computed_columns)
 
+        # 连接自定义函数变化信号
+        self._widget.custom_functions_changed.connect(
+            self._on_custom_functions_changed)
+
         # 初始化计算列（必须在恢复过滤/排序状态之前，否则过滤引用计算列时查不到）
         if self.other_info:
             columns = ComputedColumn.from_json(
                 self.other_info.saved_computed_columns)
             self._widget.on_computed_columns_changed(columns, reload=False)
+            # 初始化自定义函数脚本
+            if self.other_info.saved_custom_functions:
+                self._widget.set_custom_functions(
+                    self.other_info.saved_custom_functions)
 
         # 恢复保存的排序和过滤状态
         if self.other_info:
@@ -211,9 +258,15 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             self.other_info.saved_show_fields = show_fields_json
             self.save_config()
 
+    def _on_custom_functions_changed(self, script: str) -> None:
+        """保存自定义函数脚本"""
+        if self.other_info:
+            self.other_info.saved_custom_functions = script
+            self.save_config()
+
     def on_initialized(self) -> None:
         self._init_db()
-        self._rebuild_view()
+        self._cleanup_legacy_view()
         if hasattr(self, '_widget'):
             self._widget.load_data()
         self.register_service(self, protocol=HistoryService)
@@ -227,8 +280,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         if not db_path.exists():
             return
         # 检查是否有未压缩的记录
-        conn = sqlite3.connect(db_path)
-        try:
+        with db_connection(db_path, register_custom_functions=False) as conn:
             cursor = conn.cursor()
             cursor.execute("PRAGMA table_info(history)")
             cols = {row[1] for row in cursor.fetchall()}
@@ -238,55 +290,22 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 "SELECT COUNT(*) FROM history WHERE compressed = 0 AND raw_data IS NOT NULL"
             )
             count = cursor.fetchone()[0]
-        finally:
-            conn.close()
         if count > 0:
             self._migrate_worker = _CompressionMigrateWorker(
-                db_path, parent=self)
+                db_path)
             self._migrate_worker.start()
             self.logger.info(f"后台压缩迁移启动，待处理 {count} 条记录")
 
-    def _rebuild_view(self) -> None:
-        """根据配置重建 history_view"""
+    def _cleanup_legacy_view(self) -> None:
+        """清理旧版本遗留的 VIEW（子查询方式不再需要）"""
         db_path = self.data_dir / "history.db"
         if not db_path.exists():
             return
-
-        columns: list[ComputedColumn] = []
-        if self.other_info:
-            columns = ComputedColumn.from_json(
-                self.other_info.saved_computed_columns)
-
-        conn = sqlite3.connect(db_path)
-        try:
+        with db_connection(db_path, register_custom_functions=False) as conn:
             cursor = conn.cursor()
-            # 始终先删除旧视图
             cursor.execute("DROP VIEW IF EXISTS history_view")
-
-            view_sql = ComputedColumn.build_view_sql(columns)
-            if view_sql:
-                try:
-                    cursor.execute(view_sql)
-                    conn.commit()
-                    self.logger.info(
-                        f"已创建 history_view，包含 {len(columns)} 个计算列"
-                    )
-                except sqlite3.Error as e:
-                    # 视图创建失败（表达式错误），回退到基础视图
-                    cursor.execute(
-                        "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
-                    )
-                    conn.commit()
-                    self.logger.warning(f"创建 history_view 失败，回退到基础视图: {e}")
-            else:
-                # 无计算列，创建基础视图
-                cursor.execute(
-                    "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
-                )
-                conn.commit()
-                self.logger.info("无计算列，已创建基础 history_view")
-        finally:
-            conn.close()
+            conn.commit()
+            self.logger.info("已清理旧 history_view")
 
     def get_computed_columns(self) -> list[ComputedColumn]:
         """获取当前计算列配置"""
@@ -295,12 +314,11 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         return []
 
     def set_computed_columns(self, columns: list[ComputedColumn]) -> None:
-        """更新计算列配置并重建视图"""
+        """更新计算列配置"""
         if self.other_info:
             self.other_info.saved_computed_columns = ComputedColumn.to_json(
                 columns)
             self.save_config()
-        self._rebuild_view()
         # 通知 widget 刷新
         if hasattr(self, '_widget'):
             self._widget.on_computed_columns_changed(columns)
@@ -310,81 +328,69 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     def _init_db(self) -> None:
         db_path = self.data_dir / "history.db"
         if db_path.exists():
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute("PRAGMA table_info(history)")
-            cols = {row[1] for row in cursor.fetchall()}
-            if "game_state" in cols:
-                # 旧 schema 缺少 compressed 列则追加
-                if "compressed" not in cols:
-                    cursor.execute(
-                        "ALTER TABLE history ADD COLUMN compressed INTEGER DEFAULT 0"
-                    )
+            with db_connection(db_path, register_custom_functions=False) as conn:
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA table_info(history)")
+                cols = {row[1] for row in cursor.fetchall()}
+                if "game_state" in cols:
+                    # 旧 schema 缺少 compressed 列则追加
+                    if "compressed" not in cols:
+                        cursor.execute(
+                            "ALTER TABLE history ADD COLUMN compressed INTEGER DEFAULT 0"
+                        )
+                        conn.commit()
+                        self.logger.info("已添加 compressed 列")
+                    # 清理旧版本遗留的 VIEW（改用子查询方式不再需要）
+                    cursor.execute("DROP VIEW IF EXISTS history_view")
                     conn.commit()
-                    self.logger.info("已添加 compressed 列")
-                # 确保基础视图存在
-                cursor.execute(
-                    "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
-                )
+                    return
+                self.logger.info("旧 schema，迁移中…")
+                cursor.executescript("DROP TABLE IF EXISTS history;")
                 conn.commit()
-                conn.close()
-                return
-            self.logger.info("旧 schema，迁移中…")
-            cursor.executescript("DROP TABLE IF EXISTS history;")
+        with db_connection(db_path, register_custom_functions=False) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE history (
+                    replay_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    game_state          INTEGER,
+                    nf                  INTEGER,
+                    row                 INTEGER,
+                    column              INTEGER,
+                    mine_num            INTEGER,
+                    rtime               REAL,
+                    left                INTEGER,
+                    right               INTEGER,
+                    double              INTEGER,
+                    level               INTEGER,
+                    cl                  INTEGER,
+                    ce                  INTEGER,
+                    rce                 INTEGER,
+                    lce                 INTEGER,
+                    dce                 INTEGER,
+                    bbbv                INTEGER,
+                    bbbv_solved         INTEGER,
+                    zini                INTEGER,
+                    flag                INTEGER,
+                    path                REAL,
+                    start_time          INTEGER,
+                    end_time            INTEGER,
+                    mode                INTEGER,
+                    software            TEXT,
+                    player_identifier   TEXT,
+                    race_identifier     TEXT,
+                    unique_identifier   TEXT,
+                    is_official         INTEGER,
+                    is_fair             INTEGER,
+                    op                  INTEGER,
+                    isl                 INTEGER,
+                    pluck               REAL,
+                    board               TEXT,
+                    raw_data            BLOB,
+                    compressed          INTEGER DEFAULT 0
+                )
+            """)
             conn.commit()
-            conn.close()
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE history (
-                replay_id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                game_state          INTEGER,
-                nf                  INTEGER,
-                row                 INTEGER,
-                column              INTEGER,
-                mine_num            INTEGER,
-                rtime               REAL,
-                left                INTEGER,
-                right               INTEGER,
-                double              INTEGER,
-                level               INTEGER,
-                cl                  INTEGER,
-                ce                  INTEGER,
-                rce                 INTEGER,
-                lce                 INTEGER,
-                dce                 INTEGER,
-                bbbv                INTEGER,
-                bbbv_solved         INTEGER,
-                zini                INTEGER,
-                flag                INTEGER,
-                path                REAL,
-                start_time          INTEGER,
-                end_time            INTEGER,
-                mode                INTEGER,
-                software            TEXT,
-                player_identifier   TEXT,
-                race_identifier     TEXT,
-                unique_identifier   TEXT,
-                is_official         INTEGER,
-                is_fair             INTEGER,
-                op                  INTEGER,
-                isl                 INTEGER,
-                pluck               REAL,
-                board               TEXT,
-                raw_data            BLOB,
-                compressed          INTEGER DEFAULT 0
-            )
-        """
-        )
-        conn.commit()
-        # 创建基础视图（始终存在，方便查询统一使用 history_view）
-        cursor.execute(
-            "CREATE VIEW IF NOT EXISTS history_view AS SELECT * FROM history"
-        )
-        conn.commit()
-        conn.close()
-        self.logger.info(f"Database created: {db_path}")
+            self.logger.info(f"Database created: {db_path}")
 
     # ── 事件处理 ──────────────────────────────────────────
 
@@ -402,8 +408,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         placeholders = ", ".join(f":{k}" for k in data.keys())
 
         db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        try:
+        with db_connection(db_path, register_custom_functions=False) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 f"INSERT INTO history ({columns}) VALUES ({placeholders})",
@@ -413,8 +418,6 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             self.logger.info(
                 f"Saved: game_state={event.game_state} time={event.rtime:.1f}s"
             )
-        finally:
-            conn.close()
         self.video_save_over.emit()
 
     # ═══════════════════════════════════════════════════════════════════
@@ -429,11 +432,10 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     ) -> list[GameRecord]:
         """查询游戏记录"""
         db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        with db_connection(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        try:
             if level is not None:
                 cursor.execute(
                     """
@@ -477,16 +479,12 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 mine_num=row["mine_num"],
                 zini=row["zini"],
             ) for row in rows]
-        finally:
-            conn.close()
 
     def get_record_count(self, level: int | None = None) -> int:
         """获取记录总数"""
         db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        try:
+        with db_connection(db_path) as conn:
+            cursor = conn.cursor()
             if level is not None:
                 cursor.execute(
                     "SELECT COUNT(*) FROM history WHERE level = ?", (level,)
@@ -494,8 +492,6 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             else:
                 cursor.execute("SELECT COUNT(*) FROM history")
             return cursor.fetchone()[0]
-        finally:
-            conn.close()
 
     def get_last_record(self) -> GameRecord | None:
         """获取最近一条记录"""
@@ -505,10 +501,8 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     def delete_record(self, record_id: int) -> bool:
         """删除指定记录"""
         db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        try:
+        with db_connection(db_path) as conn:
+            cursor = conn.cursor()
             cursor.execute(
                 "DELETE FROM history WHERE replay_id = ?", (record_id,)
             )
@@ -517,8 +511,6 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             if deleted:
                 self.logger.info(f"Deleted record: {record_id}")
             return deleted
-        finally:
-            conn.close()
 
     def raw_query(self, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
         """
@@ -532,16 +524,12 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             字典列表
         """
         db_path = self.data_dir / "history.db"
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        try:
+        with db_connection(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
             cursor.execute(sql, params)
             rows = cursor.fetchall()
             return [dict(row) for row in rows]
-        finally:
-            conn.close()
 
     def raw_query_one(self, sql: str, params: tuple = ()) -> dict[str, Any] | None:
         """
@@ -553,3 +541,6 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
     def _on_config_changed(self, name: str, value: Any) -> None:
         if name == "float_decimals":
             self._widget.set_float_decimals(value)
+        elif name == "saved_custom_functions":
+            from .db import set_custom_script
+            set_custom_script(value or "")

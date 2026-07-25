@@ -9,6 +9,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+from .db import db_connection
+
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtWidgets import (
     QVBoxLayout,
@@ -19,6 +21,8 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QComboBox,
     QMessageBox,
+    QLabel,
+    QPlainTextEdit,
 )
 
 from shared_types.widgets import ConfirmDialog
@@ -30,12 +34,14 @@ _translate = QCoreApplication.translate
 class ComputedColumnsDialog(ConfirmDialog):
     """计算列管理对话框"""
 
-    def __init__(self, columns: list[ComputedColumn], db_path: Path, parent=None):
+    def __init__(self, columns: list[ComputedColumn], db_path: Path,
+                 custom_functions: str = "", parent=None):
         self._columns = [ComputedColumn(col.name, col.expression, col.result_type)
                          for col in columns]
         self._db_path = db_path
+        self._custom_functions = custom_functions
         super().__init__(parent, title=_translate("Form", "计算列管理"))
-        self.resize(600, 400)
+        self.resize(650, 550)
 
     def _create_content(self):
         layout = QVBoxLayout()
@@ -67,6 +73,17 @@ class ComputedColumnsDialog(ConfirmDialog):
         btn_layout.addWidget(self.validate_btn)
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
+
+        # 自定义函数编辑区
+        func_label = QLabel(
+            _translate("Form", "自定义 Python 函数（可在 SQL 表达式中调用）:"))
+        layout.addWidget(func_label)
+        self.func_edit = QPlainTextEdit(self)
+        self.func_edit.setPlaceholderText(
+            "def py_my_func(x):\n    return x * 2\n")
+        self.func_edit.setPlainText(self._custom_functions)
+        self.func_edit.setMaximumHeight(120)
+        layout.addWidget(self.func_edit)
 
         # 初始化表格
         self._init_table()
@@ -111,16 +128,11 @@ class ComputedColumnsDialog(ConfirmDialog):
         if row >= 0:
             self.table.removeRow(row)
 
-    def _validate_all(self):
-        """验证所有表达式能否创建视图"""
+    def _validate_all(self) -> bool:
+        """验证所有表达式，返回是否通过"""
         columns = self._collect_columns()
         if not columns:
-            QMessageBox.information(
-                self,
-                _translate("Form", "验证"),
-                _translate("Form", "没有计算列需要验证"),
-            )
-            return
+            return True  # 没有计算列，无需验证
 
         # 检查列名合法性
         for col in columns:
@@ -130,7 +142,7 @@ class ComputedColumnsDialog(ConfirmDialog):
                     _translate("Form", "验证失败"),
                     _translate("Form", "列名不能为空"),
                 )
-                return
+                return False
             if not col.name.isidentifier():
                 QMessageBox.warning(
                     self,
@@ -138,33 +150,45 @@ class ComputedColumnsDialog(ConfirmDialog):
                     _translate("Form", "列名 '%1' 不是合法标识符").replace(
                         "%1", col.name),
                 )
-                return
+                return False
 
-        # 尝试创建视图验证
-        view_sql = ComputedColumn.build_view_sql(columns)
-        if not view_sql or not self._db_path.exists():
+        # 尝试子查询验证
+        subquery = ComputedColumn.build_subquery_sql(columns)
+        if not subquery or not self._db_path.exists():
             QMessageBox.warning(
                 self,
                 _translate("Form", "验证失败"),
                 _translate("Form", "无法验证：数据库不存在"),
             )
-            return
+            return False
 
-        conn = sqlite3.connect(self._db_path)
-        try:
+        with db_connection(self._db_path) as conn:
+            # 先注册当前编辑区中的自定义函数，以便验证时可用
+            from .db import _register_custom_functions
+            script = self.func_edit.toPlainText()
+            if script:
+                import ast
+                try:
+                    tree = ast.parse(script)
+                    namespace: dict = {}
+                    exec(compile(tree, "<custom_functions>", "exec"), namespace)
+                    for node in ast.iter_child_nodes(tree):
+                        if isinstance(node, ast.FunctionDef):
+                            func = namespace.get(node.name)
+                            if func and callable(func):
+                                try:
+                                    conn.create_function(
+                                        node.name, len(node.args.args), func)
+                                except sqlite3.Error:
+                                    pass
+                except SyntaxError:
+                    pass
             cursor = conn.cursor()
-            cursor.execute("DROP VIEW IF EXISTS _validate_view")
             try:
-                cursor.execute(view_sql.replace(
-                    "history_view", "_validate_view"))
+                # 用 LIMIT 0 验证表达式语法，不实际取数据
+                cursor.execute(f"SELECT * FROM ({subquery}) LIMIT 0")
                 conn.commit()
-                QMessageBox.information(
-                    self,
-                    _translate("Form", "验证通过"),
-                    _translate("Form", "所有 %1 个计算列表达式有效").replace(
-                        "%1", str(len(columns))
-                    ),
-                )
+                return True
             except sqlite3.Error as e:
                 conn.rollback()
                 QMessageBox.warning(
@@ -172,11 +196,7 @@ class ComputedColumnsDialog(ConfirmDialog):
                     _translate("Form", "验证失败"),
                     _translate("Form", "SQL 错误: %1").replace("%1", str(e)),
                 )
-            finally:
-                cursor.execute("DROP VIEW IF EXISTS _validate_view")
-                conn.commit()
-        finally:
-            conn.close()
+                return False
 
     def _collect_columns(self) -> list[ComputedColumn]:
         """从表格收集计算列"""
@@ -197,3 +217,13 @@ class ComputedColumnsDialog(ConfirmDialog):
     def get_columns(self) -> list[ComputedColumn]:
         """获取对话框中的计算列列表"""
         return self._collect_columns()
+
+    def accept(self):
+        """点确定前先验证，验证失败不关闭"""
+        if not self._validate_all():
+            return
+        super().accept()
+
+    def get_custom_functions(self) -> str:
+        """获取自定义函数脚本"""
+        return self.func_edit.toPlainText()

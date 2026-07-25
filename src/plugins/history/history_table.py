@@ -11,6 +11,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from .db import db_connection
+
 from PyQt5.QtCore import Qt, QCoreApplication, pyqtSignal
 from PyQt5.QtGui import QCloseEvent as _QCloseEvent
 from PyQt5.QtWidgets import (
@@ -171,8 +173,7 @@ class HistoryTable(QWidget):
         return getattr(self.model._data[row_idx], "replay_id", None)
 
     def _read_raw_data(self, replay_id: int) -> bytes | None:
-        conn = sqlite3.connect(self._db_path)
-        try:
+        with db_connection(self._db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT raw_data FROM history WHERE replay_id = ?", (
@@ -182,8 +183,6 @@ class HistoryTable(QWidget):
             if row and row[0] is not None:
                 return decompress(row[0])
             return None
-        finally:
-            conn.close()
 
     def save_evf(self, evf_path: str):
         replay_id = self._get_current_replay_id()

@@ -165,9 +165,8 @@ class HistoryData:
         ]
 
     @classmethod
-    def query_all(cls, use_view: bool = False):
-        table = "history_view" if use_view else "history"
-        return f"select * from {table}"
+    def query_all(cls):
+        return "select * from history"
 
     @classmethod
     def from_dict(cls, data: dict):

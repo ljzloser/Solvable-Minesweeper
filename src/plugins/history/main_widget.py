@@ -11,6 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import cast
 
+from .db import db_connection
+
 from PyQt5.QtCore import QCoreApplication, pyqtSignal
 from PyQt5.QtGui import QCloseEvent as _QCloseEvent
 from PyQt5.QtWidgets import (
@@ -48,6 +50,8 @@ class HistoryMainWidget(QWidget):
     show_fields_changed = pyqtSignal(str)
     # 信号：计算列变化 (columns_json)
     computed_columns_changed = pyqtSignal(list)
+    # 信号：自定义函数脚本变化 (script)
+    custom_functions_changed = pyqtSignal(str)
 
     def __init__(
         self,
@@ -62,6 +66,7 @@ class HistoryMainWidget(QWidget):
         self._config_path = config_path
         self._float_decimals = float_decimals
         self._computed_columns: list[ComputedColumn] = []
+        self._custom_functions: str = ""
 
         # 存储过滤和排序条件数据（每次对话框确认后更新）
         self._filter_rows: list[dict] = []
@@ -264,45 +269,49 @@ class HistoryMainWidget(QWidget):
             return
 
         try:
-            conn = sqlite3.connect(self._db_path)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            filter_str = self._gen_filter_str()
-            order_str = self._gen_order_str()
-            # 有计算列时查询视图，否则查询原表
-            table_name = "history_view"  # if self._computed_columns else "history"
-            # 构建查询字段：显示字段 + 计算列（视图会自动包含计算列）
-            show_fields = list(self.table.showFields)
-            if self._computed_columns:
-                # 查询视图时，确保计算列也在 SELECT 中
-                computed_names = [col.name for col in self._computed_columns]
-                for name in computed_names:
-                    if name not in show_fields:
-                        show_fields.append(name)
-            select_fields = ','.join(show_fields)
-            sql = f"SELECT {select_fields}, COUNT(*) OVER() AS total_count FROM {table_name}"
-            if filter_str:
-                sql += " WHERE " + filter_str
-            elif filter_str is None:
-                return
-            sql += order_str
-            sql += self._get_limit_str()
-            cursor.execute(sql)
-            datas = cursor.fetchall()
+            with db_connection(self._db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                filter_str = self._gen_filter_str()
+                order_str = self._gen_order_str()
+                # 构建查询字段：显示字段 + 计算列
+                show_fields = list(self.table.showFields)
+                if self._computed_columns:
+                    computed_names = [
+                        col.name for col in self._computed_columns]
+                    for name in computed_names:
+                        if name not in show_fields:
+                            show_fields.append(name)
+                select_fields = ','.join(show_fields)
+                # 有计算列时用子查询，否则直接查原表
+                subquery = ComputedColumn.build_subquery_sql(
+                    self._computed_columns)
+                if subquery:
+                    from_clause = f"({subquery})"
+                else:
+                    from_clause = "history"
+                sql = f"SELECT {select_fields}, COUNT(*) OVER() AS total_count FROM {from_clause}"
+                if filter_str:
+                    sql += " WHERE " + filter_str
+                elif filter_str is None:
+                    return
+                sql += order_str
+                sql += self._get_limit_str()
+                cursor.execute(sql)
+                datas = cursor.fetchall()
 
-            if not datas:
-                self.page_spin.setMaximum(1)
-                self.limit_label.setText(_translate("Form", "共0行,0页"))
-            else:
-                per_page = int(self.one_page_combo.currentText())
-                total = datas[0]["total_count"]
-                max_page = math.ceil(total / per_page)
-                self.page_spin.setMaximum(max_page)
-                self.limit_label.setText(
-                    _translate("Form", "共%1行,%2页").replace("%1", str(total)).replace("%2", str(max_page)))
+                if not datas:
+                    self.page_spin.setMaximum(1)
+                    self.limit_label.setText(_translate("Form", "共0行,0页"))
+                else:
+                    per_page = int(self.one_page_combo.currentText())
+                    total = datas[0]["total_count"]
+                    max_page = math.ceil(total / per_page)
+                    self.page_spin.setMaximum(max_page)
+                    self.limit_label.setText(
+                        _translate("Form", "共%1行,%2页").replace("%1", str(total)).replace("%2", str(max_page)))
 
-            history_data = [HistoryData.from_dict(dict(d)) for d in datas]
-            conn.close()
+                history_data = [HistoryData.from_dict(dict(d)) for d in datas]
         except sqlite3.Error as e:
             QMessageBox.warning(
                 self, _translate("Form", "错误"),
@@ -628,12 +637,20 @@ class HistoryMainWidget(QWidget):
         if reload:
             self.load_data()
 
+    def set_custom_functions(self, script: str) -> None:
+        """设置自定义函数脚本（由 plugin.py 初始化时调用）"""
+        self._custom_functions = script
+
     def _show_computed_columns_dialog(self):
         """显示计算列管理对话框"""
         from .computed_columns_dialog import ComputedColumnsDialog
         dialog = ComputedColumnsDialog(
-            self._computed_columns, self._db_path, self)
+            self._computed_columns, self._db_path,
+            self._custom_functions, self)
         if dialog.exec_():
             new_columns = dialog.get_columns()
+            new_functions = dialog.get_custom_functions()
+            self._custom_functions = new_functions
             # 通过信号通知 plugin 保存配置并重建视图
             self.computed_columns_changed.emit(new_columns)
+            self.custom_functions_changed.emit(new_functions)

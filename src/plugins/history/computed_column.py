@@ -1,7 +1,7 @@
 """
 计算列定义
 
-用户可配置的 SQL 计算列，通过 SQLite VIEW 实现。
+用户可配置的 SQL 计算列，通过子查询实现。
 """
 
 from __future__ import annotations
@@ -61,19 +61,17 @@ class ComputedColumn:
         )
 
     @staticmethod
-    def build_view_sql(columns: list[ComputedColumn]) -> str | None:
+    def build_subquery_sql(columns: list[ComputedColumn]) -> str | None:
         """
-        构建 CREATE VIEW 语句
+        构建计算列子查询的 FROM 部分
 
         Returns:
-            SQL 语句，或 None（无计算列时）
+            子查询 SQL（如 "SELECT *, (bbbv*1.0/rtime) AS \"bbbvs\" FROM history"），
+            或 None（无计算列时）
         """
         if not columns:
             return None
         computed_parts = ", ".join(
             f"({col.expression}) AS \"{col.name}\"" for col in columns
         )
-        return (
-            f"CREATE VIEW history_view AS "
-            f"SELECT history.*, {computed_parts} FROM history"
-        )
+        return f"SELECT *, {computed_parts} FROM history"
