@@ -52,6 +52,8 @@ class ConfirmDialog(QDialog):
         """
         super().__init__(parent)
         self.setWindowTitle(title or _translate("Dialog", "对话框"))
+        self.setWindowFlags(self.windowFlags() & ~
+                            Qt.WindowContextHelpButtonHint)
         self._buttons = buttons
 
         self._setup_ui()
