@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QSizePolicy,
     QHeaderView,
-    QWidget,
 )
 
 from shared_types.widgets import ConfirmDialog
@@ -35,8 +34,7 @@ class FilterDialog(ConfirmDialog):
         self.resize(700, 300)
 
     def _create_content(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.table = AutoEditTableView()
@@ -58,7 +56,7 @@ class FilterDialog(ConfirmDialog):
         self._setup_delegates()
         self._connect_field_change_signal()
 
-        return widget
+        return layout
 
     def _connect_field_change_signal(self):
         """当字段列改变时，更新值列的默认值"""
@@ -251,7 +249,8 @@ class FilterDialog(ConfirmDialog):
 
             if right_count > left_count:
                 QMessageBox.warning(
-                    self, _translate("Form", "错误"), _translate("Form", "第{n}行 右括号数量大于左括号数量，请检查").replace("{n}", str(row))
+                    self, _translate("Form", "错误"), _translate(
+                        "Form", "第{n}行 右括号数量大于左括号数量，请检查").replace("{n}", str(row))
                 )
                 return None
 
@@ -269,7 +268,8 @@ class FilterDialog(ConfirmDialog):
                     for v in values:
                         if not v.replace("-", "").replace(".", "").isdigit():
                             QMessageBox.warning(
-                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是数字").replace("{n}", str(row)).replace("{val}", v)
+                                self, _translate("Form", "错误"), _translate(
+                                    "Form", "第{n}行 {val} 不是数字").replace("{n}", str(row)).replace("{val}", v)
                             )
                             return None
                     value = ",".join(v for v in values)
@@ -299,7 +299,8 @@ class FilterDialog(ConfirmDialog):
                                     raise ValueError(f"无法解析日期: {v}")
                             except ValueError as e:
                                 QMessageBox.warning(
-                                    self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", v)
+                                    self, _translate("Form", "错误"), _translate(
+                                        "Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", v)
                                 )
                                 return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -317,7 +318,8 @@ class FilterDialog(ConfirmDialog):
                                 break
                         else:
                             QMessageBox.warning(
-                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的枚举选项").replace("{n}", str(row)).replace("{val}", v)
+                                self, _translate("Form", "错误"), _translate(
+                                    "Form", "第{n}行 {val} 不是合法的枚举选项").replace("{n}", str(row)).replace("{val}", v)
                             )
                             return None
                     value = ",".join(parsed_values) if parsed_values else ""
@@ -343,12 +345,14 @@ class FilterDialog(ConfirmDialog):
                                 continue
                         else:
                             QMessageBox.warning(
-                                self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
+                                self, _translate("Form", "错误"), _translate(
+                                    "Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
                             )
                             return None
                     except ValueError:
                         QMessageBox.warning(
-                            self, _translate("Form", "错误"), _translate("Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
+                            self, _translate("Form", "错误"), _translate(
+                                "Form", "第{n}行 {val} 不是合法的日期时间").replace("{n}", str(row)).replace("{val}", value)
                         )
                         return None
             elif value and not value.startswith("'"):
@@ -362,6 +366,7 @@ class FilterDialog(ConfirmDialog):
                 filter_str += logic
 
         if left_count != right_count:
-            QMessageBox.warning(self, _translate("Form", "错误"), _translate("Form", "左括号数量和右括号数量不匹配，请检查"))
+            QMessageBox.warning(self, _translate(
+                "Form", "错误"), _translate("Form", "左括号数量和右括号数量不匹配，请检查"))
             return None
         return filter_str

@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import (
     QTableView,
     QSizePolicy,
     QHeaderView,
-    QWidget,
 )
 
 from shared_types.widgets import ConfirmDialog
@@ -30,8 +29,7 @@ class SortDialog(ConfirmDialog):
         self.resize(400, 300)
 
     def _create_content(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.sort_table = AutoEditTableView()
@@ -43,7 +41,8 @@ class SortDialog(ConfirmDialog):
             self.show_sort_context_menu)
         self.sort_table.setSelectionBehavior(QTableView.SelectItems)
         self.sort_table.setSelectionMode(QTableView.ExtendedSelection)
-        self.sort_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.sort_table.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding)
         # 设置所有列自动进入编辑
         self.sort_table.setAutoEditColumns(
             [SortModel.COL_FIELD, SortModel.COL_ORDER])
@@ -53,7 +52,7 @@ class SortDialog(ConfirmDialog):
 
         self._setup_delegates()
 
-        return widget
+        return layout
 
     def _setup_delegates(self):
         """设置列代理"""
