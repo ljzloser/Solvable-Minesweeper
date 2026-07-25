@@ -33,6 +33,7 @@ from .models import HistoryData, CompareSymbol, LogicSymbol
 from .table_views import SortModel
 from .sort_dialog import SortDialog
 from .table_views import FilterModel
+from .computed_column import ComputedColumn
 from shared_types.enums import BaseDiaPlayEnum
 
 _translate = QCoreApplication.translate
@@ -45,6 +46,8 @@ class HistoryMainWidget(QWidget):
     filter_sort_state_changed = pyqtSignal(str, str)
     # 信号：列显示配置变化 (show_fields_json)
     show_fields_changed = pyqtSignal(str)
+    # 信号：计算列变化 (columns_json)
+    computed_columns_changed = pyqtSignal(list)
 
     def __init__(
         self,
@@ -58,6 +61,7 @@ class HistoryMainWidget(QWidget):
         self._db_path = db_path
         self._config_path = config_path
         self._float_decimals = float_decimals
+        self._computed_columns: list[ComputedColumn] = []
 
         # 存储过滤和排序条件数据（每次对话框确认后更新）
         self._filter_rows: list[dict] = []
@@ -74,10 +78,12 @@ class HistoryMainWidget(QWidget):
         self.filter_button = QPushButton(_translate("Form", "过滤"))
         self.sort_button = QPushButton(_translate("Form", "排序"))
         self.columns_button = QPushButton(_translate("Form", "列设置"))
+        self.computed_columns_button = QPushButton(_translate("Form", "计算列"))
         btn_layout.addWidget(self.query_button)
         btn_layout.addWidget(self.filter_button)
         btn_layout.addWidget(self.sort_button)
         btn_layout.addWidget(self.columns_button)
+        btn_layout.addWidget(self.computed_columns_button)
         btn_layout.addItem(
             QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.Minimum)
         )
@@ -89,7 +95,8 @@ class HistoryMainWidget(QWidget):
         self.sort_label.setWordWrap(True)
 
         # 表格
-        self.table = HistoryTable(self._get_show_fields(), db_path, self)
+        self.table = HistoryTable(
+            self._get_show_fields(), db_path, self._computed_columns, self)
 
         # 分页
         limit_layout = QHBoxLayout()
@@ -132,6 +139,7 @@ class HistoryMainWidget(QWidget):
         self.filter_button.setText(_translate("Form", "过滤"))
         self.sort_button.setText(_translate("Form", "排序"))
         self.columns_button.setText(_translate("Form", "列设置"))
+        self.computed_columns_button.setText(_translate("Form", "计算列"))
         self.previous_button.setText(_translate("Form", "上一页"))
         self.next_button.setText(_translate("Form", "下一页"))
 
@@ -159,6 +167,8 @@ class HistoryMainWidget(QWidget):
         self.filter_button.clicked.connect(self._show_filter_dialog)
         self.sort_button.clicked.connect(self._show_sort_dialog)
         self.columns_button.clicked.connect(self._show_columns_dialog)
+        self.computed_columns_button.clicked.connect(
+            self._show_computed_columns_dialog)
         self.previous_button.clicked.connect(
             lambda: self.page_spin.setValue(self.page_spin.value() - 1)
         )
@@ -171,7 +181,8 @@ class HistoryMainWidget(QWidget):
 
     def _show_filter_dialog(self):
         """显示过滤对话框，确认后执行查询"""
-        filter_dialog = FilterDialog(self._float_decimals, self)
+        filter_dialog = FilterDialog(
+            self._float_decimals, self._computed_columns, self)
         # 从已有条件数据恢复到对话框
         if self._filter_rows:
             model = cast(FilterModel, filter_dialog.table.model())
@@ -199,7 +210,7 @@ class HistoryMainWidget(QWidget):
 
     def _show_sort_dialog(self):
         """显示排序对话框，确认后执行查询"""
-        sort_dialog = SortDialog(self)
+        sort_dialog = SortDialog(self._computed_columns, self)
         # 从已有条件数据恢复到对话框
         if self._sort_rows:
             model = cast(SortModel, sort_dialog.sort_table.model())
@@ -219,8 +230,9 @@ class HistoryMainWidget(QWidget):
 
     def _show_columns_dialog(self):
         """显示列设置对话框，确认后应用更改"""
+        all_headers = HistoryTable.all_headers(self._computed_columns)
         columns_dialog = ColumnsDialog(
-            HistoryTable.HEADERS, self.table.showFields, self)
+            all_headers, self.table.showFields, self)
         if columns_dialog.exec_():
             new_fields = columns_dialog.get_show_fields()
             self.table.showFields = new_fields
@@ -257,7 +269,18 @@ class HistoryMainWidget(QWidget):
             cursor = conn.cursor()
             filter_str = self._gen_filter_str()
             order_str = self._gen_order_str()
-            sql = f"SELECT {','.join(self._get_show_fields())}, COUNT(*) OVER() AS total_count FROM history"
+            # 有计算列时查询视图，否则查询原表
+            table_name = "history_view"  # if self._computed_columns else "history"
+            # 构建查询字段：显示字段 + 计算列（视图会自动包含计算列）
+            show_fields = list(self.table.showFields)
+            if self._computed_columns:
+                # 查询视图时，确保计算列也在 SELECT 中
+                computed_names = [col.name for col in self._computed_columns]
+                for name in computed_names:
+                    if name not in show_fields:
+                        show_fields.append(name)
+            select_fields = ','.join(show_fields)
+            sql = f"SELECT {select_fields}, COUNT(*) OVER() AS total_count FROM {table_name}"
             if filter_str:
                 sql += " WHERE " + filter_str
             elif filter_str is None:
@@ -308,34 +331,25 @@ class HistoryMainWidget(QWidget):
                 continue
 
             # 格式化值：日期时间戳转为可读格式
-            try:
-                field_value = HistoryData.get_field_value(field)
-                if isinstance(field_value, datetime) and value:
-                    try:
-                        ts = int(float(value))
-                        if ts > 1e15:
-                            ts = ts // 1_000_000
-                        elif ts > 1e12:
-                            ts = ts // 1_000
-                        value = datetime.fromtimestamp(
-                            ts).strftime("%Y-%m-%d %H:%M:%S")
-                    except (ValueError, TypeError, OSError):
-                        pass
-            except (KeyError, IndexError):
-                pass
+            field_value = self._get_field_value_type(field)
+            if isinstance(field_value, datetime) and value:
+                try:
+                    ts = int(float(value))
+                    if ts > 1e15:
+                        ts = ts // 1_000_000
+                    elif ts > 1e12:
+                        ts = ts // 1_000
+                    value = datetime.fromtimestamp(
+                        ts).strftime("%Y-%m-%d %H:%M:%S")
+                except (ValueError, TypeError, OSError):
+                    pass
 
-            part = f"{left_bracket}{field} {compare_text} {value}{right_bracket}"
-            parts.append((part, logic_text))
+            parts.append(
+                f"{left_bracket}{field} {compare_text} {value}{right_bracket}")
+            if logic_text:
+                parts.append(logic_text)
 
-        if not parts:
-            return ""
-
-        result = ""
-        for i, (part, logic) in enumerate(parts):
-            result += part
-            if i < len(parts) - 1 and logic:
-                result += f" {logic} "
-        return result
+        return " ".join(parts)
 
     def _format_sort_display(self, sort_rows: list[dict]) -> str:
         """将排序行数据格式化为易读字符串"""
@@ -350,6 +364,20 @@ class HistoryMainWidget(QWidget):
             parts.append(f"{field} {order}")
         return ", ".join(parts)
 
+    def _get_field_value_type(self, field_name: str):
+        """获取字段值类型（支持计算列）"""
+        result = HistoryData.get_field_value(field_name)
+        if result is not None:
+            return result
+        # 尝试计算列
+        for col in self._computed_columns:
+            if col.name == field_name:
+                if col.result_type == "int":
+                    return 0
+                elif col.result_type == "float":
+                    return 0.0
+        return None
+
     def _gen_filter_str(self) -> str | None:
         """根据 _filter_rows 生成过滤 SQL 语句"""
         if not self._filter_rows:
@@ -360,7 +388,7 @@ class HistoryMainWidget(QWidget):
         right_count = 0
 
         for row, data in enumerate(self._filter_rows):
-            field_value_type = HistoryData.get_field_value(
+            field_value_type = self._get_field_value_type(
                 data.get("field") or "")
 
             left_bracket = data.get("left_bracket") or ""
@@ -493,6 +521,16 @@ class HistoryMainWidget(QWidget):
                                 "%1", str(row)).replace("%2", value)
                         )
                         return None
+            elif isinstance(field_value_type, (int, float)) and value:
+                try:
+                    float(value)
+                except ValueError:
+                    QMessageBox.warning(
+                        self, _translate("Form", "错误"),
+                        _translate("Form", "第%1行 %2 不是数字").replace(
+                            "%1", str(row)).replace("%2", value)
+                    )
+                    return None
             elif value and not value.startswith("'"):
                 value = f"'{value}'"
 
@@ -565,8 +603,37 @@ class HistoryMainWidget(QWidget):
         try:
             fields = json.loads(show_fields_json)
             if not fields:
-                fields = self.table.HEADERS
+                fields = HistoryTable.all_headers(self._computed_columns)
             self.table.showFields = list(fields)
             self.table.model.update_show_fields(self.table.showFields)
         except (json.JSONDecodeError, TypeError):
             pass
+
+    def on_computed_columns_changed(self, columns: list[ComputedColumn], reload: bool = True) -> None:
+        """计算列变更回调（由 plugin.py 调用）"""
+        self._computed_columns = columns
+        self.table.set_computed_columns(columns)
+        # 新增的计算列自动加入 show_fields
+        all_headers = HistoryTable.all_headers(columns)
+        for col in columns:
+            if col.name not in self.table.showFields:
+                self.table.showFields.append(col.name)
+        # 移除已删除的计算列
+        computed_names = {col.name for col in columns}
+        self.table.showFields = [
+            f for f in self.table.showFields
+            if f in all_headers
+        ]
+        self.table.model.update_show_fields(self.table.showFields)
+        if reload:
+            self.load_data()
+
+    def _show_computed_columns_dialog(self):
+        """显示计算列管理对话框"""
+        from .computed_columns_dialog import ComputedColumnsDialog
+        dialog = ComputedColumnsDialog(
+            self._computed_columns, self._db_path, self)
+        if dialog.exec_():
+            new_columns = dialog.get_columns()
+            # 通过信号通知 plugin 保存配置并重建视图
+            self.computed_columns_changed.emit(new_columns)

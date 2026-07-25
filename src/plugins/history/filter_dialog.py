@@ -21,6 +21,7 @@ from shared_types.widgets import ConfirmDialog
 from .delegates import ComboBoxDelegate, EditableComboBoxDelegate, FilterValueDelegate
 from .models import HistoryData, LogicSymbol, CompareSymbol
 from .table_views import AutoEditTableView, FilterModel
+from .computed_column import ComputedColumn
 
 _translate = QCoreApplication.translate
 
@@ -28,8 +29,9 @@ _translate = QCoreApplication.translate
 class FilterDialog(ConfirmDialog):
     """过滤条件对话框"""
 
-    def __init__(self, float_decimals: int = 2, parent=None):
+    def __init__(self, float_decimals: int = 2, computed_columns: list[ComputedColumn] | None = None, parent=None):
         self._float_decimals = float_decimals
+        self._computed_columns = computed_columns or []
         super().__init__(parent, title=_translate("Form", "过滤条件"))
         self.resize(700, 300)
 
@@ -38,7 +40,7 @@ class FilterDialog(ConfirmDialog):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.table = AutoEditTableView()
-        self.table.setModel(FilterModel(self))
+        self.table.setModel(FilterModel(self._computed_columns, self))
         self.table.horizontalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -101,7 +103,7 @@ class FilterDialog(ConfirmDialog):
         if not field_name:
             return
 
-        field_value = HistoryData.get_field_value(field_name)
+        field_value = self._get_field_value(field_name)
         new_default = self._get_default_value(field_value)
 
         # 获取当前值（使用 EditRole 获取原始数据）
@@ -114,6 +116,20 @@ class FilterDialog(ConfirmDialog):
             new_default,
             Qt.EditRole
         )
+
+    def _get_field_value(self, field_name: str):
+        """获取字段值类型（支持计算列）"""
+        result = HistoryData.get_field_value(field_name)
+        if result is not None:
+            return result
+        # 再尝试计算列
+        for col in self._computed_columns:
+            if col.name == field_name:
+                if col.result_type == "int":
+                    return 0
+                elif col.result_type == "float":
+                    return 0.0
+        return None
 
     def _get_default_value(self, field_value) -> str:
         """获取字段类型的默认值"""
@@ -143,9 +159,13 @@ class FilterDialog(ConfirmDialog):
             ComboBoxDelegate(["", "(", "(("], self)
         )
         # 字段
+        field_names = list(HistoryData.fields())
+        for col in self._computed_columns:
+            if col.name not in field_names:
+                field_names.append(col.name)
         self.table.setItemDelegateForColumn(
             FilterModel.COL_FIELD,
-            EditableComboBoxDelegate(HistoryData.fields(), self)
+            EditableComboBoxDelegate(field_names, self)
         )
         # 比较符
         self.table.setItemDelegateForColumn(
@@ -155,7 +175,8 @@ class FilterDialog(ConfirmDialog):
         # 值列 - 使用智能代理
         self.table.setItemDelegateForColumn(
             FilterModel.COL_VALUE,
-            FilterValueDelegate(self._float_decimals, self)
+            FilterValueDelegate(self._float_decimals,
+                                self._computed_columns, self)
         )
         # 右括号
         self.table.setItemDelegateForColumn(
@@ -174,7 +195,8 @@ class FilterDialog(ConfirmDialog):
         # 更新值列代理
         self.table.setItemDelegateForColumn(
             FilterModel.COL_VALUE,
-            FilterValueDelegate(self._float_decimals, self)
+            FilterValueDelegate(self._float_decimals,
+                                self._computed_columns, self)
         )
 
     def show_context_menu(self, pos):
@@ -208,8 +230,12 @@ class FilterDialog(ConfirmDialog):
         model = self.table.model()
         self.table.insertRow(row)
         # 设置默认值
+        field_names = list(HistoryData.fields())
+        for col in self._computed_columns:
+            if col.name not in field_names:
+                field_names.append(col.name)
         model.setData(model.index(row, FilterModel.COL_FIELD),
-                      HistoryData.fields()[0])
+                      field_names[0])
         model.setData(model.index(row, FilterModel.COL_COMPARE),
                       CompareSymbol.display_names()[0])
         model.setData(model.index(row, FilterModel.COL_LOGIC),

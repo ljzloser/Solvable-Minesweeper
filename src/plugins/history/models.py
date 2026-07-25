@@ -165,8 +165,9 @@ class HistoryData:
         ]
 
     @classmethod
-    def query_all(cls):
-        return f"select {','.join(cls.fields())} from history"
+    def query_all(cls, use_view: bool = False):
+        table = "history_view" if use_view else "history"
+        return f"select * from {table}"
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -192,4 +193,11 @@ class HistoryData:
                 else:
                     value = new_value
                 setattr(instance, name, value)
+        # 计算列：视图查询多出的字段，动态挂载
+        known_fields = set(cls.fields())
+        for key, val in data.items():
+            if key not in known_fields and not key.startswith("_"):
+                if isinstance(val, float):
+                    val = round(val, 4)
+                setattr(instance, key, val)
         return instance

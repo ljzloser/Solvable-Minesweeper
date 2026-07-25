@@ -5,6 +5,7 @@
 from __future__ import annotations
 from .widgets import HistoryMainWidget
 from .compression import compress, decompress
+from .computed_column import ComputedColumn
 from plugins.services.history import HistoryService, GameRecord
 from shared_types.events import GameFinishedEvent, LanguageChangeEvent
 from plugin_sdk import (
@@ -99,6 +100,12 @@ class HistoryConfig(OtherInfoBase):
         visible=False,
     )
 
+    saved_computed_columns = TextConfig(
+        default="[]",
+        label="saved_computed_columns",
+        visible=False,
+    )
+
     page_size = ChoiceConfig(
         default="50",
         label=_translate("Form", "每页条数"),
@@ -166,6 +173,16 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
         self._widget.show_fields_changed.connect(
             self._on_show_fields_changed)
 
+        # 连接计算列变化信号
+        self._widget.computed_columns_changed.connect(
+            self.set_computed_columns)
+
+        # 初始化计算列（必须在恢复过滤/排序状态之前，否则过滤引用计算列时查不到）
+        if self.other_info:
+            columns = ComputedColumn.from_json(
+                self.other_info.saved_computed_columns)
+            self._widget.on_computed_columns_changed(columns, reload=False)
+
         # 恢复保存的排序和过滤状态
         if self.other_info:
             self._widget.set_filter_sort_state(
@@ -196,6 +213,7 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
 
     def on_initialized(self) -> None:
         self._init_db()
+        self._rebuild_view()
         if hasattr(self, '_widget'):
             self._widget.load_data()
         self.register_service(self, protocol=HistoryService)
@@ -227,6 +245,57 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 db_path, parent=self)
             self._migrate_worker.start()
             self.logger.info(f"后台压缩迁移启动，待处理 {count} 条记录")
+
+    def _rebuild_view(self) -> None:
+        """根据配置重建 history_view"""
+        db_path = self.data_dir / "history.db"
+        if not db_path.exists():
+            return
+
+        columns: list[ComputedColumn] = []
+        if self.other_info:
+            columns = ComputedColumn.from_json(
+                self.other_info.saved_computed_columns)
+
+        conn = sqlite3.connect(db_path)
+        try:
+            cursor = conn.cursor()
+            # 始终先删除旧视图
+            cursor.execute("DROP VIEW IF EXISTS history_view")
+
+            view_sql = ComputedColumn.build_view_sql(columns)
+            if view_sql:
+                try:
+                    cursor.execute(view_sql)
+                    conn.commit()
+                    self.logger.info(
+                        f"已创建 history_view，包含 {len(columns)} 个计算列"
+                    )
+                except sqlite3.Error as e:
+                    # 视图创建失败（表达式错误），跳过
+                    self.logger.warning(f"创建 history_view 失败: {e}")
+            else:
+                conn.commit()
+                self.logger.info("无计算列，已删除 history_view")
+        finally:
+            conn.close()
+
+    def get_computed_columns(self) -> list[ComputedColumn]:
+        """获取当前计算列配置"""
+        if self.other_info:
+            return ComputedColumn.from_json(self.other_info.saved_computed_columns)
+        return []
+
+    def set_computed_columns(self, columns: list[ComputedColumn]) -> None:
+        """更新计算列配置并重建视图"""
+        if self.other_info:
+            self.other_info.saved_computed_columns = ComputedColumn.to_json(
+                columns)
+            self.save_config()
+        self._rebuild_view()
+        # 通知 widget 刷新
+        if hasattr(self, '_widget'):
+            self._widget.on_computed_columns_changed(columns)
 
     # ── 数据库 ──────────────────────────────────────────────
 

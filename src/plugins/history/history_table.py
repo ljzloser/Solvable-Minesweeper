@@ -32,6 +32,7 @@ from plugin_manager.app_paths import get_executable_dir
 from .models import HistoryData
 from .table_model import HistoryTableModel
 from .compression import decompress
+from .computed_column import ComputedColumn
 
 _translate = QCoreApplication.translate
 
@@ -44,7 +45,8 @@ class HistoryTable(QWidget):
 
     NF_COLUMN_WIDTH = 50
 
-    HEADERS = [
+    # 物理字段（固定）
+    PHYSICAL_HEADERS = [
         "replay_id",
         "game_state",
         "nf",
@@ -81,9 +83,23 @@ class HistoryTable(QWidget):
         "board",
     ]
 
-    def __init__(self, show_fields: list[str], db_path: Path, parent=None):
+    HEADERS = PHYSICAL_HEADERS  # 向后兼容
+
+    @classmethod
+    def all_headers(cls, computed_columns: list[ComputedColumn] | None = None) -> list[str]:
+        """获取完整列头列表（物理字段 + 计算列）"""
+        headers = list(cls.PHYSICAL_HEADERS)
+        if computed_columns:
+            for col in computed_columns:
+                if col.name not in headers:
+                    headers.append(col.name)
+        return headers
+
+    def __init__(self, show_fields: list[str], db_path: Path,
+                 computed_columns: list[ComputedColumn] | None = None, parent=None):
         super().__init__(parent)
         self._db_path = db_path
+        self._computed_columns = computed_columns or []
         layout = QVBoxLayout(self)
         self.table = QTableView(self)
         layout.addWidget(self.table)
@@ -93,7 +109,7 @@ class HistoryTable(QWidget):
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_context_menu)
         self.showFields: list[str] = show_fields
-        self.headers = self.HEADERS
+        self.headers = self.all_headers(self._computed_columns)
 
         self.model = HistoryTableModel([], self.headers, self.showFields, self)
         self.table.setModel(self.model)
@@ -107,6 +123,14 @@ class HistoryTable(QWidget):
 
     def load(self, data: list[HistoryData]):
         self.model.update_data(data)
+
+    def set_computed_columns(self, columns: list[ComputedColumn]):
+        """更新计算列，重建 headers 和 model"""
+        self._computed_columns = columns
+        self.headers = self.all_headers(columns)
+        self.model = HistoryTableModel([], self.headers, self.showFields, self)
+        self.table.setModel(self.model)
+        self.model.modelReset.connect(self._apply_column_widths)
 
     def _apply_column_widths(self):
         visible_headers = getattr(self.model, "_visible_headers", [])

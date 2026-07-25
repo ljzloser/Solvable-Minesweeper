@@ -17,6 +17,7 @@ from shared_types.widgets import ConfirmDialog
 from .delegates import ComboBoxDelegate, EditableComboBoxDelegate
 from .models import HistoryData
 from .table_views import AutoEditTableView, SortModel
+from .computed_column import ComputedColumn
 
 _translate = QCoreApplication.translate
 
@@ -24,7 +25,8 @@ _translate = QCoreApplication.translate
 class SortDialog(ConfirmDialog):
     """排序条件对话框"""
 
-    def __init__(self, parent=None):
+    def __init__(self, computed_columns: list[ComputedColumn] | None = None, parent=None):
+        self._computed_columns = computed_columns or []
         super().__init__(parent, title=_translate("Form", "排序条件"))
         self.resize(400, 300)
 
@@ -56,9 +58,13 @@ class SortDialog(ConfirmDialog):
 
     def _setup_delegates(self):
         """设置列代理"""
+        field_names = list(HistoryData.fields())
+        for col in self._computed_columns:
+            if col.name not in field_names:
+                field_names.append(col.name)
         self.sort_table.setItemDelegateForColumn(
             SortModel.COL_FIELD,
-            EditableComboBoxDelegate(HistoryData.fields(), self)
+            EditableComboBoxDelegate(field_names, self)
         )
         self.sort_table.setItemDelegateForColumn(
             SortModel.COL_ORDER,
