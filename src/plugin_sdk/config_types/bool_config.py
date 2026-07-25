@@ -1,19 +1,19 @@
 """
-布尔配置类型 → QCheckBox
+布尔配置类型 → ToggleSwitch
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from PyQt5.QtWidgets import QCheckBox
+from shared_types.widgets import ToggleSwitch
 
 from .base_config import BaseConfig, ConfigWidgetWrapper
 
 
 class BoolConfig(BaseConfig[bool]):
     """
-    布尔配置 → QCheckBox
+    布尔配置 → ToggleSwitch
 
     用法::
 
@@ -27,12 +27,11 @@ class BoolConfig(BaseConfig[bool]):
         self.default = bool(self.default)
 
     def create_widget(self) -> ConfigWidgetWrapper:
-        """创建 QCheckBox 控件"""
-        widget = QCheckBox()
-        widget.setChecked(self.default)
+        """创建 ToggleSwitch 控件"""
+        widget = ToggleSwitch(checked=self.default)
         if self.description:
             widget.setToolTip(self.description)
-        return ConfigWidgetWrapper(widget, widget.isChecked, widget.setChecked, widget.stateChanged)
+        return ConfigWidgetWrapper(widget, widget.isChecked, widget.setChecked, widget.toggled)
 
     def to_storage(self, value: bool) -> bool:
         """转换为存储格式"""
