@@ -257,7 +257,7 @@ class HistoryMainWidget(QWidget):
             cursor = conn.cursor()
             filter_str = self._gen_filter_str()
             order_str = self._gen_order_str()
-            sql = "SELECT *, COUNT(*) OVER() AS total_count FROM history"
+            sql = f"SELECT {','.join(self._get_show_fields())}, COUNT(*) OVER() AS total_count FROM history"
             if filter_str:
                 sql += " WHERE " + filter_str
             elif filter_str is None:

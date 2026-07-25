@@ -3,25 +3,70 @@
 """
 
 from __future__ import annotations
+from .widgets import HistoryMainWidget
+from .compression import compress, decompress
+from plugins.services.history import HistoryService, GameRecord
+from shared_types.events import GameFinishedEvent, LanguageChangeEvent
+from plugin_sdk import (
+    BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
+    OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
+)
 
 import sqlite3
 from pathlib import Path
 from typing import Any
 
 import msgspec
-from PyQt5.QtCore import QCoreApplication, pyqtSignal
+from PyQt5.QtCore import QCoreApplication, QThread, pyqtSignal
 from PyQt5.QtWidgets import QWidget
 
 _translate = QCoreApplication.translate
 
-from plugin_sdk import (
-    BasePlugin, PluginInfo, make_plugin_icon, WindowMode,
-    OtherInfoBase, IntConfig, TextConfig, ChoiceConfig,
-)
-from shared_types.events import GameFinishedEvent, LanguageChangeEvent
-from plugins.services.history import HistoryService, GameRecord
 
-from .widgets import HistoryMainWidget
+class _CompressionMigrateWorker(QThread):
+    """后台压缩迁移工作线程，静默处理旧数据"""
+
+    def __init__(self, db_path: Path, batch_size: int = 100, parent=None):
+        super().__init__(parent)
+        self._db_path = db_path
+        self._batch_size = batch_size
+
+    def run(self):
+        conn = sqlite3.connect(self._db_path)
+        try:
+            cursor = conn.cursor()
+            # 检查 compressed 列是否存在
+            cursor.execute("PRAGMA table_info(history)")
+            cols = {row[1] for row in cursor.fetchall()}
+            if "compressed" not in cols:
+                return  # schema 还没升级，跳过
+
+            while True:
+                cursor.execute(
+                    "SELECT replay_id, raw_data FROM history "
+                    "WHERE compressed = 0 AND raw_data IS NOT NULL "
+                    "LIMIT ?",
+                    (self._batch_size,),
+                )
+                rows = cursor.fetchall()
+                if not rows:
+                    break
+                for replay_id, raw_data in rows:
+                    if raw_data is None:
+                        continue
+                    compressed_data = compress(raw_data)
+                    cursor.execute(
+                        "UPDATE history SET raw_data = ?, compressed = 1 "
+                        "WHERE replay_id = ?",
+                        (compressed_data, replay_id),
+                    )
+                conn.commit()
+            # 所有记录压缩完成，VACUUM 回收磁盘空间
+            cursor.execute("VACUUM")
+        except Exception:
+            pass  # 静默失败，下次启动继续
+        finally:
+            conn.close()
 
 
 class HistoryConfig(OtherInfoBase):
@@ -155,6 +200,33 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             self._widget.load_data()
         self.register_service(self, protocol=HistoryService)
         self.logger.info("历史记录插件已初始化，HistoryService 已注册")
+        # 后台静默压缩旧数据
+        self._start_compression_migrate()
+
+    def _start_compression_migrate(self) -> None:
+        """启动后台压缩迁移线程"""
+        db_path = self.data_dir / "history.db"
+        if not db_path.exists():
+            return
+        # 检查是否有未压缩的记录
+        conn = sqlite3.connect(db_path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(history)")
+            cols = {row[1] for row in cursor.fetchall()}
+            if "compressed" not in cols:
+                return
+            cursor.execute(
+                "SELECT COUNT(*) FROM history WHERE compressed = 0 AND raw_data IS NOT NULL"
+            )
+            count = cursor.fetchone()[0]
+        finally:
+            conn.close()
+        if count > 0:
+            self._migrate_worker = _CompressionMigrateWorker(
+                db_path, parent=self)
+            self._migrate_worker.start()
+            self.logger.info(f"后台压缩迁移启动，待处理 {count} 条记录")
 
     # ── 数据库 ──────────────────────────────────────────────
 
@@ -166,6 +238,13 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             cursor.execute("PRAGMA table_info(history)")
             cols = {row[1] for row in cursor.fetchall()}
             if "game_state" in cols:
+                # 旧 schema 缺少 compressed 列则追加
+                if "compressed" not in cols:
+                    cursor.execute(
+                        "ALTER TABLE history ADD COLUMN compressed INTEGER DEFAULT 0"
+                    )
+                    conn.commit()
+                    self.logger.info("已添加 compressed 列")
                 conn.close()
                 return
             self.logger.info("旧 schema，迁移中…")
@@ -211,7 +290,8 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
                 isl                 INTEGER,
                 pluck               REAL,
                 board               TEXT,
-                raw_data            BLOB
+                raw_data            BLOB,
+                compressed          INTEGER DEFAULT 0
             )
         """
         )
@@ -227,6 +307,10 @@ class HistoryPlugin(BasePlugin[HistoryConfig]):
             import json
             data["board"] = json.dumps(data["board"], separators=(",", ":"))
         data.pop("timestamp", None)
+        # 压缩 raw_data
+        if data.get("raw_data") is not None:
+            data["raw_data"] = compress(data["raw_data"])
+            data["compressed"] = 1
         columns = ", ".join(data.keys())
         placeholders = ", ".join(f":{k}" for k in data.keys())
 

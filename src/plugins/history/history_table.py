@@ -31,6 +31,7 @@ from plugin_manager.app_paths import get_executable_dir
 
 from .models import HistoryData
 from .table_model import HistoryTableModel
+from .compression import decompress
 
 _translate = QCoreApplication.translate
 
@@ -154,7 +155,9 @@ class HistoryTable(QWidget):
                     replay_id,)
             )
             row = cursor.fetchone()
-            return row[0] if row else None
+            if row and row[0] is not None:
+                return decompress(row[0])
+            return None
         finally:
             conn.close()
 
@@ -183,7 +186,8 @@ class HistoryTable(QWidget):
             subprocess.Popen([str(exe), str(temp_filename)])
         else:
             QMessageBox.warning(
-                self, _translate("Form", "错误"), _translate("Form", "找不到主程序 (main.py 或 metaminesweeper.exe)")
+                self, _translate("Form", "错误"), _translate(
+                    "Form", "找不到主程序 (main.py 或 metaminesweeper.exe)")
             )
 
     def export_row(self):
@@ -229,13 +233,15 @@ class HistoryTable(QWidget):
                 items.append(f'{pad * (indent + 1)}"{k}": {val}')
             return "{\n" + ",\n".join(items) + "\n" + pad * indent + "}"
         if isinstance(obj, list) and obj and isinstance(obj[0], list):
-            inner = ", ".join(json.dumps(row, ensure_ascii=False) for row in obj)
+            inner = ", ".join(json.dumps(row, ensure_ascii=False)
+                              for row in obj)
             return "[\n" + pad * (indent + 1) + inner + "\n" + pad * indent + "]"
         if isinstance(obj, list):
             if not obj:
                 return "[]"
             inner = ",\n".join(
-                pad * (indent + 1) + HistoryTable._compact_json(item, indent + 1)
+                pad * (indent + 1) +
+                HistoryTable._compact_json(item, indent + 1)
                 for item in obj
             )
             return "[\n" + inner + "\n" + pad * indent + "]"
