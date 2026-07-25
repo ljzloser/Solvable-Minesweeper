@@ -79,7 +79,8 @@ def cli_check_file(file_path: str) -> int:
                     try:
                         video.parse()
                     except Exception:
-                        logger.warning("Failed to parse evf file", exc_info=True)
+                        logger.warning(
+                            "Failed to parse evf file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         checksum = ui.checksum_guard.get_checksum(
@@ -92,7 +93,8 @@ def cli_check_file(file_path: str) -> int:
                     try:
                         videos.parse()
                     except Exception:
-                        logger.warning("Failed to parse evfs file", exc_info=True)
+                        logger.warning(
+                            "Failed to parse evfs file", exc_info=True)
                         evf_evfs_files[ide] = (e, 2)
                     else:
                         if videos.len() <= 0:
@@ -167,6 +169,7 @@ if __name__ == "__main__":
         localServer.newConnection.connect(
             lambda: on_new_connection(localServer=localServer)
         )
+        GameServerBridge.instance().start()
         mainWindow = mainWindowGUI.MainWindow()
         ui = mineSweeperGUI.MineSweeperGUI(mainWindow, sys.argv)
         ui.mainWindow.show()
@@ -182,7 +185,8 @@ if __name__ == "__main__":
             import win32api
             import win32event
             import winerror
-            hMutex = win32event.OpenMutex(0x001F0001, False, "Metasweeper-PluginManager")
+            hMutex = win32event.OpenMutex(
+                0x001F0001, False, "Metasweeper-PluginManager")
             if hMutex:
                 win32api.CloseHandle(hMutex)
                 _plugin_manager_running = True
@@ -199,11 +203,13 @@ if __name__ == "__main__":
                 if not os.path.exists(plugin_exe):
                     QtWidgets.QMessageBox.warning(
                         mainWindow, _translate("MainWindow", "插件管理器"),
-                        _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace("{path}", plugin_exe),
+                        _translate("MainWindow", "找不到 plugin_manager.exe：\n{path}\n\n插件将被禁用。").replace(
+                            "{path}", plugin_exe),
                     )
                     plugin_process = None
                 else:
-                    cmd = [plugin_exe, "--mode", "tray", "--data-dir", data_dir]
+                    cmd = [plugin_exe, "--mode",
+                           "tray", "--data-dir", data_dir]
                     cwd = base_dir
                     try:
                         plugin_process = subprocess.Popen(
@@ -212,7 +218,8 @@ if __name__ == "__main__":
                     except Exception as e:
                         QtWidgets.QMessageBox.warning(
                             mainWindow, _translate("MainWindow", "插件管理器"),
-                            _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace("{err}", str(e)),
+                            _translate("MainWindow", "启动 plugin_manager 失败：\n{err}").replace(
+                                "{err}", str(e)),
                         )
                         plugin_process = None
             else:
@@ -228,8 +235,6 @@ if __name__ == "__main__":
                     plugin_process = None
 
         ui._plugin_process = plugin_process  # 保存引用，防止被 GC
-
-        GameServerBridge.instance().start()
 
         # 等插件连接后同步初始语言
         from PyQt5.QtCore import QTimer

@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
     QDialogButtonBox,
     QMenu,
-    QWidget,
 )
 
 from shared_types.widgets import ConfirmDialog
@@ -60,8 +59,7 @@ class ColumnsDialog(ConfirmDialog):
         self.resize(300, 500)
 
     def _create_content(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
         # 全选/取消全选
@@ -88,7 +86,7 @@ class ColumnsDialog(ConfirmDialog):
         self.select_all_btn.clicked.connect(self._select_all)
         self.deselect_all_btn.clicked.connect(self._deselect_all)
 
-        return widget
+        return layout
 
     def _init_list(self):
         """初始化列表内容"""

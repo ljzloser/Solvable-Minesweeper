@@ -75,13 +75,13 @@ plugin_info()           # 返回元信息
     ↓
 实例化 BasePlugin
     ↓
-initialize()            # 启动 QThread
+initialize()            # 启动插件线程
     ↓
 _setup_subscriptions()  # 注册事件订阅
     ↓
 _create_widget()        # 创建 UI（主线程）
     ↓
-start()                 # QThread 开始运行
+_thread.start()         # QThread 事件循环开始运行
     ↓
 on_initialized()        # 【工作线程】初始化回调
     ↓

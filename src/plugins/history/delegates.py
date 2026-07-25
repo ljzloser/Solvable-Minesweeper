@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
 from shared_types.widgets import EditableComboBox
 
 from .models import HistoryData, CompareSymbol
+from .computed_column import ComputedColumn
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
@@ -79,9 +80,10 @@ class FilterValueDelegate(QStyledItemDelegate):
     COL_FIELD = 1  # FilterModel.COL_FIELD
     COL_COMPARE = 2  # FilterModel.COL_COMPARE
 
-    def __init__(self, float_decimals: int = 2, parent=None):
+    def __init__(self, float_decimals: int = 2, computed_columns: list[ComputedColumn] | None = None, parent=None):
         super().__init__(parent)
         self._float_decimals = float_decimals
+        self._computed_columns = computed_columns or []
         self._editor_widgets = []  # 缓存创建的编辑器widget
 
     def paint(self, painter, option, index):
@@ -153,9 +155,19 @@ class FilterValueDelegate(QStyledItemDelegate):
         if not field_name:
             return None, None, None
 
-        try:
-            field_value = HistoryData.get_field_value(field_name)
-        except (KeyError, IndexError):
+        # 先尝试物理字段
+        field_value = HistoryData.get_field_value(field_name)
+        if field_value is None:
+            # 再尝试计算列
+            for col in self._computed_columns:
+                if col.name == field_name:
+                    if col.result_type == "int":
+                        field_value = 0
+                    elif col.result_type == "float":
+                        field_value = 0.0
+                    break
+
+        if field_value is None:
             return None, None, None
 
         compare = None
@@ -170,29 +182,28 @@ class FilterValueDelegate(QStyledItemDelegate):
     def _create_editor_by_type(self, parent, field_value, compare, field_name):
         """根据字段类型创建编辑器"""
         from shared_types.enums import BaseDiaPlayEnum
-
-        # 如果是包含/不包含比较符，使用 LineEdit
-        if compare.value in (CompareSymbol.Contains, CompareSymbol.NotContains):
-            return QLineEdit(parent)
+        editor = None
+        # 如果是包含/不包含比较符，使用 LineEdit,先注释后面会有大用
+        # if compare.value in (CompareSymbol.Contains, CompareSymbol.NotContains):
+        #     editor = QLineEdit(parent)
 
         if isinstance(field_value, BaseDiaPlayEnum):
             editor = QComboBox(parent)
             editor.addItems([e.display_name for e in field_value.__class__])
-            return editor
         elif isinstance(field_value, int):
-            return QSpinBox(parent)
+            editor = QSpinBox(parent)
+            editor.setRange(-2147483648, 2147483647)
         elif isinstance(field_value, float):
             editor = QDoubleSpinBox(parent)
             editor.setDecimals(self._float_decimals)
             editor.setRange(-1e15, 1e15)
-            return editor
         elif isinstance(field_value, datetime):
             editor = QDateTimeEdit(parent)
             editor.setDisplayFormat("yyyy-MM-dd HH:mm:ss")
             editor.setCalendarPopup(True)
-            return editor
         else:
-            return QLineEdit(parent)
+            editor = QLineEdit(parent)
+        return editor
 
     def createEditor(self, parent, option, index):
         field_value, compare, field_name = self._get_field_info(index)

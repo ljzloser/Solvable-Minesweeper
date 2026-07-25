@@ -43,7 +43,9 @@ class HistoryTableModel(QAbstractTableModel):
 
         if role == Qt.DisplayRole:
             field_name = self._visible_headers[col]
-            value = getattr(self._data[row], field_name)
+            value = getattr(self._data[row], field_name, None)
+            if value is None:
+                return ""
             if isinstance(value, datetime):
                 return value.strftime("%Y-%m-%d %H:%M:%S.%f")
             elif isinstance(value, BaseDiaPlayEnum):
@@ -54,7 +56,7 @@ class HistoryTableModel(QAbstractTableModel):
 
         elif role == Qt.UserRole:
             field_name = self._visible_headers[col]
-            return getattr(self._data[row], field_name)
+            return getattr(self._data[row], field_name, None)
 
         elif role == Qt.TextAlignmentRole:
             return Qt.AlignCenter | Qt.AlignVCenter

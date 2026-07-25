@@ -17,7 +17,7 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 │        │                             │
 │   EventDispatcher ──→ 事件分发       │
 │        │                             │
-│   BasePlugin(QThread) × N            │
+│   BasePlugin(QObject + moveToThread) × N
 │     ├─ HistoryPlugin (内置)          │
 │     ├─ 你的插件A (用户)              │
 │     └─ 你的插件B (用户)              │
@@ -28,7 +28,7 @@ Meta-Minesweeper 采用 **ZMQ 多进程插件架构**：
 
 ## 关键点
 
-- 每个插件运行在**独立的 QThread** 中，互不阻塞
+- 每个插件运行在**独立的线程**中（QObject + moveToThread），互不阻塞
 - 主进程和插件管理器通过 **ZeroMQ** 通信
 - 插件通过**事件订阅**接收游戏数据，通过**指令发送**控制主进程
 

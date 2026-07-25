@@ -5,14 +5,17 @@
 """
 
 from __future__ import annotations
+import typing
 
 from PyQt5.QtCore import QCoreApplication, Qt
 from PyQt5.QtWidgets import (
     QDialog,
+    QPushButton,
     QVBoxLayout,
     QDialogButtonBox,
-    QWidget,
+    QLayout,
 )
+
 
 _translate = QCoreApplication.translate
 
@@ -25,11 +28,10 @@ class ConfirmDialog(QDialog):
 
     Usage:
         class MyDialog(ConfirmDialog):
-            def _create_content(self) -> QWidget:
-                widget = QWidget()
-                layout = QVBoxLayout(widget)
+            def _create_content(self) -> QLayout:
+                layout = QVBoxLayout()
                 # 添加自定义控件...
-                return widget
+                return layout
 
             def _on_accepted(self):
                 # 处理确认逻辑
@@ -50,6 +52,8 @@ class ConfirmDialog(QDialog):
         """
         super().__init__(parent)
         self.setWindowTitle(title or _translate("Dialog", "对话框"))
+        self.setWindowFlags(self.windowFlags() & ~
+                            Qt.WindowContextHelpButtonHint)
         self._buttons = buttons
 
         self._setup_ui()
@@ -61,20 +65,20 @@ class ConfirmDialog(QDialog):
         # 内容区域（子类实现）
         content = self._create_content()
         if content:
-            layout.addWidget(content)
+            layout.addLayout(content)
 
         # 使用 QDialogButtonBox（Qt 内置标准按钮框）
-        self.button_box = QDialogButtonBox(self._buttons)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
-        layout.addWidget(self.button_box)
+        self._button_box = QDialogButtonBox(self._buttons)
+        self._button_box.accepted.connect(self.accept)
+        self._button_box.rejected.connect(self.reject)
+        layout.addWidget(self._button_box)
 
-    def _create_content(self) -> QWidget | None:
+    def _create_content(self) -> QLayout | None:
         """
         创建内容区域（子类重写）
 
         Returns:
-            内容控件，或 None
+            内容布局，或 None
         """
         return None
 
@@ -86,17 +90,24 @@ class ConfirmDialog(QDialog):
         """取消时调用（子类重写）"""
         pass
 
+    @typing.override
     def accept(self):
         """确认"""
         self._on_accepted()
         super().accept()
 
+    @typing.override
     def reject(self):
         """取消"""
         self._on_rejected()
         super().reject()
 
-    def button(self, standard_button: QDialogButtonBox.StandardButton) -> QWidget | None:
+    @property
+    def button_box(self) -> QDialogButtonBox:
+        """获取按钮框"""
+        return self._button_box
+
+    def button(self, standard_button: QDialogButtonBox.StandardButton) -> QPushButton:
         """
         获取指定标准按钮
 
@@ -104,6 +115,10 @@ class ConfirmDialog(QDialog):
             standard_button: 标准按钮类型
 
         Returns:
-            按钮控件，或 None
+            按钮控件
         """
         return self.button_box.button(standard_button)
+
+    def buttons(self) -> dict[QDialogButtonBox.StandardButton, QPushButton]:
+        """获取所有按钮"""
+        return {btn: self.button_box.button(btn) for btn in self._buttons}

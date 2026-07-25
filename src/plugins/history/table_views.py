@@ -11,6 +11,7 @@ from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtWidgets import QTableView
 
 from .models import HistoryData
+from .computed_column import ComputedColumn
 
 _translate = QCoreApplication.translate
 
@@ -134,8 +135,9 @@ class FilterModel(QStandardItemModel):
     COL_LBRACKET, COL_FIELD, COL_COMPARE, COL_VALUE, COL_RBRACKET, COL_LOGIC = range(
         6)
 
-    def __init__(self, parent=None):
+    def __init__(self, computed_columns: list[ComputedColumn] | None = None, parent=None):
         super().__init__(0, 6, parent)
+        self._computed_columns = computed_columns or []
         self.setHorizontalHeaderLabels([
             _translate("Form", "左括号"),
             _translate("Form", "字段"),
@@ -164,7 +166,7 @@ class FilterModel(QStandardItemModel):
                 field_name = super().data(field_index, Qt.EditRole)
 
                 if field_name:
-                    field_value = HistoryData.get_field_value(field_name)
+                    field_value = self._get_field_value(field_name)
                     if isinstance(field_value, datetime):
                         # 尝试解析时间戳并格式化为可读格式
                         try:
@@ -193,10 +195,21 @@ class FilterModel(QStandardItemModel):
             "logic": self.data(self.index(row, self.COL_LOGIC)),
         }
 
+    def _get_field_value(self, field_name: str):
+        """获取字段值类型（支持计算列）"""
+        result = HistoryData.get_field_value(field_name)
+        if result is not None:
+            return result
+        for col in self._computed_columns:
+            if col.name == field_name:
+                if col.result_type == "int":
+                    return 0
+                elif col.result_type == "float":
+                    return 0.0
     def get_field_value_type(self, row: int):
         """获取指定行字段的原始值类型"""
         field_name = str(self.data(self.index(row, self.COL_FIELD)))
-        return HistoryData.get_field_value(field_name)
+        return self._get_field_value(field_name)
 
 
 class SortModel(QStandardItemModel):
