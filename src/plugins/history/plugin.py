@@ -121,14 +121,17 @@ def py_safe_mod(a, b):
     return a % b
 
 def py_days_since(ts_us):
-    """微秒时间戳距今天数（SQLite 无内置，需 julianday 嵌套且不处理 NULL）"""
+    """微秒时间戳距今天数，今天=0，昨天=1（SQLite 无内置）"""
     if ts_us is None:
         return None
     import time
-    return (time.time() * 1_000_000 - ts_us) / 86_400_000_000
+    from datetime import datetime, date
+    then = date.fromtimestamp(ts_us / 1_000_000)
+    today = date.today()
+    return (today - then).days
 
 def py_months_since(ts_us):
-    """微秒时间戳距今月数（SQLite 完全无法计算月差）"""
+    """微秒时间戳距今月数，当月=0，上月=1（SQLite 完全无法计算月差）"""
     if ts_us is None:
         return None
     from datetime import datetime

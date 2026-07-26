@@ -229,7 +229,9 @@ class HistoryTable(QWidget):
             return
         data = self.model._data[row_idx]
         result = {}
-        for field in HistoryData.fields():
+        for field in self.model._visible_headers:
+            if not hasattr(data, field):
+                continue
             value = getattr(data, field)
             if isinstance(value, datetime):
                 value = value.isoformat()
