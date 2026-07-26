@@ -15,7 +15,6 @@ from PyQt5.QtCore import Qt, QCoreApplication, pyqtSignal, QPoint, QTimer, QEven
 from PyQt5.QtGui import QColor, QMouseEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
-    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -48,6 +47,7 @@ from PyQt5.QtWidgets import (
 from .plugin_state import PluginStateManager, PluginState
 from .settings_manager import SettingsManager
 from plugin_sdk.plugin_base import PluginLifecycle, WindowMode, LogLevel
+from shared_types.widgets.toggle_switch import ToggleSwitch
 from plugin_sdk.control_auth import ControlAuthorizationManager
 from plugin_sdk.config_types import OtherInfoBase
 from .app_paths import get_data_dir
@@ -418,11 +418,11 @@ class PluginSettingsDialog(QDialog):
         grp = QGroupBox(self.tr("基本设置"))
         form = QFormLayout(grp)
 
-        self._chk_enabled = QCheckBox()
+        self._chk_enabled = ToggleSwitch()
         self._chk_enabled.setChecked(state.enabled)
         form.addRow(self.tr("启用插件:"), self._chk_enabled)
 
-        self._chk_show = QCheckBox()
+        self._chk_show = ToggleSwitch()
         self._chk_show.setChecked(state.show_window)
         form.addRow(self.tr("启动时显示窗口:"), self._chk_show)
         layout.addWidget(grp)
@@ -558,12 +558,12 @@ class BasicSettingsDialog(QDialog):
         viewer_log_label.setToolTip(_translate("SettingsDialog", "日志查看器显示的日志等级"))
         viewer_layout.addRow(viewer_log_label, self._viewer_log_level_combo)
 
-        self._auto_scroll_cb = QCheckBox()
+        self._auto_scroll_cb = ToggleSwitch()
         self._auto_scroll_cb.setChecked(
             self._settings_manager.viewer_auto_scroll)
         viewer_layout.addRow(_translate("SettingsDialog", "自动滚动"), self._auto_scroll_cb)
 
-        self._show_source_cb = QCheckBox()
+        self._show_source_cb = ToggleSwitch()
         self._show_source_cb.setChecked(
             self._settings_manager.viewer_show_source)
         viewer_layout.addRow(_translate("SettingsDialog", "显示来源"), self._show_source_cb)
@@ -694,12 +694,14 @@ class LogViewerDialog(QDialog):
         top_layout.addSpacing(20)
 
         # 自动滚动
-        self._auto_scroll_cb = QCheckBox(_translate("LogViewerDialog", "自动滚动"))
+        top_layout.addWidget(QLabel(_translate("LogViewerDialog", "自动滚动")))
+        self._auto_scroll_cb = ToggleSwitch()
         self._auto_scroll_cb.setChecked(self._auto_scroll_default)
         top_layout.addWidget(self._auto_scroll_cb)
 
         # 显示来源
-        self._show_source_cb = QCheckBox(_translate("LogViewerDialog", "显示来源"))
+        top_layout.addWidget(QLabel(_translate("LogViewerDialog", "显示来源")))
+        self._show_source_cb = ToggleSwitch()
         self._show_source_cb.setChecked(self._show_source_default)
         top_layout.addWidget(self._show_source_cb)
 
