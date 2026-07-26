@@ -227,22 +227,13 @@ class HistoryTable(QWidget):
         row_idx = self.table.currentIndex().row()
         if row_idx < 0:
             return
-        data = self.model._data[row_idx]
         result = {}
-        for field in self.model._visible_headers:
-            if not hasattr(data, field):
-                continue
-            value = getattr(data, field)
-            if isinstance(value, datetime):
-                value = value.isoformat()
-            elif isinstance(value, BaseDiaPlayEnum):
-                value = value.value
-            elif field == "board" and isinstance(value, str):
-                try:
-                    value = json.loads(value)
-                except (json.JSONDecodeError, TypeError):
-                    pass
+        headers = self.table.horizontalHeader().visibleSectionNames()
+        for idx, field in enumerate(headers):
+            value = self.model.data(
+                self.model.index(row_idx, idx), Qt.DisplayRole)
             result[field] = value
+
         clipboard = QApplication.clipboard()
         clipboard.setText(self._compact_json(result))
 
