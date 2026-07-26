@@ -518,7 +518,8 @@ class BasicSettingsDialog(QDialog):
     def __init__(self, settings_manager: "SettingsManager", parent=None) -> None:
         super().__init__(parent)
         self._settings_manager = settings_manager
-        self.setWindowTitle(QCoreApplication.translate("SettingsDialog", "基础设置"))
+        self.setWindowTitle(
+            QCoreApplication.translate("SettingsDialog", "基础设置"))
         self.setMinimumWidth(400)
         self._setup_ui()
 
@@ -555,18 +556,21 @@ class BasicSettingsDialog(QDialog):
             self._viewer_log_level_combo.setCurrentIndex(index)
 
         viewer_log_label = QLabel(_translate("SettingsDialog", "日志等级"))
-        viewer_log_label.setToolTip(_translate("SettingsDialog", "日志查看器显示的日志等级"))
+        viewer_log_label.setToolTip(
+            _translate("SettingsDialog", "日志查看器显示的日志等级"))
         viewer_layout.addRow(viewer_log_label, self._viewer_log_level_combo)
 
         self._auto_scroll_cb = ToggleSwitch()
         self._auto_scroll_cb.setChecked(
             self._settings_manager.viewer_auto_scroll)
-        viewer_layout.addRow(_translate("SettingsDialog", "自动滚动"), self._auto_scroll_cb)
+        viewer_layout.addRow(_translate(
+            "SettingsDialog", "自动滚动"), self._auto_scroll_cb)
 
         self._show_source_cb = ToggleSwitch()
         self._show_source_cb.setChecked(
             self._settings_manager.viewer_show_source)
-        viewer_layout.addRow(_translate("SettingsDialog", "显示来源"), self._show_source_cb)
+        viewer_layout.addRow(_translate(
+            "SettingsDialog", "显示来源"), self._show_source_cb)
 
         layout.addWidget(viewer_group)
 
@@ -649,7 +653,8 @@ class LogViewerDialog(QDialog):
             parent: 父窗口
         """
         super().__init__(parent)
-        self.setWindowTitle(QCoreApplication.translate("LogViewerDialog", "日志查看"))
+        self.setWindowTitle(QCoreApplication.translate(
+            "LogViewerDialog", "日志查看"))
         self.setMinimumSize(900, 600)
         self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint)
 
@@ -676,7 +681,8 @@ class LogViewerDialog(QDialog):
         self._log_combo = QComboBox()
         self._log_combo.addItem(_translate("LogViewerDialog", "主进程"), "main")
         for name in self._plugin_names:
-            self._log_combo.addItem(_translate("LogViewerDialog", "插件: {name}").replace("{name}", name), name)
+            self._log_combo.addItem(_translate(
+                "LogViewerDialog", "插件: {name}").replace("{name}", name), name)
         self._log_combo.currentIndexChanged.connect(self._on_log_changed)
         top_layout.addWidget(self._log_combo)
 
@@ -1095,12 +1101,16 @@ class PluginManagerWindow(QMainWindow):
         self._menu_settings = self._menu_options.addMenu(self.tr("设置"))
 
         # 基础设置动作
-        self._act_basic_settings = self._menu_settings.addAction(self.tr("基础设置..."))
-        self._act_basic_settings.triggered.connect(self._open_basic_settings_dialog)
+        self._act_basic_settings = self._menu_settings.addAction(
+            self.tr("基础设置..."))
+        self._act_basic_settings.triggered.connect(
+            self._open_basic_settings_dialog)
 
         # 控制授权动作
-        self._act_control_auth = self._menu_settings.addAction(self.tr("控制授权..."))
-        self._act_control_auth.triggered.connect(self._open_control_auth_dialog)
+        self._act_control_auth = self._menu_settings.addAction(
+            self.tr("控制授权..."))
+        self._act_control_auth.triggered.connect(
+            self._open_control_auth_dialog)
 
         self._menu_settings.addSeparator()
 

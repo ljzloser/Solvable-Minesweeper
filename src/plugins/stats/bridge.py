@@ -3,6 +3,9 @@ QML ↔ Python 数据桥
 
 将 HistoryService 的查询结果暴露给 QML，
 通过 QQuickWidget.rootContext().setContextProperty() 注入。
+
+所有查询方法接受统一的筛选参数：
+  level (-1=全部), mode (-1=全部), startUs (0=不限), endUs (0=不限)
 """
 
 from __future__ import annotations
@@ -10,7 +13,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QThread
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 
 from shared_types.enums import GameBoardState, GameLevel, GameMode
 from plugins.services.history import HistoryService
@@ -18,12 +21,15 @@ from plugins.services.history import HistoryService
 from .queries import (
     SQL_SUMMARY, SQL_SUMMARY_PARAMS,
     SQL_SUMMARY_BY_LEVEL, SQL_SUMMARY_BY_LEVEL_PARAMS,
-    SQL_SUMMARY_FOR_LEVEL, SQL_SUMMARY_FOR_LEVEL_PARAMS,
-    SQL_TREND, SQL_TREND_BY_LEVEL,
-    SQL_TIME_DISTRIBUTION, SQL_TIME_DISTRIBUTION_BY_LEVEL,
+    SQL_TREND,
+    SQL_TIME_DISTRIBUTION,
     SQL_LEVEL_DISTRIBUTION,
     SQL_WINRATE_MONTHLY,
+    SQL_PROGRESS_ASC, SQL_PROGRESS_DESC,
+    SQL_TOPN_AVG,
+    PROGRESS_METRICS,
     LEVEL_NAMES, MODE_NAMES,
+    build_where,
 )
 
 
@@ -35,18 +41,19 @@ class StatsBridge(QObject):
     所有方法返回 JSON 字符串，QML 端用 JSON.parse() 解析。
     """
 
-    dataChanged = pyqtSignal()  # 数据变化时通知 QML 刷新
+    dataChanged = pyqtSignal()
+    topNChanged = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._history: HistoryService | None = None
+        self._top_n: int = 10  # 前N名平均，0=全部平均
 
     def set_history_service(self, service: HistoryService) -> None:
         self._history = service
         self.dataChanged.emit()
 
     def _query(self, sql: str, params: tuple = ()) -> str:
-        """执行 raw_query 并返回 JSON 字符串"""
         if self._history is None:
             return "[]"
         try:
@@ -56,7 +63,6 @@ class StatsBridge(QObject):
             return json.dumps({"error": str(e)})
 
     def _query_one(self, sql: str, params: tuple = ()) -> str:
-        """执行 raw_query_one 并返回 JSON 字符串"""
         if self._history is None:
             return "null"
         try:
@@ -65,66 +71,71 @@ class StatsBridge(QObject):
         except Exception as e:
             return json.dumps({"error": str(e)})
 
+    @staticmethod
+    def _filter(level: int, mode: int, startMs: float, endMs: float) -> tuple[str, tuple]:
+        """将 QML 传入的筛选参数转为 WHERE 子句（QML 传毫秒float，数据库存微秒int）"""
+        return build_where(
+            level=None if level < 0 else level,
+            mode=None if mode < 0 else mode,
+            start_us=None if startMs <= 0 else int(startMs * 1000),
+            end_us=None if endMs <= 0 else int(endMs * 1000),
+        )
+
     # ── QML 可调用的槽方法 ────────────────────────────────
 
-    @pyqtSlot(result=str)
-    def getSummary(self) -> str:
-        """获取总体汇总统计"""
-        return self._query_one(SQL_SUMMARY, SQL_SUMMARY_PARAMS)
+    @pyqtSlot(int, int, float, float, result=str)
+    def getSummary(self, level: int = -1, mode: int = -1,
+                   startMs: float = 0, endMs: float = 0) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        sql = SQL_SUMMARY.format(where=where)
+        return self._query_one(sql, SQL_SUMMARY_PARAMS + params)
 
-    @pyqtSlot(int, result=str)
-    def getSummaryByLevel(self, level: int) -> str:
-        """获取指定难度的汇总统计"""
-        return self._query_one(SQL_SUMMARY_FOR_LEVEL, SQL_SUMMARY_FOR_LEVEL_PARAMS + (level,))
+    @pyqtSlot(int, int, float, float, result=str)
+    def getLevelSummary(self, level: int = -1, mode: int = -1,
+                        startMs: float = 0, endMs: float = 0) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        sql = SQL_SUMMARY_BY_LEVEL.format(where=where)
+        return self._query(sql, SQL_SUMMARY_BY_LEVEL_PARAMS + params)
 
-    @pyqtSlot(result=str)
-    def getLevelSummary(self) -> str:
-        """获取按难度分组的汇总"""
-        return self._query(SQL_SUMMARY_BY_LEVEL, SQL_SUMMARY_BY_LEVEL_PARAMS)
+    @pyqtSlot(int, int, float, float, int, result=str)
+    def getTrend(self, level: int = -1, mode: int = -1,
+                 startMs: float = 0, endMs: float = 0, limit: int = 200) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        sql = SQL_TREND.format(where=where)
+        return self._query(sql, params + (limit,))
 
-    @pyqtSlot(int, result=str)
-    def getTrend(self, limit: int = 200) -> str:
-        """获取最近 N 局趋势数据"""
-        return self._query(SQL_TREND, (limit,))
+    @pyqtSlot(int, int, float, float, result=str)
+    def getTimeDistribution(self, level: int = -1, mode: int = -1,
+                            startMs: float = 0, endMs: float = 0) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        extra = (" AND " + where.replace("WHERE ", "")) if where else ""
+        sql = SQL_TIME_DISTRIBUTION.format(where_extra=extra)
+        return self._query(sql, (GameBoardState.Win.value,) + params)
 
-    @pyqtSlot(int, int, result=str)
-    def getTrendByLevel(self, level: int, limit: int = 200) -> str:
-        """获取指定难度最近 N 局趋势"""
-        return self._query(SQL_TREND_BY_LEVEL, (level, limit))
+    @pyqtSlot(int, int, float, float, result=str)
+    def getLevelDistribution(self, level: int = -1, mode: int = -1,
+                             startMs: float = 0, endMs: float = 0) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        sql = SQL_LEVEL_DISTRIBUTION.format(where=where)
+        return self._query(sql, params)
 
-    @pyqtSlot(result=str)
-    def getTimeDistribution(self) -> str:
-        """获取完成时间分布"""
-        return self._query(SQL_TIME_DISTRIBUTION, (GameBoardState.Win.value,))
-
-    @pyqtSlot(int, result=str)
-    def getTimeDistributionByLevel(self, level: int) -> str:
-        """获取指定难度完成时间分布"""
-        return self._query(SQL_TIME_DISTRIBUTION_BY_LEVEL, (GameBoardState.Win.value, level))
-
-    @pyqtSlot(result=str)
-    def getLevelDistribution(self) -> str:
-        """获取难度分布（饼图）"""
-        return self._query(SQL_LEVEL_DISTRIBUTION)
-
-    @pyqtSlot(result=str)
-    def getWinrateMonthly(self) -> str:
-        """获取月度胜率趋势"""
-        return self._query(SQL_WINRATE_MONTHLY, (GameBoardState.Win.value,))
+    @pyqtSlot(int, int, float, float, result=str)
+    def getWinrateMonthly(self, level: int = -1, mode: int = -1,
+                          startMs: float = 0, endMs: float = 0) -> str:
+        where, params = self._filter(level, mode, startMs, endMs)
+        sql = SQL_WINRATE_MONTHLY.format(where=where)
+        return self._query(sql, (GameBoardState.Win.value,) + params)
 
     @pyqtSlot(result=str)
     def getLevelNames(self) -> str:
-        """获取难度名称映射"""
         return json.dumps(LEVEL_NAMES, ensure_ascii=False)
 
     @pyqtSlot(result=str)
     def getModeNames(self) -> str:
-        """获取模式名称映射"""
         return json.dumps(MODE_NAMES, ensure_ascii=False)
 
     @pyqtSlot(result=str)
     def getEnumValues(self) -> str:
-        """获取 QML 需要的枚举值，避免硬编码魔数"""
         return json.dumps({
             "gameState": {
                 "win": GameBoardState.Win.value,
@@ -138,9 +149,62 @@ class StatsBridge(QObject):
                 "expert": GameLevel.EXPERT.value,
                 "custom": GameLevel.CUSTOM.value,
             },
+            "mode": {m.value: m.display_name for m in GameMode},
         }, ensure_ascii=False)
+
+    @pyqtSlot(str, int, int, float, float, result=str)
+    def getProgress(self, metric: str, level: int = -1, mode: int = -1,
+                    startMs: float = 0, endMs: float = 0) -> str:
+        """获取进步历程数据（仅保留创纪录的局）。"""
+        if metric not in PROGRESS_METRICS:
+            return json.dumps({"error": f"Unknown metric: {metric}"})
+        metric_expr, direction, display_name = PROGRESS_METRICS[metric]
+        where, params = self._filter(level, mode, startMs, endMs)
+        # where_and: "WHERE ... AND " 或 "WHERE "（无额外条件时）
+        where_and = where + " AND " if where else "WHERE "
+        sql_template = SQL_PROGRESS_ASC if direction == "asc" else SQL_PROGRESS_DESC
+        sql = sql_template.format(metric_expr=metric_expr, where_and=where_and)
+        # 额外参数：game_state = Win
+        all_params = params + (GameBoardState.Win.value,)
+        return self._query(sql, all_params)
+
+    @pyqtSlot(result=str)
+    def getProgressMetrics(self) -> str:
+        """返回可用指标列表及显示名。"""
+        return json.dumps(
+            {k: v[2] for k, v in PROGRESS_METRICS.items()},
+            ensure_ascii=False,
+        )
+
+    @pyqtSlot(int)
+    def setTopN(self, n: int) -> None:
+        """设置前N名平均的N值，0=全部平均。"""
+        n = max(0, n)
+        if self._top_n != n:
+            self._top_n = n
+            self.topNChanged.emit()
+            self.dataChanged.emit()
+
+    @pyqtSlot(result=int)
+    def getTopN(self) -> int:
+        """获取当前前N名平均的N值。"""
+        return self._top_n
+
+    @pyqtSlot(str, int, int, float, float, result=str)
+    def getTopNAvg(self, metric: str, level: int = -1, mode: int = -1,
+                   startMs: float = 0, endMs: float = 0) -> str:
+        """获取指定指标的前N名平均值。top_n=0时返回null。"""
+        if self._top_n == 0 or metric not in PROGRESS_METRICS:
+            return "null"
+        metric_expr, direction, _ = PROGRESS_METRICS[metric]
+        order = "ASC" if direction == "asc" else "DESC"
+        where, params = self._filter(level, mode, startMs, endMs)
+        where_and = where + " AND " if where else "WHERE "
+        sql = SQL_TOPN_AVG.format(
+            metric_expr=metric_expr, order=order, where_and=where_and)
+        all_params = params + (GameBoardState.Win.value, self._top_n)
+        return self._query_one(sql, all_params)
 
     @pyqtSlot()
     def refresh(self) -> None:
-        """通知 QML 刷新数据"""
         self.dataChanged.emit()

@@ -8,3 +8,5 @@
 """
 
 from .plugin import StatsPlugin
+
+__all__ = ["StatsPlugin"]

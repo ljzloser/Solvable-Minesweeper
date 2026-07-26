@@ -5,13 +5,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
-from PyQt5.QtCore import QCoreApplication, QUrl, QLibraryInfo
+from PyQt5.QtCore import QCoreApplication, QUrl, QLibraryInfo, QTimer
 from PyQt5.QtGui import QColor
 from PyQt5.QtQuickWidgets import QQuickWidget
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode
+from plugin_sdk import BasePlugin, PluginInfo, make_plugin_icon, WindowMode, IntConfig
 from plugin_sdk.config_types import OtherInfoBase
 from plugins.services.history import HistoryService
 from shared_types.events import GameFinishedEvent, LanguageChangeEvent
@@ -22,8 +23,15 @@ _translate = QCoreApplication.translate
 
 
 class StatsConfig(OtherInfoBase):
-    """统计插件配置（暂无自定义配置项）"""
-    pass
+    """统计插件配置"""
+    top_n = IntConfig(
+        default=10,
+        label=_translate("Form", "前N名平均（0=全部平均）"),
+        min_value=0,
+        max_value=999,
+        step=1,
+        description=_translate("Form", "设置0则显示全部平均，设置N则显示前N名的平均值"),
+    )
 
 
 class StatsPlugin(BasePlugin[StatsConfig]):
@@ -62,6 +70,7 @@ class StatsPlugin(BasePlugin[StatsConfig]):
 
         # 创建容器 QWidget
         container = QWidget()
+        container.setMinimumSize(600, 400)
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -100,12 +109,26 @@ class StatsPlugin(BasePlugin[StatsConfig]):
 
         # 必须在 GUI 线程设置 history service，因为 dataChanged 信号会触发 QML 刷新
         self.run_on_gui(lambda: self._bridge.set_history_service(history))
+        # 同步配置到 bridge
+        self._sync_config()
         self.logger.info("统计插件已初始化，HistoryService 已连接")
 
-    def _on_game_finished(self, event: GameFinishedEvent) -> None:
-        """游戏结束时刷新统计数据"""
+    def _sync_config(self) -> None:
+        """将插件配置同步到 bridge。"""
         if self._bridge:
+            top_n = self.other_info.top_n
+            self.run_on_gui(lambda: self._bridge.setTopN(top_n))
+
+    def _on_config_changed(self, name: str, value: Any) -> None:
+        """配置变化时同步到 bridge 并刷新。"""
+        if name == "top_n" and self._bridge:
+            self.run_on_gui(lambda: self._bridge.setTopN(value))
             self.run_on_gui(self._bridge.refresh)
+
+    def _on_game_finished(self, event: GameFinishedEvent) -> None:
+        """游戏结束后延迟刷新统计数据，等待录像保存完成"""
+        if self._bridge:
+            QTimer.singleShot(2000, lambda: self._bridge.refresh())
 
     def _on_language_change(self, event: LanguageChangeEvent) -> None:
         """语言变化时重新加载 QML"""

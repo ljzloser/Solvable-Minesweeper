@@ -2,77 +2,83 @@ import QtQuick 2.15
 import QtCharts 2.3
 
 /**
- * 时间分布柱状图
- *
- * 显示完成时间的频率分布
+ * 时间分布柱状图 - 浅色主题
  */
 
 ChartView {
     id: chartView
     title: "时间分布"
-    titleColor: "#cdd6f4"
+    titleColor: "#333333"
     titleFont.pixelSize: 14
-    backgroundColor: "#313244"
+    backgroundColor: "#ffffff"
     legend.visible: false
     antialiasing: true
     margins.top: 30
     margins.bottom: 20
     margins.left: 10
-    margins.right: 10
+    margins.right: 30
 
     property var distData: []
+    property var _axisX: null
+    property var _axisY: null
 
     function refresh() {
-        var json
-        if (root.currentLevel === -1) {
-            json = JSON.parse(bridge.getTimeDistribution())
-        } else {
-            json = JSON.parse(bridge.getTimeDistributionByLevel(root.currentLevel))
+        try {
+            var json = JSON.parse(bridge.getTimeDistribution(root.currentLevel, root.currentMode, root.startUs, root.endUs));
+            distData = json;
+            updateChart();
+        } catch (e) {
+            console.warn("DistChart refresh error:", e);
         }
-
-        distData = json
-        updateChart()
     }
 
     function updateChart() {
-        chartView.removeAllSeries()
-
-        if (distData.length === 0) {
-            return
+        chartView.removeAllSeries();
+        if (_axisX) {
+            _axisX.destroy();
+            _axisX = null;
+        }
+        if (_axisY) {
+            _axisY.destroy();
+            _axisY = null;
         }
 
-        var barSeries = chartView.createSeries(ChartView.SeriesTypeBarSeries, "")
-
-        var values = []
-        var categories = []
-        var maxCount = 0
+        if (distData.length === 0)
+            return;
+        var barSeries = chartView.createSeries(ChartView.SeriesTypeBarSeries, "");
+        var categories = [];
+        var maxCount = 0;
+        var values = [];
 
         for (var i = 0; i < distData.length; i++) {
-            var bucket = parseFloat(distData[i].time_bucket) || 0
-            var count = parseInt(distData[i].count) || 0
-            values.push(count)
-            categories.push(Math.round(bucket) + "s")
-            if (count > maxCount) maxCount = count
+            var bucket = parseFloat(distData[i].time_bucket) || 0;
+            var count = parseInt(distData[i].count) || 0;
+            values.push(count);
+            categories.push(Math.round(bucket) + "s");
+            if (count > maxCount)
+                maxCount = count;
         }
 
-        barSeries.append("局数", values)
-        barSeries.barWidth = 0.8
+        var barSet = barSeries.append("局数", values);
+        if (barSet) {
+            barSet.color = "#42a5f5";
+            barSet.borderColor = "#1e88e5";
+        }
+        barSeries.barWidth = 0.8;
 
-        // X 轴
-        var axisXObj = Qt.createQmlObject('import QtCharts 2.3; BarCategoryAxis {}', chartView)
-        axisXObj.categories = categories
-        axisXObj.labelsColor = "#a6adc8"
-        axisXObj.labelsFont.pixelSize = 10
-        axisXObj.gridVisible = false
-        chartView.setAxisX(axisXObj, barSeries)
+        _axisX = Qt.createQmlObject('import QtCharts 2.3; BarCategoryAxis {}', chartView);
+        _axisX.categories = categories;
+        _axisX.labelsColor = "#666666";
+        _axisX.labelsFont.pixelSize = 10;
+        _axisX.gridVisible = false;
+        chartView.setAxisX(_axisX, barSeries);
 
-        // Y 轴
-        var axisYObj = Qt.createQmlObject('import QtCharts 2.3; ValueAxis {}', chartView)
-        axisYObj.min = 0
-        axisYObj.max = Math.max(maxCount * 1.1, 1)
-        axisYObj.labelsColor = "#a6adc8"
-        axisYObj.gridVisible = true
-        axisYObj.gridLineColor = "#45475a"
-        chartView.setAxisY(axisYObj, barSeries)
+        _axisY = Qt.createQmlObject('import QtCharts 2.3; ValueAxis {}', chartView);
+        _axisY.min = 0;
+        _axisY.max = Math.max(maxCount * 1.1, 1);
+        _axisY.labelsColor = "#666666";
+        _axisY.gridVisible = true;
+        _axisY.gridLineColor = "#e0e0e0";
+        chartView.setAxisY(_axisY, barSeries);
     }
 }
