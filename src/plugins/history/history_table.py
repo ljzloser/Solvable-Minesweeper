@@ -156,7 +156,7 @@ class HistoryTable(QWidget):
     def show_context_menu(self, pos):
         menu = QMenu(self)
         menu.addAction(_translate("Form", "播放"), self.play_row)
-        menu.addAction(_translate("Form", "导出"), self.export_row)
+        menu.addAction(_translate("Form", "导出录像"), self.export_row)
         menu.addAction(_translate("Form", "复制JSON"), self.export_row_json)
         menu.addAction(_translate("Form", "刷新"), self.refresh)
         menu.exec_(self.table.mapToGlobal(pos))
