@@ -21,7 +21,7 @@ pyinstaller --noconfirm --name metaminsweeper --windowed --distpath %OUT% ^
 
 echo.
 echo [2/3] plugin_manager.exe
-pyinstaller --noconfirm --name plugin_manager --windowed --icon src/media/cat.ico --runtime-hook package_tool\hook-debugpy-pyinstaller.py --add-data "src/plugins;plugins" --add-data "src/shared_types;shared_types" --hidden-import sqlite3 --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --hidden-import requests --hidden-import Crypto.Cipher.AES --hidden-import Crypto.Random --hidden-import ms_toollib --distpath %OUT% src\plugin_manager\_run.py
+pyinstaller --noconfirm --name plugin_manager --windowed --icon src/media/cat.ico --runtime-hook package_tool\hook-debugpy-pyinstaller.py --add-data "src/plugins;plugins" --add-data "src/shared_types;shared_types" --hidden-import sqlite3 --hidden-import code --hidden-import xmlrpc --hidden-import xmlrpc.server --hidden-import xmlrpc.client --hidden-import http.server --hidden-import socketserver --hidden-import email --hidden-import email.utils --hidden-import requests --hidden-import Crypto.Cipher.AES --hidden-import Crypto.Random --hidden-import ms_toollib --hidden-import PyQt5.QtQuickWidgets --hidden-import PyQt5.QtQml --hidden-import PyQt5.QtChart --distpath %OUT% src\plugin_manager\_run.py
 
 echo.
 echo [3/3] Copy resources to metaminsweeper\
@@ -39,9 +39,6 @@ xcopy /e /y /i "%SP%\setuptools" "%DEST%\_internal\setuptools" >nul 2>nul
 echo [5/5] Strip unnecessary Qt binaries
 set QT_BIN=%DEST%\_internal\PyQt5\Qt5\bin
 if exist "%QT_BIN%" (
-    del "%QT_BIN%\Qt5Quick.dll"     2>nul & echo  Removed Qt5Quick.dll
-    del "%QT_BIN%\Qt5Qml.dll"       2>nul & echo  Removed Qt5Qml.dll
-    del "%QT_BIN%\Qt5QmlModels.dll" 2>nul & echo  Removed Qt5QmlModels.dll
     del "%QT_BIN%\Qt5DBus.dll"      2>nul & echo  Removed Qt5DBus.dll
     del "%QT_BIN%\Qt5Svg.dll"       2>nul & echo  Removed Qt5Svg.dll
     del "%QT_BIN%\opengl32sw.dll"   2>nul & echo  Removed opengl32sw.dll

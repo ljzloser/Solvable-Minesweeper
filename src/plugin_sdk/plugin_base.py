@@ -189,6 +189,19 @@ class PluginInfo(Generic[ConfigT]):
     required_controls: list[type] = field(default_factory=list)
 
 
+class _GuiCallHandler(QObject):
+    """留在主线程的 GUI 调用处理器，确保 run_on_gui 真正在 GUI 线程执行"""
+
+    @pyqtSlot(object, object, object)
+    def execute(self, func, args, kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(
+                f"GUI callback error: {e}", exc_info=True)
+
+
 class BasePlugin(QObject, Generic[ConfigT]):
     """
     插件基类（QObject + moveToThread，每个插件运行在独立线程中）
@@ -240,6 +253,13 @@ class BasePlugin(QObject, Generic[ConfigT]):
         # 创建专属线程，将自身移入
         self._thread = QThread()
         self._thread.setObjectName(f"plugin-{info.name}")
+
+        # 创建 GUI 调度器（留在主线程），确保 run_on_gui 真正在 GUI 线程执行
+        # 注意：必须在 moveToThread 之前创建，否则会跟着移到插件线程
+        self._gui_handler = _GuiCallHandler()
+        self.gui_call.connect(
+            self._gui_handler.execute, Qt.ConnectionType.QueuedConnection)  # type: ignore
+
         self.moveToThread(self._thread)
 
         self._info = info
@@ -255,9 +275,7 @@ class BasePlugin(QObject, Generic[ConfigT]):
         self._event_dispatch.connect(
             self._handle_event, Qt.ConnectionType.QueuedConnection)  # type: ignore
 
-        # 连接 gui_call 信号到槽（QueuedConnection 跨线程安全）
-        self.gui_call.connect(
-            self._on_gui_call, Qt.ConnectionType.QueuedConnection)  # type: ignore
+        # gui_call 已在上方连接到 _gui_handler（主线程），不再连接到 self
 
         # 线程启动时执行初始化
         self._thread.started.connect(self._on_thread_started)
@@ -415,19 +433,6 @@ class BasePlugin(QObject, Generic[ConfigT]):
         """
         self.gui_call.emit(func, args, kwargs)
 
-    @pyqtSlot(object, object, object)
-    def _on_gui_call(
-        self,
-        func: Callable[..., None],
-        args: tuple,
-        kwargs: dict,
-    ) -> None:
-        """GUI 主线程执行的槽：接收来自工作线程的回调请求"""
-        try:
-            func(*args, **kwargs)
-        except Exception as e:
-            self.logger.error(f"GUI callback error: {e}", exc_info=True)
-
     # ═══════════════════════════════════════════════════════════════════
     # 线程入口（Qt 事件循环驱动，子类不应覆写）
     # ═══════════════════════════════════════════════════════════════════
@@ -439,6 +444,9 @@ class BasePlugin(QObject, Generic[ConfigT]):
 
         由 QThread.started 信号触发，在插件线程中执行。
         """
+        # 设置 Python 线程名，使 threading.enumerate() / sys._current_frames() 可识别
+        threading.current_thread().name = f"plugin-{self.name}"
+
         self.logger.debug(f"Plugin thread started: {self.name}")
 
         try:
@@ -565,6 +573,13 @@ class BasePlugin(QObject, Generic[ConfigT]):
             except RuntimeError:
                 pass
             self._widget = None
+
+        if self._gui_handler:
+            try:
+                self._gui_handler.deleteLater()
+            except RuntimeError:
+                pass
+            self._gui_handler = None
 
         # 保存插件配置
         self.save_config()
