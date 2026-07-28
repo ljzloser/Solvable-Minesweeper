@@ -796,6 +796,7 @@
       <addaction name="action_copy_board_file_emoji"/>
       <addaction name="separator"/>
       <addaction name="action_copy_image_png"/>
+      <addaction name="action_copy_image_svg"/>
      </widget>
      <addaction name="menu_7"/>
      <addaction name="menu_8"/>
@@ -1362,6 +1363,17 @@
    <action name="action_copy_image_png">
     <property name="text">
      <string>局面图片（png）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_image_svg">
+    <property name="text">
+     <string>局面图片（svg）</string>
     </property>
     <property name="font">
      <font>

@@ -579,6 +579,12 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.action_copy_image_png.setFont(font)
         self.action_copy_image_png.setObjectName("action_copy_image_png")
+        self.action_copy_image_svg = QtWidgets.QAction(MainWindow)
+        font = QtGui.QFont()
+        font.setFamily("微软雅黑")
+        font.setPointSize(12)
+        self.action_copy_image_svg.setFont(font)
+        self.action_copy_image_svg.setObjectName("action_copy_image_svg")
         self.menu.addAction(self.actionopen)
         self.menu.addSeparator()
         self.menu.addAction(self.actionnew_game)
@@ -624,6 +630,7 @@ class Ui_MainWindow(object):
         self.menu_copy_board.addAction(self.action_copy_board_file_emoji)
         self.menu_copy_board.addSeparator()
         self.menu_copy_board.addAction(self.action_copy_image_png)
+        self.menu_copy_board.addAction(self.action_copy_image_svg)
         self.menu_data.addAction(self.menu_7.menuAction())
         self.menu_data.addAction(self.menu_8.menuAction())
         self.menu_data.addSeparator()
@@ -673,6 +680,7 @@ class Ui_MainWindow(object):
         self.action_copy_board_file_ascii.setText(_translate("MainWindow", ".board 文件（ascii）"))
         self.action_copy_board_file_emoji.setText(_translate("MainWindow", ".board 文件（emoji）"))
         self.action_copy_image_png.setText(_translate("MainWindow", "局面图片（png）"))
+        self.action_copy_image_svg.setText(_translate("MainWindow", "局面图片（svg）"))
 from ui.mineLabel import mineLabel
 from ui.mineNumLabel import mineNumLabel
 from ui.uiComponents import StatusLabel

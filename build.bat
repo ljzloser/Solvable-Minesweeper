@@ -40,7 +40,6 @@ echo [5/5] Strip unnecessary Qt binaries
 set QT_BIN=%DEST%\_internal\PyQt5\Qt5\bin
 if exist "%QT_BIN%" (
     del "%QT_BIN%\Qt5DBus.dll"      2>nul & echo  Removed Qt5DBus.dll
-    del "%QT_BIN%\Qt5Svg.dll"       2>nul & echo  Removed Qt5Svg.dll
     del "%QT_BIN%\opengl32sw.dll"   2>nul & echo  Removed opengl32sw.dll
     del "%QT_BIN%\libcrypto-1_1*.dll" 2>nul & echo  Removed old OpenSSL
     del "%QT_BIN%\libssl-1_1*.dll"    2>nul

@@ -44,6 +44,7 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         self.action_copy_board_file_ascii.triggered.connect(lambda: self._copy_board(2, "ascii"))
         self.action_copy_board_file_emoji.triggered.connect(lambda: self._copy_board(2, "emoji"))
         self.action_copy_image_png.triggered.connect(self._copy_board_image)
+        self.action_copy_image_svg.triggered.connect(self._copy_board_svg)
 
     # ═══════════════════════════════════════════════════════════
     # 复制局面到剪贴板
@@ -79,8 +80,72 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
     def _copy_board_image(self):
         if self.game_state in ("playing", "ready"):
             return
+        import tempfile, os
+        from PyQt5.QtCore import QMimeData, QUrl
+        from PyQt5.QtWidgets import QApplication
         pixmap = self.frame_1.grab()
-        QApplication.clipboard().setPixmap(pixmap)
+        path = os.path.join(tempfile.gettempdir(), "metasweeper_board.png")
+        pixmap.save(path, "PNG")
+        mime = QMimeData()
+        mime.setImageData(pixmap.toImage())
+        mime.setUrls([QUrl.fromLocalFile(path)])
+        QApplication.clipboard().setMimeData(mime)
+
+    def _copy_board_svg(self):
+        if self.game_state in ("playing", "ready"):
+            return
+        import tempfile, os
+        from PyQt5.QtCore import QBuffer, QUrl, QRectF, QMimeData, QPoint
+        from PyQt5.QtSvg import QSvgGenerator, QSvgRenderer
+        from PyQt5.QtGui import QPainter, QPixmap
+        from PyQt5.QtWidgets import QApplication
+        label = self.label
+        pix_size = label.pixSize
+        game_board = label.ms_board.game_board
+        rows = len(game_board)
+        cols = len(game_board[0])
+        cell_paths = {
+            0: label.celldown_path, 1: label.cell1_path, 2: label.cell2_path,
+            3: label.cell3_path, 4: label.cell4_path, 5: label.cell5_path,
+            6: label.cell6_path, 7: label.cell7_path, 8: label.cell8_path,
+            10: label.cellup_path, 11: label.cellflag_path,
+            14: label.falsemine_path, 15: label.blast_path,
+            16: label.cellmine_path, 100: label.mine_path,
+        }
+        renderers = {}
+        for val, path in cell_paths.items():
+            if os.path.exists(path):
+                renderers[val] = QSvgRenderer(path)
+        board_origin = label.mapTo(self.frame_1, QPoint(0, 0))
+        buf = QBuffer()
+        buf.open(QBuffer.WriteOnly)
+        gen = QSvgGenerator()
+        gen.setOutputDevice(buf)
+        gen.setSize(self.frame_1.size())
+        gen.setViewBox(self.frame_1.rect())
+        painter = QPainter(gen)
+        self.frame_1.render(painter)
+        for i in range(rows):
+            for j in range(cols):
+                cell = game_board[i][j]
+                r = renderers.get(cell)
+                if r:
+                    x = board_origin.x() + j * pix_size
+                    y = board_origin.y() + i * pix_size
+                    r.render(painter, QRectF(x, y, pix_size, pix_size))
+        painter.end()
+        svg_bytes = bytes(buf.data())
+        buf.close()
+        svg_text = svg_bytes.decode("utf-8")
+        svg_path = os.path.join(tempfile.gettempdir(), "metasweeper_board.svg")
+        with open(svg_path, "w", encoding="utf-8") as f:
+            f.write(svg_text)
+        pixmap = self.frame_1.grab()
+        mime = QMimeData()
+        mime.setText(svg_text)
+        mime.setImageData(pixmap.toImage())
+        mime.setUrls([QUrl.fromLocalFile(svg_path)])
+        QApplication.clipboard().setMimeData(mime)
 
     # ═══════════════════════════════════════════════════════════
     # 导入录像（从其他版本导入历史记录到 stats.dat）
