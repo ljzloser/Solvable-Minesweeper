@@ -38,6 +38,50 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         self.action_import_3_2_2.triggered.connect(self._import_replays)
         self.action_import_dat.triggered.connect(self._import_stat_dat)
 
+        self.action_copy_array.triggered.connect(lambda: self._copy_board(0))
+        self.action_copy_board_text_ascii.triggered.connect(lambda: self._copy_board(1, "ascii"))
+        self.action_copy_board_text_emoji.triggered.connect(lambda: self._copy_board(1, "emoji"))
+        self.action_copy_board_file_ascii.triggered.connect(lambda: self._copy_board(2, "ascii"))
+        self.action_copy_board_file_emoji.triggered.connect(lambda: self._copy_board(2, "emoji"))
+        self.action_copy_image_png.triggered.connect(self._copy_board_image)
+
+    # ═══════════════════════════════════════════════════════════
+    # 复制局面到剪贴板
+    # ═══════════════════════════════════════════════════════════
+
+    def _get_board_data(self):
+        if self.game_state in ("playing", "ready"):
+            return None
+        try:
+            board = self.label.ms_board.board
+            if isinstance(board, ms.SafeBoard):
+                board = board.into_vec_vec()
+            game_board = self.label.ms_board.game_board
+        except AttributeError:
+            return None
+        if not board:
+            return None
+        return board, game_board
+
+    def _copy_board(self, copy_format: int, render: str = "ascii"):
+        from utils.board_format import copy_board_to_clipboard
+        data = self._get_board_data()
+        if data is None:
+            return
+        board, game_board = data
+        copy_board_to_clipboard(
+            board, game_board,
+            self.row, self.column, self.minenum,
+            self.gameMode, copy_format,
+            author=self.player_identifier, render=render,
+        )
+
+    def _copy_board_image(self):
+        if self.game_state in ("playing", "ready"):
+            return
+        pixmap = self.frame_1.grab()
+        QApplication.clipboard().setPixmap(pixmap)
+
     # ═══════════════════════════════════════════════════════════
     # 导入录像（从其他版本导入历史记录到 stats.dat）
     # ═══════════════════════════════════════════════════════════

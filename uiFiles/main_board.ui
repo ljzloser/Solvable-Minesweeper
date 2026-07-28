@@ -676,22 +676,6 @@
     <property name="title">
      <string>游戏</string>
     </property>
-    <widget class="QMenu" name="menu_5">
-     <property name="title">
-      <string>导出</string>
-     </property>
-     <addaction name="action_stats_csv"/>
-     <addaction name="action_textstats_csv"/>
-     <addaction name="action_meta_dat"/>
-     <addaction name="action_meta_all_dat"/>
-    </widget>
-    <widget class="QMenu" name="menu_6">
-     <property name="title">
-      <string>导入</string>
-     </property>
-     <addaction name="action_import_3_2_2"/>
-     <addaction name="action_import_dat"/>
-    </widget>
     <addaction name="actionopen"/>
     <addaction name="separator"/>
     <addaction name="actionnew_game"/>
@@ -701,13 +685,10 @@
     <addaction name="actiongao_ji"/>
     <addaction name="actionzi_ding_yi"/>
     <addaction name="separator"/>
-    <addaction name="action_save"/>
-    <addaction name="action_replay"/>
-    <addaction name="separator"/>
-    <addaction name="menu_6"/>
-    <addaction name="menu_5"/>
-    <addaction name="separator"/>
-    <addaction name="actiontui_chu"/>
+     <addaction name="action_save"/>
+     <addaction name="action_replay"/>
+     <addaction name="separator"/>
+     <addaction name="actiontui_chu"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="font">
@@ -777,8 +758,52 @@
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
-   <addaction name="menu_4"/>
-   <addaction name="menu_3"/>
+    <addaction name="menu_4"/>
+    <widget class="QMenu" name="menu_data">
+     <property name="font">
+      <font>
+       <family>微软雅黑</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="title">
+      <string>数据</string>
+     </property>
+     <widget class="QMenu" name="menu_7">
+      <property name="title">
+       <string>导入</string>
+      </property>
+      <addaction name="action_import_3_2_2"/>
+      <addaction name="action_import_dat"/>
+     </widget>
+     <widget class="QMenu" name="menu_8">
+      <property name="title">
+       <string>导出</string>
+      </property>
+      <addaction name="action_stats_csv"/>
+      <addaction name="action_textstats_csv"/>
+      <addaction name="action_meta_dat"/>
+      <addaction name="action_meta_all_dat"/>
+     </widget>
+     <widget class="QMenu" name="menu_copy_board">
+      <property name="title">
+       <string>复制局面</string>
+      </property>
+      <addaction name="action_copy_array"/>
+      <addaction name="action_copy_board_text_ascii"/>
+      <addaction name="action_copy_board_text_emoji"/>
+      <addaction name="action_copy_board_file_ascii"/>
+      <addaction name="action_copy_board_file_emoji"/>
+      <addaction name="separator"/>
+      <addaction name="action_copy_image_png"/>
+     </widget>
+     <addaction name="menu_7"/>
+     <addaction name="menu_8"/>
+     <addaction name="separator"/>
+     <addaction name="menu_copy_board"/>
+    </widget>
+    <addaction name="menu_data"/>
+    <addaction name="menu_3"/>
   </widget>
   <action name="actionnew_game">
    <property name="text">
@@ -1278,8 +1303,74 @@
      <pointsize>12</pointsize>
     </font>
    </property>
-  </action>
- </widget>
+   </action>
+   <action name="action_copy_array">
+    <property name="text">
+     <string>局面数组</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_board_text_ascii">
+    <property name="text">
+     <string>.board 文本（ascii）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_board_text_emoji">
+    <property name="text">
+     <string>.board 文本（emoji）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_board_file_ascii">
+    <property name="text">
+     <string>.board 文件（ascii）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_board_file_emoji">
+    <property name="text">
+     <string>.board 文件（emoji）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+   <action name="action_copy_image_png">
+    <property name="text">
+     <string>局面图片（png）</string>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+   </action>
+  </widget>
  <customwidgets>
   <customwidget>
    <class>StatusLabel</class>

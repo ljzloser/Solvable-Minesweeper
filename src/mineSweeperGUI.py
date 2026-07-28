@@ -1513,13 +1513,11 @@ class MineSweeperGUI(MainWindowGUIImportExport):
             return
         if not board:
             return
-        copy_format = self.game_setting.value("DEFAULT/copy_format", 1, int)
-        copy_render = self.game_setting.value("DEFAULT/copy_render", "ascii", str)
         copy_board_to_clipboard(
             board, game_board,
             self.row, self.column, self.minenum,
-            self.gameMode, copy_format,
-            author=self.player_identifier, render=copy_render,
+            self.gameMode, 1,
+            author=self.player_identifier, render="ascii",
         )
 
     def paste_board(self):
