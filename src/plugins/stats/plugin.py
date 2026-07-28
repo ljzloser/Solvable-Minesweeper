@@ -128,12 +128,13 @@ class StatsPlugin(BasePlugin[StatsConfig]):
     def _on_game_finished(self, event: GameFinishedEvent) -> None:
         """游戏结束后延迟刷新统计数据，等待录像保存完成"""
         if self._bridge:
-            QTimer.singleShot(2000, lambda: self._bridge.refresh())
+            self.run_on_gui(lambda: QTimer.singleShot(2000, self._bridge.refresh))
 
     def _on_language_change(self, event: LanguageChangeEvent) -> None:
         """语言变化时重新加载 QML"""
         if self._quick_widget:
-            # 重新加载 QML 以应用翻译
-            source = self._quick_widget.source()
-            self._quick_widget.setSource(QUrl())
-            self._quick_widget.setSource(source)
+            def _reload():
+                source = self._quick_widget.source()
+                self._quick_widget.setSource(QUrl())
+                self._quick_widget.setSource(source)
+            self.run_on_gui(_reload)

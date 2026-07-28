@@ -11,6 +11,7 @@ requests>=2.33.1
 textdistance
 pycryptodome>=3.20.0
 PyMCUlib>=1.0.3
+pyqtchart
 
 # 开发/测试/打包依赖
 pytest>=7.4.0
