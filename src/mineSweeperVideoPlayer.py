@@ -286,6 +286,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.last_mouse_state_video_playing_step = self.label.ms_board.mouse_state
         
         self.score_board_manager.show(self.label.ms_board, index_type=3)
+        self.mineUnFlagedNum = self.minenum - self.label.ms_board.flag
+        self.showMineNum(self.mineUnFlagedNum)
         self.video_time += self.video_time_step
         self.showTime(int(self.video_time))
         self.ui_video_control.horizontalSlider_time.blockSignals(True)
@@ -324,6 +326,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             self.label.current_trace_event_id = self.label.ms_board.current_event_id
         self.label.update()
         self.score_board_manager.show(self.label.ms_board, index_type=3)
+        self.mineUnFlagedNum = self.minenum - self.label.ms_board.flag
+        self.showMineNum(self.mineUnFlagedNum)
 
     def video_set_a_time(self, t):
         # 把录像定位到某一段时间，默认前后一秒，自动播放。是点录像事件的回调
