@@ -790,8 +790,6 @@
        <string>复制局面</string>
       </property>
       <addaction name="action_copy_array"/>
-      <addaction name="action_copy_board_text_ascii"/>
-      <addaction name="action_copy_board_text_emoji"/>
       <addaction name="action_copy_board_file_ascii"/>
       <addaction name="action_copy_board_file_emoji"/>
       <addaction name="separator"/>
@@ -1308,28 +1306,6 @@
    <action name="action_copy_array">
     <property name="text">
      <string>局面数组</string>
-    </property>
-    <property name="font">
-     <font>
-      <family>微软雅黑</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-   </action>
-   <action name="action_copy_board_text_ascii">
-    <property name="text">
-     <string>.board 文本（ascii）</string>
-    </property>
-    <property name="font">
-     <font>
-      <family>微软雅黑</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-   </action>
-   <action name="action_copy_board_text_emoji">
-    <property name="text">
-     <string>.board 文本（emoji）</string>
     </property>
     <property name="font">
      <font>

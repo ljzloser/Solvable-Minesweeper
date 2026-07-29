@@ -39,8 +39,6 @@ class MainWindowGUIImportExport(MineSweeperVideoPlayer):
         self.action_import_dat.triggered.connect(self._import_stat_dat)
 
         self.action_copy_array.triggered.connect(lambda: self._copy_board(0))
-        self.action_copy_board_text_ascii.triggered.connect(lambda: self._copy_board(1, "ascii"))
-        self.action_copy_board_text_emoji.triggered.connect(lambda: self._copy_board(1, "emoji"))
         self.action_copy_board_file_ascii.triggered.connect(lambda: self._copy_board(2, "ascii"))
         self.action_copy_board_file_emoji.triggered.connect(lambda: self._copy_board(2, "emoji"))
         self.action_copy_image_png.triggered.connect(self._copy_board_image)
