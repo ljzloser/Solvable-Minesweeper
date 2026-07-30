@@ -82,9 +82,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             # 包含对每个evf的parse
             video_set.parse()
             video_set.analyse()
-            video_set.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                            "mouse_trace", "vision_transfer", "pluck",
-                                            "super_fl_local"])
+            video_set.analyse_for_features(["pluck"])
             self.ui_video_control.add_new_video_set_tab(video_set)
             self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
             self.ui_video_control.videoTabDoubleClicked.connect(
@@ -94,9 +92,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         else:
             video.parse()
             video.analyse()
-            video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                        "mouse_trace", "vision_transfer", "pluck",
-                                        "super_fl_local"])
+            video.analyse_for_features(["pluck"])
             self.ui_video_control.add_new_video_tab(video)
             # self.tab_data.append(video)
         tab_count = self.ui_video_control.tabWidget.count()

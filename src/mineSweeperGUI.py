@@ -1111,9 +1111,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         video = ms.EvfVideo("virtual_preview.evf", raw_data)
         video.parse()
         video.analyse()
-        video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                    "mouse_trace", "vision_transfer", "pluck",
-                                    "super_fl_local"])
+        video.analyse_for_features(["pluck"])
         self.play_video(video, True)
 
     def action_CEvent(self):

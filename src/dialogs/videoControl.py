@@ -1,5 +1,4 @@
 import os
-import re
 from pathlib import Path
 
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
@@ -8,60 +7,11 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
     QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox
 
-import ms_toollib as ms
+from replay_analysis import analyse_replay_events
 from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from utils.app_logger import logger
 from utils.path_utils import resource_path
-
-_translate = QtCore.QCoreApplication.translate
-
-# ── 评论翻译 ──────────────────────────────────────────────
-# severity + key → 中文原文（默认），国际化引擎翻译为其他语言
-_COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
-    ("error", "high_risk_guess"):        "危险的猜雷（正确概率 {0}）",
-    ("feature", "hard_judgment"):        "高难度的判雷（{0}）",
-    ("warning", "needless_guess"):       "可以判雷时选择猜雷",
-    ("error", "mouse_trace_too_curved"): "鼠标轨迹过于弯曲（{0}%）",
-    ("warning", "mouse_trace_curved"):   "鼠标轨迹弯曲（{0}%）",
-    ("suspect", "mouse_trace_straight"): "笔直的鼠标轨迹",
-    ("warning", "vision_transfer"):      "可以判雷时视野的转移",
-    ("feature", "fl_local"):             "教科书式的FL局部（{0} 步）",
-}
-# pylupdate5 提取目标字符串（必须使用字符串字面量，不能用变量）
-# fmt: off
-_COMMENT_TEMPLATES_EXTRACT = [
-    _translate("VideoControl", "危险的猜雷（正确概率 {0}）"),
-    _translate("VideoControl", "高难度的判雷（{0}）"),
-    _translate("VideoControl", "可以判雷时选择猜雷"),
-    _translate("VideoControl", "鼠标轨迹过于弯曲（{0}%）"),
-    _translate("VideoControl", "鼠标轨迹弯曲（{0}%）"),
-    _translate("VideoControl", "笔直的鼠标轨迹"),
-    _translate("VideoControl", "可以判雷时视野的转移"),
-    _translate("VideoControl", "教科书式的FL局部（{0} 步）"),
-]
-# fmt: on
-
-def _translate_comments(comments: str) -> list[tuple[str, str]]:
-    if not comments:
-        return []
-    result: list[tuple[str, str]] = []
-    for seg in comments.split(";"):
-        seg = seg.strip()
-        if not seg:
-            continue
-        m = re.match(r"^(\w+):(\w+):(.+)$", seg)
-        if m:
-            severity, key, params = m.group(1), m.group(2), m.group(3).strip()
-            template = _COMMENT_TEMPLATES.get((severity, key))
-            if template:
-                try:
-                    params = f"{float(params):.3f}"
-                except ValueError:
-                    pass
-                text = _translate("VideoControl", template).format(params)
-                result.append((severity, text))
-    return result
 
 
 class CommentCheckBox(QWidget):
@@ -491,13 +441,11 @@ class ui_Form(QWidget, Ui_Form):
         
     def add_new_video_tab(self, video):
         _translate = QtCore.QCoreApplication.translate
-        # 组织录像评论
         comments = []
-        for event in video.events:
-            t = event.time
-            parsed = _translate_comments(event.comments)
+        for row in analyse_replay_events(video):
+            parsed = [(annotation.severity, annotation.text) for annotation in row.annotations]
             if parsed:
-                comments.append((t, parsed))
+                comments.append((row.time, parsed))
                 
         
         self.tab_id += 1
@@ -528,6 +476,7 @@ class ui_Form(QWidget, Ui_Form):
         
         
     def add_new_video_set_tab(self, video_set):
+        _translate = QtCore.QCoreApplication.translate
         self.tab_id += 1
         tab_name = f"tab_{self.tab_id}"
         tab = VideoSetTabWidget(self, video_set=video_set, tab_name=tab_name, file_name=video_set.file_name)
