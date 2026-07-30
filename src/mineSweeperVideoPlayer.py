@@ -32,7 +32,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
         self.ui_video_control.videoTabDoubleClicked.connect(
             lambda a, b: self.play_video_tab_name_id(a, b, True))
-        self.ui_video_control.videoCellHovered.connect(self.highlight_video_cell)
+        self.ui_video_control.videoCellsHovered.connect(self.highlight_video_cells)
         self.ui_video_control.videoCellHoverCleared.connect(self.clear_video_cell_highlight)
         self.show_path_trace = False
         self.mouse_trace_points = []
@@ -376,8 +376,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.label.show_opening = checked
         self.label.update()
 
-    def highlight_video_cell(self, row, column):
-        self.label.highlight_cell(row, column)
+    def highlight_video_cells(self, cells):
+        self.label.highlight_cells(cells)
 
     def clear_video_cell_highlight(self):
         self.label.clear_highlight_cell()

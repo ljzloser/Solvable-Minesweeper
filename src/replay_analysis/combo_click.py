@@ -45,6 +45,7 @@ def combo_click_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
             f"平均{_format_interval_ms(average_interval)}"
         ),
         params=(len(clicks), max_interval, min_interval, average_interval),
+        highlight_cells=tuple((row, column) for _, _, _, row, column in clicks),
     )
 
 

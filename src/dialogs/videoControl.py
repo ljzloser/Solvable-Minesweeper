@@ -549,7 +549,7 @@ class ui_Form(QWidget, Ui_Form):
     videoSetTimePeriod = QtCore.pyqtSignal(int)
     videoTabClicked = QtCore.pyqtSignal(str, int)
     videoTabDoubleClicked = QtCore.pyqtSignal(str, int)
-    videoCellHovered = QtCore.pyqtSignal(int, int)
+    videoCellsHovered = QtCore.pyqtSignal(object)
     videoCellHoverCleared = QtCore.pyqtSignal()
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
@@ -619,10 +619,13 @@ class ui_Form(QWidget, Ui_Form):
                 c2.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
                 c3.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
                 c4.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
-                if coordinate is not None:
-                    row, column = coordinate
-                    c2.hovered.connect(lambda r=row, c=column: self.videoCellHovered.emit(r, c))
-                    c2.unhovered.connect(self.videoCellHoverCleared.emit)
+                highlight_cells = tuple(getattr(annotation, "highlight_cells", ()) or ())
+                if highlight_cells:
+                    for cell in (c1, c2, c3, c4):
+                        cell.hovered.connect(
+                            lambda cells=highlight_cells: self.videoCellsHovered.emit(cells)
+                        )
+                        cell.unhovered.connect(self.videoCellHoverCleared.emit)
         
         self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
         ...

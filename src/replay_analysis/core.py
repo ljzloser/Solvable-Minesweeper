@@ -58,6 +58,7 @@ class ReplayEventAnnotation:
     params: Tuple[Any, ...] = ()
     event_index: Optional[int] = None
     time: Optional[float] = None
+    highlight_cells: Tuple[Tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)

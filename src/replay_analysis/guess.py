@@ -65,7 +65,14 @@ def guess_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
             context.mouse.row,
             context.mouse.column,
         ),
+        highlight_cells=_highlight_cells(context.mouse.row, context.mouse.column),
     )
+
+
+def _highlight_cells(row: Optional[int], column: Optional[int]) -> Tuple[Tuple[int, int], ...]:
+    if row is None or column is None:
+        return ()
+    return ((row, column),)
 
 
 def _pluck_change_from_previous_mouse_event(

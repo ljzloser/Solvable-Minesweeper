@@ -45,13 +45,17 @@ def one_point_five_click_event_rule(context: ReplayEventContext) -> ReplayAnalys
             f"标双间隔{_format_interval_ms(flag_double_interval)}"
         ),
         params=(right_left_interval, flag_double_interval),
+        highlight_cells=_unique_cells(
+            (right_press[4], right_press[5]),
+            (context.mouse.row, context.mouse.column),
+        ),
     )
 
 
 def _previous_mouse_action_record(
     context: ReplayEventContext,
     before_index: int,
-) -> Optional[Tuple[int, Any, str, float]]:
+) -> Optional[Tuple[int, Any, str, float, Optional[int], Optional[int]]]:
     for index in range(before_index - 1, -1, -1):
         record = context.records[index]
         event = getattr(record, "event", None)
@@ -62,8 +66,22 @@ def _previous_mouse_action_record(
             continue
         if mouse.mouse in {"mv", "mc", "mr"}:
             continue
-        return index, record, mouse.mouse, _record_time(record)
+        return index, record, mouse.mouse, _record_time(record), mouse.row, mouse.column
     return None
+
+
+def _unique_cells(*cells: Tuple[Optional[int], Optional[int]]) -> Tuple[Tuple[int, int], ...]:
+    result = []
+    seen = set()
+    for row, column in cells:
+        if row is None or column is None:
+            continue
+        cell = (row, column)
+        if cell in seen:
+            continue
+        result.append(cell)
+        seen.add(cell)
+    return tuple(result)
 
 
 def _counter_increased(
