@@ -70,10 +70,10 @@ class FlagEvent(ReplayEvent):
 
 @register_replay_event_manager
 class FlagEventManager(ReplayEventManager):
-    def reset(self, _video: Any) -> None:
+    def reset(self, context: ReplayEventContext) -> None:
         self.flags_by_index: Dict[int, FlagContribution] = {}
         self.active_flags: List[Tuple[int, Cell]] = []
-        self.previous_mouse_record: Optional[Any] = None
+        self.previous_mouse_record: Optional[Any] = context.record
 
     def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
         mouse_event = _mouse_event_record(context, context.index)
@@ -93,7 +93,7 @@ class FlagEventManager(ReplayEventManager):
         elif _counter_delta(self.previous_mouse_record, context.record, "flag") < 0:
             _remove_active_flag(self.active_flags, row, column)
 
-        dce_delta = _counter_delta(self.previous_mouse_record, context.record, "dce", "double_ce")
+        dce_delta = _counter_delta(self.previous_mouse_record, context.record, "dce")
         if dce_delta > 0:
             bbbv_delta = _counter_delta(self.previous_mouse_record, context.record, "bbbv_solved")
             nearby_flags = [
@@ -129,7 +129,7 @@ def _mouse_event_record(
     if not is_mouse_event(event):
         return None
     mouse = unwrap_mouse_event(event, context.pix_size)
-    if mouse is None or mouse.mouse in {"mv", "mc", "mr"}:
+    if mouse.mouse in {"mv", "mc", "mr"}:
         return None
     return mouse.mouse, mouse.row, mouse.column
 
@@ -142,23 +142,14 @@ def _counter_delta(
     for counter_name in counter_names:
         previous_value = _record_counter(previous_record, counter_name)
         current_value = _record_counter(current_record, counter_name)
-        if previous_value is None:
-            previous_value = 0
-        if current_value is not None:
-            return current_value - previous_value
+        return current_value - previous_value
     return 0
 
 
-def _record_counter(record: Optional[Any], counter_name: str) -> Optional[int]:
+def _record_counter(record: Optional[Any], counter_name: str) -> int:
     if record is None:
-        return None
-    key_dynamic_params = getattr(record, "key_dynamic_params", None)
-    for source in (key_dynamic_params, record):
-        try:
-            return int(getattr(source, counter_name))
-        except (AttributeError, RuntimeError):
-            continue
-    return None
+        return 0
+    return getattr(record.key_dynamic_params, counter_name)
 
 
 def _remove_active_flag(active_flags: List[Tuple[int, Cell]], row: int, column: int) -> None:

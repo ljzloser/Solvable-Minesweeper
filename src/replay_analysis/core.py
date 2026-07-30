@@ -88,7 +88,7 @@ class ReplayEvent:
 
 
 class ReplayEventManager:
-    def reset(self, video: Any) -> None:
+    def reset(self, context: "ReplayEventContext") -> None:
         pass
 
     def handle(self, context: "ReplayEventContext") -> Iterable[ReplayEvent]:
@@ -178,13 +178,19 @@ def _analyse_replay_events_with_managers(
         _report_analysis_progress(progress_callback, total_records, total_records)
         return []
 
+    contexts = list(iter_replay_event_contexts(video, records))
+    if not contexts:
+        _report_analysis_progress(progress_callback, total_records, total_records)
+        return []
+
+    start_context = contexts[0]
     for manager in active_managers:
-        manager.reset(video)
+        manager.reset(start_context)
 
     events_by_index: Dict[int, List[ReplayEvent]] = {}
     progress_step = max(1, total_records // 100) if total_records else 1
 
-    for context in iter_replay_event_contexts(video, records):
+    for context in contexts[1:]:
         for manager in active_managers:
             for event in manager.handle(context):
                 if 0 <= event.event_index < len(records):
@@ -338,15 +344,6 @@ def extract_raw_board(board_holder: Any) -> Optional[Board]:
     if board_holder is None:
         return None
     return _copy_matrix(getattr(board_holder, "board", None))
-
-
-def extract_possibility_board(board_holder: Any) -> Optional[Board]:
-    if board_holder is None:
-        return None
-    matrix = getattr(board_holder, "game_board_poss", None)
-    if matrix is None:
-        matrix = getattr(board_holder, "poss", None)
-    return _copy_matrix(matrix)
 
 
 def cell_at(board: Optional[Board], row: int, column: int, default: Any = None) -> Any:

@@ -58,7 +58,7 @@ class OnePointFiveClickEvent(ReplayEvent):
 
 @register_replay_event_manager
 class OnePointFiveClickEventManager(ReplayEventManager):
-    def reset(self, _video: Any) -> None:
+    def reset(self, _context: ReplayEventContext) -> None:
         self.actions: list[MouseAction] = []
 
     def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
@@ -84,14 +84,14 @@ class OnePointFiveClickEventManager(ReplayEventManager):
         left_press = self.actions[-1]
         if left_press[2] not in {"lc", "cc"}:
             return None
-        if not _counter_increased(left_press[1], record, "dce", "double_ce"):
+        if not _counter_increased(left_press[1], record, "dce"):
             return None
 
         right_press = self.actions[-2]
         if right_press[2] != "rc":
             return None
         previous_record_before_right = self.actions[-3][1] if len(self.actions) >= 3 else None
-        if not _counter_increased(previous_record_before_right, right_press[1], "rce", "right_ce"):
+        if not _counter_increased(previous_record_before_right, right_press[1], "rce"):
             return None
 
         return OnePointFiveClickEvent(
@@ -113,8 +113,6 @@ def _mouse_action_record(
     if not is_mouse_event(event):
         return None
     mouse = unwrap_mouse_event(event, context.pix_size)
-    if mouse is None:
-        return None
     if mouse.mouse in {"mv", "mc", "mr"}:
         return None
     return index, record, mouse.mouse, _record_time(record), mouse.row, mouse.column
@@ -139,27 +137,16 @@ def _counter_increased(
     for counter_name in counter_names:
         previous_value = _record_counter(previous_record, counter_name)
         current_value = _record_counter(current_record, counter_name)
-        if previous_value is None:
-            previous_value = 0
-        if current_value is not None and current_value - previous_value == 1:
+        if current_value - previous_value == 1:
             return True
     return False
 
 
-def _record_counter(record: Optional[Any], counter_name: str) -> Optional[int]:
+def _record_counter(record: Optional[Any], counter_name: str) -> int:
     if record is None:
-        return None
-    key_dynamic_params = getattr(record, "key_dynamic_params", None)
-    for source in (key_dynamic_params, record):
-        try:
-            return int(getattr(source, counter_name))
-        except (AttributeError, RuntimeError):
-            continue
-    return None
+        return 0
+    return getattr(record.key_dynamic_params, counter_name)
 
 
 def _record_time(record: Any) -> float:
-    try:
-        return float(getattr(record, "time", 0.0))
-    except (TypeError, ValueError):
-        return 0.0
+    return record.time

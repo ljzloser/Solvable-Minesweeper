@@ -61,7 +61,7 @@
 
 ```python
 class ReplayEventManager:
-    def reset(self, video) -> None:
+    def reset(self, start_context: ReplayEventContext) -> None:
         ...
 
     def handle(self, context: ReplayEventContext) -> Iterable[ReplayEvent]:
@@ -72,9 +72,10 @@ class ReplayEventManager:
 
 1. 创建 managers。
 2. 按 `video.events` 顺序构造 `ReplayEventContext`。
-3. 把 context 依次传给每个 manager。
-4. 收集 manager 发出的 `ReplayEvent`。
-5. 按 `event_index` 汇总后交给 UI。
+3. 使用开始事件 context 初始化每个 manager。
+4. 从开始事件之后，把 context 依次传给每个 manager。
+5. 收集 manager 发出的 `ReplayEvent`。
+6. 按 `event_index` 汇总后交给 UI。
 
 ## 状态归属
 
