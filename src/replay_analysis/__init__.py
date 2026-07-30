@@ -31,6 +31,7 @@ from .core import (
 
 from .guess import guess_event_rule
 from .combo_click import combo_click_event_rule
+from .flag import flag_event_rule
 from .one_point_five_click import one_point_five_click_event_rule
 
 __all__ = [
@@ -54,6 +55,7 @@ __all__ = [
     "get_replay_analysis_rules",
     "guess_event_rule",
     "combo_click_event_rule",
+    "flag_event_rule",
     "one_point_five_click_event_rule",
     "is_board_event",
     "is_mouse_event",
