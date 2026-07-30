@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
-    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox, QGridLayout, QSizeGrip, QComboBox
+    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox, QGridLayout, QSizeGrip, QComboBox, QSpacerItem
 
 from replay_analysis import analyse_replay_events, unwrap_board_event, unwrap_mouse_event
 from ui.uiComponents import RoundQWidget
@@ -313,6 +313,8 @@ class VideoTabWidget(QWidget):
         self.video = video
         self.event_rows = []
         self.event_types = set()
+        self.bottom_spacer = None
+        self.bottom_spacer_row = 1
         self.setup_ui()
     
     def setup_ui(self):
@@ -383,6 +385,8 @@ class VideoTabWidget(QWidget):
         self.tableLayout.addWidget(self.label_position, 0, 1)
         self.tableLayout.addWidget(self.label_event, 0, 2)
         self.tableLayout.addWidget(self.label_tag, 0, 3)
+        self.tableLayout.setRowStretch(0, 0)
+        self._place_bottom_spacer(1)
         
         # 设置滚动区域的内容
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
@@ -461,15 +465,32 @@ class VideoTabWidget(QWidget):
         tag_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         tag_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
+        self._remove_bottom_spacer()
         self.tableLayout.addWidget(time_label, row_index, 0)
         self.tableLayout.addWidget(coordinate_label, row_index, 1)
         self.tableLayout.addWidget(event_type_label, row_index, 2)
         self.tableLayout.addWidget(tag_label, row_index, 3)
+        self.tableLayout.setRowStretch(row_index, 0)
+        self._place_bottom_spacer(row_index + 1)
+
         row_widgets = (time_label, coordinate_label, event_type_label, tag_label)
         self.event_rows.append((event_type_text, row_widgets))
         self._add_event_type_filter_option(event_type_text)
         self._set_event_row_visible(row_widgets, self._event_type_filter_accepts(event_type_text))
         return time_label, coordinate_label, event_type_label, tag_label
+
+    def _place_bottom_spacer(self, row_index):
+        if self.bottom_spacer is None:
+            self.bottom_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.bottom_spacer_row = row_index
+        self.tableLayout.addItem(self.bottom_spacer, row_index, 0, 1, 4)
+        self.tableLayout.setRowStretch(row_index, 1)
+
+    def _remove_bottom_spacer(self):
+        if self.bottom_spacer is None:
+            return
+        self.tableLayout.setRowStretch(self.bottom_spacer_row, 0)
+        self.tableLayout.removeItem(self.bottom_spacer)
 
     def _add_event_type_filter_option(self, event_type_text):
         if not event_type_text or event_type_text in self.event_types:
@@ -497,6 +518,7 @@ class VideoTabWidget(QWidget):
         """清除所有事件行（保留标题行）"""
         self.event_rows = []
         self.event_types = set()
+        self._remove_bottom_spacer()
         for index in reversed(range(self.tableLayout.count())):
             item = self.tableLayout.itemAt(index)
             widget = item.widget()
@@ -510,6 +532,7 @@ class VideoTabWidget(QWidget):
                 widget.deleteLater()
         while self.label_event.count() > 1:
             self.label_event.removeItem(1)
+        self._place_bottom_spacer(1)
     
     def set_tab_text(self, text):
         """设置标签页显示文本"""
