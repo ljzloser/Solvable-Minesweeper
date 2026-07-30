@@ -151,10 +151,8 @@ def _non_frontier_probability(
 
 def _touches_number_cell(
     game_board: Board,
-    row: int,
-    column: int,
-    row_count: int,
-    column_count: int,
+    row: int, column: int,
+    row_count: int, column_count: int,
 ) -> bool:
     return any(
         _is_number_cell(cell_at(game_board, next_row, next_column))
