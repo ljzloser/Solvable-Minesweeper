@@ -6,13 +6,14 @@ from typing import Any, Dict, List, Optional, Tuple
 from PyQt5.QtCore import QCoreApplication
 
 from .core import (
-    ReplayAnalysisResult,
-    ReplayEventAnnotation,
+    ReplayEvent,
     ReplayEventContext,
+    ReplayEventManager,
     is_mouse_event,
-    register_replay_analysis_rule,
+    register_replay_event_manager,
     unwrap_mouse_event,
 )
+from .format import format_number
 
 
 Cell = Tuple[int, int]
@@ -21,6 +22,8 @@ _translate = QCoreApplication.translate
 
 @dataclass
 class FlagContribution:
+    event_index: int
+    time: float
     row: int
     column: int
     dce: float = 0.0
@@ -28,108 +31,94 @@ class FlagContribution:
     dce_cells: Tuple[Cell, ...] = ()
 
 
-_FLAG_EVENT_CACHE: Dict[int, Tuple[int, int, str, Dict[int, ReplayEventAnnotation]]] = {}
+class FlagEvent(ReplayEvent):
+    def __init__(self, flag: FlagContribution):
+        self.dce = flag.dce
+        self.bbbv_solved = flag.bbbv_solved
+        self.row = flag.row
+        self.column = flag.column
+        self.dce_cells = flag.dce_cells
+        super().__init__(
+            event_index=flag.event_index,
+            time=flag.time,
+            coordinate=(flag.row, flag.column),
+            params=(flag.dce, flag.bbbv_solved),
+        )
+
+    def type_text(self) -> str:
+        return _translate("ReplayAnalysis", "标雷")
+
+    def detail_text(self) -> str:
+        text = _translate("ReplayAnalysis", "双击{dce}次，解决{bbbv}bv")
+        return (
+            text
+            .replace("{dce}", format_number(self.dce))
+            .replace("{bbbv}", format_number(self.bbbv_solved))
+        )
+
+    def severity(self) -> str:
+        return _flag_event_severity(self.dce, self.bbbv_solved)
+
+    def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
+        return ((self.row, self.column), *self.dce_cells)
 
 
-@register_replay_analysis_rule
-def flag_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
-    annotations = _flag_event_annotations(context)
-    return annotations.get(context.index)
+@register_replay_event_manager
+class FlagEventManager(ReplayEventManager):
+    def reset(self, _video: Any) -> None:
+        self.flags_by_index: Dict[int, FlagContribution] = {}
+        self.active_flags: List[Tuple[int, Cell]] = []
+        self.previous_mouse_record: Optional[Any] = None
 
-
-def _flag_event_annotations(context: ReplayEventContext) -> Dict[int, ReplayEventAnnotation]:
-    records_key = id(context.records)
-    language_marker = _translate("ReplayAnalysis", "标雷")
-    cached = _FLAG_EVENT_CACHE.get(id(context.video))
-    if (
-        cached is not None
-        and cached[0] == records_key
-        and cached[1] == len(context.records)
-        and cached[2] == language_marker
-    ):
-        return cached[3]
-
-    annotations = _build_flag_event_annotations(context)
-    _FLAG_EVENT_CACHE[id(context.video)] = (
-        records_key,
-        len(context.records),
-        language_marker,
-        annotations,
-    )
-    return annotations
-
-
-def _build_flag_event_annotations(
-    context: ReplayEventContext,
-) -> Dict[int, ReplayEventAnnotation]:
-    flags_by_index: Dict[int, FlagContribution] = {}
-    active_flags: List[Tuple[int, Cell]] = []
-
-    previous_mouse_record = None
-    for index, record in enumerate(context.records):
-        mouse_event = _mouse_event_record(context, index)
+    def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
+        mouse_event = _mouse_event_record(context, context.index)
         if mouse_event is None:
-            continue
+            return ()
 
         _mouse_name, row, column = mouse_event
-        if row is None or column is None:
-            previous_mouse_record = record
-            continue
+        if _counter_delta(self.previous_mouse_record, context.record, "flag") > 0:
+            flag = FlagContribution(
+                event_index=context.index,
+                time=context.time,
+                row=row,
+                column=column,
+            )
+            self.flags_by_index[context.index] = flag
+            self.active_flags.append((context.index, (row, column)))
+        elif _counter_delta(self.previous_mouse_record, context.record, "flag") < 0:
+            _remove_active_flag(self.active_flags, row, column)
 
-        if _counter_delta(previous_mouse_record, record, "flag") > 0:
-            flag = FlagContribution(row=row, column=column)
-            flags_by_index[index] = flag
-            active_flags.append((index, (row, column)))
-        elif _counter_delta(previous_mouse_record, record, "flag") < 0:
-            _remove_active_flag(active_flags, row, column)
-
-        dce_delta = _counter_delta(previous_mouse_record, record, "dce", "double_ce")
+        dce_delta = _counter_delta(self.previous_mouse_record, context.record, "dce", "double_ce")
         if dce_delta > 0:
-            bbbv_delta = _counter_delta(previous_mouse_record, record, "bbbv_solved")
+            bbbv_delta = _counter_delta(self.previous_mouse_record, context.record, "bbbv_solved")
             nearby_flags = [
                 flag_index
-                for flag_index, flag_cell in active_flags
+                for flag_index, flag_cell in self.active_flags
                 if _is_nearby(flag_cell, (row, column))
             ]
             if nearby_flags:
                 dce_share = dce_delta / len(nearby_flags)
                 bbbv_share = bbbv_delta / len(nearby_flags)
                 for flag_index in nearby_flags:
-                    flag = flags_by_index[flag_index]
+                    flag = self.flags_by_index[flag_index]
                     flag.dce += dce_share
                     flag.bbbv_solved += bbbv_share
                     flag.dce_cells = _append_unique_cell(flag.dce_cells, (row, column))
 
-        previous_mouse_record = record
+        self.previous_mouse_record = context.record
+        return ()
 
-    return {
-        event_index: _annotation_for_flag(event_index, flag)
-        for event_index, flag in flags_by_index.items()
-    }
-
-
-def _annotation_for_flag(
-    event_index: int,
-    flag: FlagContribution,
-) -> ReplayEventAnnotation:
-    dce_text = _format_number(flag.dce)
-    bbbv_text = _format_number(flag.bbbv_solved)
-    text = _translate("ReplayAnalysis", "双击{dce}次，解决{bbbv}bv")
-    text = text.replace("{dce}", dce_text).replace("{bbbv}", bbbv_text)
-    return ReplayEventAnnotation(
-        severity=_flag_event_severity(flag.dce, flag.bbbv_solved),
-        key=_translate("ReplayAnalysis", "标雷"),
-        text=text,
-        params=(flag.dce, flag.bbbv_solved),
-        event_index=event_index,
-        highlight_cells=((flag.row, flag.column), *flag.dce_cells),
-    )
+    def finish(self) -> Tuple[ReplayEvent, ...]:
+        return tuple(
+            FlagEvent(flag)
+            for _, flag in sorted(self.flags_by_index.items())
+        )
 
 
 def _mouse_event_record(
     context: ReplayEventContext,
     index: int,
-) -> Optional[Tuple[str, Optional[int], Optional[int]]]:
+) -> Optional[Tuple[str, int, int]]:
     record = context.records[index]
     event = getattr(record, "event", None)
     if not is_mouse_event(event):
@@ -161,13 +150,9 @@ def _record_counter(record: Optional[Any], counter_name: str) -> Optional[int]:
     key_dynamic_params = getattr(record, "key_dynamic_params", None)
     for source in (key_dynamic_params, record):
         try:
-            value = getattr(source, counter_name)
-        except (AttributeError, RuntimeError, TypeError, ValueError):
+            return int(getattr(source, counter_name))
+        except (AttributeError, RuntimeError):
             continue
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return None
     return None
 
 
@@ -196,9 +181,3 @@ def _flag_event_severity(dce: float, bbbv_solved: float) -> str:
     if bbbv_solved < dce + 1:
         return "warning"
     return "info"
-
-
-def _format_number(value: float) -> str:
-    if value.is_integer():
-        return str(int(value))
-    return f"{value:.2f}"

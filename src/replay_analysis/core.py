@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple, Type
 
 from config.constants import CELL_FLAGGED, CELL_UNOPENED
 
 
 Board = List[List[Any]]
-ReplayAnalysisResult = Optional[Union["ReplayEventAnnotation", Iterable["ReplayEventAnnotation"]]]
-ReplayAnalysisRule = Callable[["ReplayEventContext"], ReplayAnalysisResult]
 ReplayAnalysisProgressCallback = Callable[[int, int], None]
 
 
@@ -62,10 +60,53 @@ class ReplayEventAnnotation:
 
 
 @dataclass(frozen=True)
+class ReplayEvent:
+    event_index: int
+    time: float
+    coordinate: Optional[Tuple[int, int]] = None
+    params: Tuple[Any, ...] = ()
+
+    def type_text(self) -> str:
+        return ""
+
+    def detail_text(self) -> str:
+        return ""
+
+    def severity(self) -> str:
+        return "info"
+
+    def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
+        return ()
+
+    def to_annotation(self) -> ReplayEventAnnotation:
+        return ReplayEventAnnotation(
+            severity=self.severity(),
+            key=self.type_text(),
+            text=self.detail_text(),
+            params=self.params,
+            event_index=self.event_index,
+            time=self.time,
+            highlight_cells=self.highlight_cells(),
+        )
+
+
+class ReplayEventManager:
+    def reset(self, video: Any) -> None:
+        pass
+
+    def handle(self, context: "ReplayEventContext") -> Iterable[ReplayEvent]:
+        return ()
+
+    def finish(self) -> Iterable[ReplayEvent]:
+        return ()
+
+
+@dataclass(frozen=True)
 class ReplayEventRow:
     time: float
     event_index: int
     annotations: Tuple[ReplayEventAnnotation, ...]
+    events: Tuple[ReplayEvent, ...] = ()
 
     @property
     def time_ms(self) -> int:
@@ -84,8 +125,6 @@ class ReplayEventContext:
     event: Any
     mouse: Optional[ReplayMouseEvent]
     board_event: Optional[ReplayBoardEvent]
-    prior_board: Any
-    next_board: Any
     useful_level: int
     path: float
     mouse_state: int
@@ -103,80 +142,73 @@ class ReplayEventContext:
     def is_board_event(self) -> bool:
         return self.board_event is not None
 
-    def prior_game_board(self) -> Optional[Board]:
-        return extract_game_board(self.prior_board)
 
-    def next_game_board(self) -> Optional[Board]:
-        return extract_game_board(self.next_board)
-
-    def prior_raw_board(self) -> Optional[Board]:
-        return extract_raw_board(self.prior_board)
-
-    def next_raw_board(self) -> Optional[Board]:
-        return extract_raw_board(self.next_board)
-
-    def prior_possibility_board(self) -> Optional[Board]:
-        return extract_possibility_board(self.prior_board)
-
-    def next_possibility_board(self) -> Optional[Board]:
-        return extract_possibility_board(self.next_board)
+_REPLAY_EVENT_MANAGER_FACTORIES: List[Type[ReplayEventManager]] = []
 
 
-_REPLAY_ANALYSIS_RULES: List[ReplayAnalysisRule] = []
+def register_replay_event_manager(
+    manager_factory: Type[ReplayEventManager],
+) -> Type[ReplayEventManager]:
+    _REPLAY_EVENT_MANAGER_FACTORIES.append(manager_factory)
+    return manager_factory
 
 
-def register_replay_analysis_rule(rule: ReplayAnalysisRule) -> ReplayAnalysisRule:
-    _REPLAY_ANALYSIS_RULES.append(rule)
-    return rule
-
-
-def clear_replay_analysis_rules() -> None:
-    _REPLAY_ANALYSIS_RULES.clear()
-
-
-def get_replay_analysis_rules() -> Tuple[ReplayAnalysisRule, ...]:
-    return tuple(_REPLAY_ANALYSIS_RULES)
+def get_replay_event_manager_factories() -> Tuple[Type[ReplayEventManager], ...]:
+    return tuple(_REPLAY_EVENT_MANAGER_FACTORIES)
 
 
 def analyse_replay_events(
     video: Any,
-    rules: Optional[Sequence[ReplayAnalysisRule]] = None,
+    managers: Optional[Sequence[ReplayEventManager]] = None,
     progress_callback: Optional[ReplayAnalysisProgressCallback] = None,
 ) -> List[ReplayEventRow]:
-    active_rules = tuple(_REPLAY_ANALYSIS_RULES if rules is None else rules)
+    return _analyse_replay_events_with_managers(video, managers, progress_callback)
+
+
+def _analyse_replay_events_with_managers(
+    video: Any,
+    managers: Optional[Sequence[ReplayEventManager]],
+    progress_callback: Optional[ReplayAnalysisProgressCallback] = None,
+) -> List[ReplayEventRow]:
+    active_managers = tuple(
+        manager_factory()
+        for manager_factory in _REPLAY_EVENT_MANAGER_FACTORIES
+    ) if managers is None else tuple(managers)
     records = list(getattr(video, "events", []) or [])
     total_records = len(records)
     _report_analysis_progress(progress_callback, 0, total_records)
-    if not active_rules:
+    if not active_managers:
         _report_analysis_progress(progress_callback, total_records, total_records)
         return []
 
-    annotations_by_index: Dict[int, List[ReplayEventAnnotation]] = {}
-    time_by_index: Dict[int, float] = {}
+    for manager in active_managers:
+        manager.reset(video)
+
+    events_by_index: Dict[int, List[ReplayEvent]] = {}
     progress_step = max(1, total_records // 100) if total_records else 1
 
     for context in iter_replay_event_contexts(video, records):
-        for rule in active_rules:
-            for annotation in _normalise_rule_result(rule(context)):
-                event_index = annotation.event_index
-                if event_index is None or event_index < 0 or event_index >= len(records):
-                    event_index = context.index
-                event_time = annotation.time
-                if event_time is None:
-                    event_time = _record_time(records[event_index])
-                time_by_index.setdefault(event_index, event_time)
-                annotations_by_index.setdefault(event_index, []).append(annotation)
+        for manager in active_managers:
+            for event in manager.handle(context):
+                if 0 <= event.event_index < len(records):
+                    events_by_index.setdefault(event.event_index, []).append(event)
         current_record = context.index + 1
         if current_record == total_records or current_record % progress_step == 0:
             _report_analysis_progress(progress_callback, current_record, total_records)
 
+    for manager in active_managers:
+        for event in manager.finish():
+            if 0 <= event.event_index < len(records):
+                events_by_index.setdefault(event.event_index, []).append(event)
+
     return [
         ReplayEventRow(
-            time=time_by_index[event_index],
+            time=_record_time(records[event_index]),
             event_index=event_index,
-            annotations=tuple(annotations_by_index[event_index]),
+            annotations=tuple(event.to_annotation() for event in events_by_index[event_index]),
+            events=tuple(events_by_index[event_index]),
         )
-        for event_index in sorted(annotations_by_index)
+        for event_index in sorted(events_by_index)
     ]
 
 
@@ -214,8 +246,6 @@ def iter_replay_event_contexts(
             event=event,
             mouse=unwrap_mouse_event(event, pix_size),
             board_event=unwrap_board_event(event),
-            prior_board=getattr(record, "prior_game_board", None),
-            next_board=getattr(record, "next_game_board", None),
             useful_level=_to_int(getattr(record, "useful_level", 0)),
             path=_to_float(getattr(record, "path", 0.0)),
             mouse_state=_to_int(getattr(record, "mouse_state", 0)),
@@ -284,8 +314,8 @@ def opened_cells(context: ReplayEventContext) -> List[ReplayOpenedCell]:
     if context.board_event is not None:
         return [board_event_cell] if board_event_cell is not None else []
 
-    prior_board = context.prior_game_board()
-    next_board = context.next_game_board()
+    prior_board = extract_game_board(getattr(context.record, "prior_game_board", None))
+    next_board = extract_game_board(getattr(context.record, "next_game_board", None))
     if prior_board is None or next_board is None:
         return []
 
@@ -406,23 +436,12 @@ def _next_mouse_event_index(context: ReplayEventContext) -> int:
     return len(context.records)
 
 
-def _normalise_rule_result(
-    result: ReplayAnalysisResult,
-) -> Iterator[ReplayEventAnnotation]:
-    if result is None:
-        return
-    if isinstance(result, ReplayEventAnnotation):
-        yield result
-        return
-    yield from result
-
-
 def _opened_cell_from_board_event(context: ReplayEventContext) -> Optional[ReplayOpenedCell]:
     if context.board_event is None or not context.board_event.opens_cell:
         return None
 
-    prior_board = context.prior_game_board()
-    next_board = context.next_game_board()
+    prior_board = extract_game_board(getattr(context.record, "prior_game_board", None))
+    next_board = extract_game_board(getattr(context.record, "next_game_board", None))
     row = context.board_event.row
     column = context.board_event.column
     return ReplayOpenedCell(

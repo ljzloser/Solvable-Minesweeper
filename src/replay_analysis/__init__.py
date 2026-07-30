@@ -1,10 +1,10 @@
 from .core import (
     Board,
-    ReplayAnalysisResult,
-    ReplayAnalysisRule,
     ReplayBoardEvent,
     ReplayEventAnnotation,
     ReplayEventContext,
+    ReplayEvent,
+    ReplayEventManager,
     ReplayEventRow,
     ReplayMouseEvent,
     ReplayOpenedCell,
@@ -12,11 +12,10 @@ from .core import (
     analyse_replay_events,
     board_size,
     cell_at,
-    clear_replay_analysis_rules,
     extract_game_board,
     extract_possibility_board,
     extract_raw_board,
-    get_replay_analysis_rules,
+    get_replay_event_manager_factories,
     is_board_event,
     is_mouse_event,
     iter_replay_event_contexts,
@@ -24,23 +23,20 @@ from .core import (
     opened_cells,
     prior_records_between_mouse_events,
     records_between_mouse_events,
-    register_replay_analysis_rule,
+    register_replay_event_manager,
     unwrap_board_event,
     unwrap_mouse_event,
 )
 
-from .guess import guess_event_rule
-from .combo_click import combo_click_event_rule
-from .flag import flag_event_rule
-from .one_point_five_click import one_point_five_click_event_rule
+from . import combo_click, flag, guess, one_point_five_click  # noqa: F401
 
 __all__ = [
     "Board",
-    "ReplayAnalysisResult",
-    "ReplayAnalysisRule",
     "ReplayBoardEvent",
     "ReplayEventAnnotation",
     "ReplayEventContext",
+    "ReplayEvent",
+    "ReplayEventManager",
     "ReplayEventRow",
     "ReplayMouseEvent",
     "ReplayOpenedCell",
@@ -48,15 +44,10 @@ __all__ = [
     "analyse_replay_events",
     "board_size",
     "cell_at",
-    "clear_replay_analysis_rules",
     "extract_game_board",
     "extract_possibility_board",
     "extract_raw_board",
-    "get_replay_analysis_rules",
-    "guess_event_rule",
-    "combo_click_event_rule",
-    "flag_event_rule",
-    "one_point_five_click_event_rule",
+    "get_replay_event_manager_factories",
     "is_board_event",
     "is_mouse_event",
     "iter_replay_event_contexts",
@@ -64,7 +55,7 @@ __all__ = [
     "opened_cells",
     "prior_records_between_mouse_events",
     "records_between_mouse_events",
-    "register_replay_analysis_rule",
+    "register_replay_event_manager",
     "unwrap_board_event",
     "unwrap_mouse_event",
 ]

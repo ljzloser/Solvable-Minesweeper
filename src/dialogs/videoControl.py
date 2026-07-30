@@ -312,6 +312,7 @@ class VideoTabWidget(QWidget):
         self.file_name = file_name
         self.video = video
         self.event_rows = []
+        self.replay_comments = []
         self.event_types = set()
         self.bottom_spacer = None
         self.bottom_spacer_row = 1
@@ -603,7 +604,8 @@ class ui_Form(QWidget, Ui_Form):
         self.tab_id += 1
         tab = VideoTabWidget(self, video=video, tab_name=f"tab_{self.tab_id}", file_name=video.file_name)
         tab.setAttribute(Qt.WA_DeleteOnClose)
-        
+        tab.replay_comments = comments
+
         self._populate_video_event_tab(tab, video, comments)
 
         self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
@@ -613,7 +615,7 @@ class ui_Form(QWidget, Ui_Form):
         comments = []
         for row in analyse_replay_events(video, progress_callback=progress_callback):
             if row.annotations:
-                comments.append((row.time, row.event_index, row.annotations))
+                comments.append((row.time, row.event_index, row.events or row.annotations))
         return comments
 
     def _populate_video_event_tab(self, tab, video, comments):
@@ -622,7 +624,12 @@ class ui_Form(QWidget, Ui_Form):
             time_value = int(time * 1000)
             coordinate = self._event_coordinate(video, event_index)
             coordinate_text = self._event_coordinate_text(coordinate)
-            for annotation in annotations:
+            for replay_event in annotations:
+                annotation = (
+                    replay_event.to_annotation()
+                    if hasattr(replay_event, "to_annotation")
+                    else replay_event
+                )
                 status = self._normalise_event_status(annotation.severity)
                 event_type_text = self._event_type_text(video, event_index, annotation)
                 c1, c2, c3, c4 = tab.add_event_row(
@@ -653,8 +660,7 @@ class ui_Form(QWidget, Ui_Form):
             if isinstance(tab, VideoTabWidget):
                 tab.retranslate_headers()
                 tab.clear_events()
-                comments = self._analyse_video_comments(tab.video)
-                self._populate_video_event_tab(tab, tab.video, comments)
+                self._populate_video_event_tab(tab, tab.video, tab.replay_comments)
                 self.tabWidget.setTabText(index, _translate("Form", "录像") + f"({tab.tab_name.split('_')[-1]})")
             elif isinstance(tab, VideoSetTabWidget):
                 self.tabWidget.setTabText(index, _translate("Form", "目录") + f"({tab.tab_name.split('_')[-1]})")

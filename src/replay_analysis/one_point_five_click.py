@@ -5,90 +5,127 @@ from typing import Any, Optional, Tuple
 from PyQt5.QtCore import QCoreApplication
 
 from .core import (
-    ReplayAnalysisResult,
-    ReplayEventAnnotation,
+    ReplayEvent,
     ReplayEventContext,
+    ReplayEventManager,
     is_mouse_event,
-    register_replay_analysis_rule,
+    register_replay_event_manager,
     unwrap_mouse_event,
 )
+from .format import format_interval_ms
 
 
 _translate = QCoreApplication.translate
+MouseAction = Tuple[int, Any, str, float, int, int]
 
 
-@register_replay_analysis_rule
-def one_point_five_click_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
-    if context.mouse is None or not context.mouse.is_mouse("lr", "rr", "l", "r"):
-        return None
+class OnePointFiveClickEvent(ReplayEvent):
+    def __init__(
+        self,
+        event_index: int,
+        time: float,
+        right_left_interval: float,
+        flag_double_interval: float,
+        right_cell: Tuple[int, int],
+        double_cell: Tuple[int, int],
+    ):
+        self.right_left_interval = right_left_interval
+        self.flag_double_interval = flag_double_interval
+        self.right_cell = right_cell
+        self.double_cell = double_cell
+        super().__init__(
+            event_index=event_index,
+            time=time,
+            coordinate=double_cell,
+            params=(right_left_interval, flag_double_interval),
+        )
 
-    left_press = _previous_mouse_action_record(context, before_index=context.index)
-    if left_press is None or left_press[2] not in {"lc", "cc"}:
-        return None
-    if not _counter_increased(left_press[1], context.record, "dce", "double_ce"):
-        return None
+    def type_text(self) -> str:
+        return "1.5click"
 
-    right_press = _previous_mouse_action_record(context, before_index=left_press[0])
-    if right_press is None or right_press[2] != "rc":
-        return None
+    def detail_text(self) -> str:
+        text = _translate(
+            "ReplayAnalysis",
+            "右左间隔{right_left}，标双间隔{flag_double}",
+        )
+        return (
+            text
+            .replace("{right_left}", format_interval_ms(self.right_left_interval))
+            .replace("{flag_double}", format_interval_ms(self.flag_double_interval))
+        )
 
-    previous_mouse_before_right = _previous_mouse_action_record(context, before_index=right_press[0])
-    previous_record_before_right = (
-        previous_mouse_before_right[1] if previous_mouse_before_right is not None else None
-    )
-    if not _counter_increased(previous_record_before_right, right_press[1], "rce", "right_ce"):
-        return None
-
-    right_left_interval = left_press[3] - right_press[3]
-    flag_double_interval = context.time - right_press[3]
-
-    text = _translate(
-        "ReplayAnalysis",
-        "右左间隔{right_left}，标双间隔{flag_double}",
-    )
-    text = (
-        text
-        .replace("{right_left}", _format_interval_ms(right_left_interval))
-        .replace("{flag_double}", _format_interval_ms(flag_double_interval))
-    )
-
-    return ReplayEventAnnotation(
-        severity="info",
-        key="1.5click",
-        text=text,
-        params=(right_left_interval, flag_double_interval),
-        highlight_cells=_unique_cells(
-            (right_press[4], right_press[5]),
-            (context.mouse.row, context.mouse.column),
-        ),
-    )
+    def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
+        return _unique_cells(self.right_cell, self.double_cell)
 
 
-def _previous_mouse_action_record(
+@register_replay_event_manager
+class OnePointFiveClickEventManager(ReplayEventManager):
+    def reset(self, _video: Any) -> None:
+        self.actions: list[MouseAction] = []
+
+    def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
+        action = _mouse_action_record(context, context.index)
+        if action is None:
+            return ()
+
+        event = self._event_from_action(context, action)
+        self.actions.append(action)
+        return (event,) if event is not None else ()
+
+    def _event_from_action(
+        self,
+        context: ReplayEventContext,
+        action: MouseAction,
+    ) -> Optional[ReplayEvent]:
+        index, record, mouse_name, event_time, row, column = action
+        if mouse_name not in {"lr", "rr", "l", "r"}:
+            return None
+        if len(self.actions) < 2:
+            return None
+
+        left_press = self.actions[-1]
+        if left_press[2] not in {"lc", "cc"}:
+            return None
+        if not _counter_increased(left_press[1], record, "dce", "double_ce"):
+            return None
+
+        right_press = self.actions[-2]
+        if right_press[2] != "rc":
+            return None
+        previous_record_before_right = self.actions[-3][1] if len(self.actions) >= 3 else None
+        if not _counter_increased(previous_record_before_right, right_press[1], "rce", "right_ce"):
+            return None
+
+        return OnePointFiveClickEvent(
+            event_index=index,
+            time=event_time,
+            right_left_interval=left_press[3] - right_press[3],
+            flag_double_interval=event_time - right_press[3],
+            right_cell=(right_press[4], right_press[5]),
+            double_cell=(row, column),
+        )
+
+
+def _mouse_action_record(
     context: ReplayEventContext,
-    before_index: int,
-) -> Optional[Tuple[int, Any, str, float, Optional[int], Optional[int]]]:
-    for index in range(before_index - 1, -1, -1):
-        record = context.records[index]
-        event = getattr(record, "event", None)
-        if not is_mouse_event(event):
-            continue
-        mouse = unwrap_mouse_event(event, context.pix_size)
-        if mouse is None:
-            continue
-        if mouse.mouse in {"mv", "mc", "mr"}:
-            continue
-        return index, record, mouse.mouse, _record_time(record), mouse.row, mouse.column
-    return None
+    index: int,
+) -> Optional[MouseAction]:
+    record = context.records[index]
+    event = getattr(record, "event", None)
+    if not is_mouse_event(event):
+        return None
+    mouse = unwrap_mouse_event(event, context.pix_size)
+    if mouse is None:
+        return None
+    if mouse.mouse in {"mv", "mc", "mr"}:
+        return None
+    return index, record, mouse.mouse, _record_time(record), mouse.row, mouse.column
 
 
-def _unique_cells(*cells: Tuple[Optional[int], Optional[int]]) -> Tuple[Tuple[int, int], ...]:
+def _unique_cells(*cells: Tuple[int, int]) -> Tuple[Tuple[int, int], ...]:
     result = []
     seen = set()
-    for row, column in cells:
-        if row is None or column is None:
-            continue
-        cell = (row, column)
+    for cell in cells:
         if cell in seen:
             continue
         result.append(cell)
@@ -104,7 +141,9 @@ def _counter_increased(
     for counter_name in counter_names:
         previous_value = _record_counter(previous_record, counter_name)
         current_value = _record_counter(current_record, counter_name)
-        if previous_value is not None and current_value is not None and current_value == previous_value + 1:
+        if previous_value is None:
+            previous_value = 0
+        if current_value is not None and current_value - previous_value == 1:
             return True
     return False
 
@@ -115,13 +154,9 @@ def _record_counter(record: Optional[Any], counter_name: str) -> Optional[int]:
     key_dynamic_params = getattr(record, "key_dynamic_params", None)
     for source in (key_dynamic_params, record):
         try:
-            value = getattr(source, counter_name)
-        except (AttributeError, RuntimeError, TypeError, ValueError):
+            return int(getattr(source, counter_name))
+        except (AttributeError, RuntimeError):
             continue
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return None
     return None
 
 
@@ -130,7 +165,3 @@ def _record_time(record: Any) -> float:
         return float(getattr(record, "time", 0.0))
     except (TypeError, ValueError):
         return 0.0
-
-
-def _format_interval_ms(seconds: float) -> str:
-    return f"{seconds * 1000:.0f}ms"

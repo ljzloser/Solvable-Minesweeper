@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import sys
 from typing import Any, Iterable, Iterator, Optional, Tuple
 
 from PyQt5.QtCore import QCoreApplication
@@ -10,110 +9,141 @@ from config.constants import CELL_UNOPENED
 
 from .core import (
     Board,
-    ReplayAnalysisResult,
-    ReplayEventAnnotation,
+    ReplayEvent,
     ReplayEventContext,
+    ReplayEventManager,
     board_size,
     cell_at,
-    is_mouse_event,
+    extract_game_board,
+    extract_possibility_board,
+    register_replay_event_manager,
     neighbours,
-    register_replay_analysis_rule,
 )
+from .format import format_pluck, format_probability_percent
 
 
 _PLUCK_DELTA_EPSILON = 1e-12
-_MAX_PLUCK_SENTINEL = sys.float_info.max / 2
 _MISSING = object()
 _translate = QCoreApplication.translate
 
 
-@register_replay_analysis_rule
-def guess_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
-    if context.mouse is None:
-        return None
+class GuessEvent(ReplayEvent):
+    def __init__(
+        self,
+        event_index: int,
+        time: float,
+        mine_probability: float,
+        pluck_delta: float,
+        global_min_probability: float,
+        non_frontier_probability: float,
+        row: int,
+        column: int,
+        current_pluck: float,
+    ):
+        self.mine_probability = mine_probability
+        self.pluck_delta = pluck_delta
+        self.global_min_probability = global_min_probability
+        self.non_frontier_probability = non_frontier_probability
+        self.current_pluck = current_pluck
+        self.row = row
+        self.column = column
+        super().__init__(
+            event_index=event_index,
+            time=time,
+            coordinate=(row, column),
+            params=(
+                mine_probability,
+                pluck_delta,
+                global_min_probability,
+                non_frontier_probability,
+                row,
+                column,
+            ),
+        )
 
-    pluck_change = _pluck_change_from_previous_mouse_event(context)
-    if pluck_change is None:
-        return None
-    current_pluck, pluck_delta = pluck_change
-    if pluck_delta is None or pluck_delta <= _PLUCK_DELTA_EPSILON:
-        return None
+    def type_text(self) -> str:
+        return _translate("ReplayAnalysis", "猜雷")
 
-    prior_game_board = context.prior_game_board()
-    possibility_board = context.prior_possibility_board()
-    safe_probability = _safe_probability_from_pluck_delta(pluck_delta)
-    mine_probability = 1 - safe_probability
-    global_min_probability = _global_min_probability(prior_game_board, possibility_board)
-    non_frontier_probability = _non_frontier_probability(prior_game_board, possibility_board)
+    def detail_text(self) -> str:
+        text = _translate(
+            "ReplayAnalysis",
+            "pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}",
+        )
+        return (
+            text
+            .replace("{pluck}", format_pluck(self.current_pluck))
+            .replace("{pluck_diff}", format_pluck(self.pluck_delta))
+            .replace("{mine}", format_probability_percent(self.mine_probability))
+            .replace("{minimum}", format_probability_percent(self.global_min_probability))
+            .replace("{density}", format_probability_percent(self.non_frontier_probability))
+        )
 
-    text = _translate(
-        "ReplayAnalysis",
-        "pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}",
-    )
-    text = (
-        text
-        .replace("{pluck}", _format_pluck(current_pluck))
-        .replace("{pluck_diff}", _format_pluck(pluck_delta))
-        .replace("{mine}", _format_probability_percent(mine_probability))
-        .replace("{minimum}", _format_probability_percent(global_min_probability))
-        .replace("{density}", _format_probability_percent(non_frontier_probability))
-    )
+    def severity(self) -> str:
+        return _guess_event_severity(
+            self.mine_probability,
+            self.global_min_probability,
+            self.non_frontier_probability,
+        )
 
-    return ReplayEventAnnotation(
-        severity=_guess_event_severity(
-            mine_probability,
-            global_min_probability,
-            non_frontier_probability,
-        ),
-        key=_translate("ReplayAnalysis", "猜雷"),
-        text=text,
-        params=(
-            mine_probability,
-            pluck_delta,
-            global_min_probability,
-            non_frontier_probability,
-            context.mouse.row,
-            context.mouse.column,
-        ),
-        highlight_cells=_highlight_cells(context.mouse.row, context.mouse.column),
-    )
-
-
-def _highlight_cells(row: Optional[int], column: Optional[int]) -> Tuple[Tuple[int, int], ...]:
-    if row is None or column is None:
-        return ()
-    return ((row, column),)
-
-
-def _pluck_change_from_previous_mouse_event(
-    context: ReplayEventContext,
-) -> Optional[Tuple[float, float]]:
-    current_pluck = _context_pluck(context)
-    previous_pluck = _previous_mouse_pluck(context)
-    if current_pluck is None or previous_pluck is None:
-        return None
-    if _is_max_pluck(previous_pluck):
-        return None
-    if _is_max_pluck(current_pluck):
-        return current_pluck, math.inf
-    if not math.isfinite(current_pluck) or not math.isfinite(previous_pluck):
-        return None
-    return current_pluck, current_pluck - previous_pluck
+    def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
+        return ((self.row, self.column),)
 
 
-def _previous_mouse_pluck(context: ReplayEventContext) -> Optional[float]:
-    for index in range(context.index - 1, -1, -1):
-        record = context.records[index]
-        if is_mouse_event(getattr(record, "event", None)):
-            pluck = _record_pluck(record)
-            if pluck is None:
-                pluck = _video_pluck_at_event_index(context.video, index)
-            if pluck is not None:
-                return pluck
-    return None
+@register_replay_event_manager
+class GuessEventManager(ReplayEventManager):
+    def reset(self, video: Any) -> None:
+        video.analyse_for_features(["pluck"])
+        self.previous_mouse_pluck: Optional[float] = None
+        self.prior_game_board: Optional[Board] = None
+        self.prior_possibility_board: Optional[Board] = None
+
+    def handle(self, context: ReplayEventContext) -> Iterable[ReplayEvent]:
+        if context.mouse is None or context.mouse.is_mouse("mv", "mc", "mr"):
+            return ()
+
+        current_pluck = _context_pluck(context)
+        previous_pluck = self.previous_mouse_pluck
+        self.previous_mouse_pluck = current_pluck
+        if previous_pluck is None:
+            return ()
+        pluck_delta = current_pluck - previous_pluck
+        if pluck_delta <= _PLUCK_DELTA_EPSILON:
+            return ()
+
+        self.prior_game_board = self._extract_prior_game_board(context)
+        self.prior_possibility_board = self._extract_prior_possibility_board(context)
+        safe_probability = _safe_probability_from_pluck_delta(pluck_delta)
+        mine_probability = 1 - safe_probability
+        global_min_probability = _global_min_probability(
+            self.prior_game_board,
+            self.prior_possibility_board,
+        )
+        non_frontier_probability = _non_frontier_probability(
+            self.prior_game_board,
+            self.prior_possibility_board,
+        )
+        return (
+            GuessEvent(
+                event_index=context.index,
+                time=context.time,
+                mine_probability=mine_probability,
+                pluck_delta=pluck_delta,
+                global_min_probability=global_min_probability,
+                non_frontier_probability=non_frontier_probability,
+                row=context.mouse.row,
+                column=context.mouse.column,
+                current_pluck=current_pluck,
+            ),
+        )
+
+    def _extract_prior_game_board(self, context: ReplayEventContext) -> Optional[Board]:
+        return extract_game_board(getattr(context.record, "prior_game_board", None))
+
+    def _extract_prior_possibility_board(self, context: ReplayEventContext) -> Optional[Board]:
+        return extract_possibility_board(getattr(context.record, "prior_game_board", None))
 
 
-def _context_pluck(context: ReplayEventContext) -> Optional[float]:
+def _context_pluck(context: ReplayEventContext) -> float:
     pluck = _record_pluck(context.record)
     if pluck is not None:
         return pluck
@@ -123,22 +153,16 @@ def _context_pluck(context: ReplayEventContext) -> Optional[float]:
 def _record_pluck(record: Any) -> Optional[float]:
     key_dynamic_params = getattr(record, "key_dynamic_params", None)
     try:
-        pluck = getattr(key_dynamic_params, "pluck")
-    except (AttributeError, RuntimeError, TypeError, ValueError):
-        return None
-    try:
-        return float(pluck)
-    except (TypeError, ValueError):
+        return float(getattr(key_dynamic_params, "pluck"))
+    except (AttributeError, RuntimeError):
         return None
 
 
-def _video_pluck_at_event_index(video: Any, event_index: int) -> Optional[float]:
+def _video_pluck_at_event_index(video: Any, event_index: int) -> float:
     original_event_index = _video_current_event_index(video)
     try:
         setattr(video, "current_event_id", event_index)
-        return _to_float(getattr(video, "pluck"))
-    except (AttributeError, RuntimeError, TypeError, ValueError):
-        return None
+        return float(getattr(video, "pluck"))
     finally:
         _restore_video_current_event_index(video, original_event_index)
 
@@ -146,7 +170,7 @@ def _video_pluck_at_event_index(video: Any, event_index: int) -> Optional[float]
 def _video_current_event_index(video: Any) -> Any:
     try:
         return getattr(video, "current_event_id")
-    except (AttributeError, RuntimeError, TypeError, ValueError):
+    except (AttributeError, RuntimeError):
         return _MISSING
 
 
@@ -155,19 +179,8 @@ def _restore_video_current_event_index(video: Any, event_index: Any) -> None:
         return
     try:
         setattr(video, "current_event_id", event_index)
-    except (AttributeError, RuntimeError, TypeError, ValueError):
+    except (AttributeError, RuntimeError):
         return
-
-
-def _to_float(value: Any) -> Optional[float]:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _is_max_pluck(value: float) -> bool:
-    return value >= _MAX_PLUCK_SENTINEL
 
 
 def _safe_probability_from_pluck_delta(pluck_delta: float) -> float:
@@ -203,10 +216,7 @@ def _non_frontier_probability(
 
 
 def _cell_probability(board: Board, row: int, column: int) -> float:
-    try:
-        return float(board[row][column])
-    except (IndexError, TypeError, ValueError):
-        return math.nan
+    return float(board[row][column])
 
 
 def _unknown_cells(game_board: Optional[Board]) -> Iterator[Tuple[int, int]]:
@@ -241,10 +251,10 @@ def _is_number_cell(value: Any) -> bool:
 
 
 def _min_probability(probabilities: Iterable[float]) -> float:
-    valid_probabilities = [p for p in probabilities if not math.isnan(p)]
-    if not valid_probabilities:
+    probabilities = list(probabilities)
+    if not probabilities:
         return math.nan
-    return min(valid_probabilities)
+    return min(probabilities)
 
 
 def _guess_event_severity(
@@ -252,26 +262,10 @@ def _guess_event_severity(
     global_min_probability: float,
     non_frontier_probability: float,
 ) -> str:
-    if math.isclose(mine_probability, global_min_probability):
+    if math.isclose(mine_probability, global_min_probability, rel_tol=0.0, abs_tol=1e-12):
         return "success"
-    if mine_probability > non_frontier_probability:
+    if not math.isnan(non_frontier_probability) and mine_probability > non_frontier_probability:
         return "warning"
-    if math.isclose(global_min_probability, 0.0):
+    if math.isclose(global_min_probability, 0.0, rel_tol=0.0, abs_tol=1e-12):
         return "warning"
     return "info"
-
-
-def _format_pluck(value: float) -> str:
-    if math.isnan(value):
-        return "nan"
-    if math.isinf(value):
-        return "-inf" if value < 0 else "inf"
-    return f"{value:.3f}"
-
-
-def _format_probability_percent(value: float) -> str:
-    if math.isnan(value):
-        return "nan"
-    if math.isinf(value):
-        return "-inf%" if value < 0 else "inf%"
-    return f"{value * 100:.2f}%"
