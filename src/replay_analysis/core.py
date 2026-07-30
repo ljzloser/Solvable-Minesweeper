@@ -53,7 +53,6 @@ class ReplayEventAnnotation:
     severity: str
     text: str
     key: str = ""
-    params: Tuple[Any, ...] = ()
     event_index: Optional[int] = None
     time: Optional[float] = None
     highlight_cells: Tuple[Tuple[int, int], ...] = ()
@@ -64,7 +63,6 @@ class ReplayEvent:
     event_index: int
     time: float
     coordinate: Optional[Tuple[int, int]] = None
-    params: Tuple[Any, ...] = ()
 
     def type_text(self) -> str:
         return ""
@@ -83,7 +81,6 @@ class ReplayEvent:
             severity=self.severity(),
             key=self.type_text(),
             text=self.detail_text(),
-            params=self.params,
             event_index=self.event_index,
             time=self.time,
             highlight_cells=self.highlight_cells(),

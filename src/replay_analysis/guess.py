@@ -32,7 +32,6 @@ class GuessEvent(ReplayEvent):
         self,
         event_index: int,
         time: float,
-        mine_probability: float,
         pluck_delta: float,
         global_min_probability: float,
         non_frontier_probability: float,
@@ -40,25 +39,14 @@ class GuessEvent(ReplayEvent):
         column: int,
         current_pluck: float,
     ):
-        self.mine_probability = mine_probability
         self.pluck_delta = pluck_delta
         self.global_min_probability = global_min_probability
         self.non_frontier_probability = non_frontier_probability
         self.current_pluck = current_pluck
-        self.row = row
-        self.column = column
         super().__init__(
             event_index=event_index,
             time=time,
             coordinate=(row, column),
-            params=(
-                mine_probability,
-                pluck_delta,
-                global_min_probability,
-                non_frontier_probability,
-                row,
-                column,
-            ),
         )
 
     def type_text(self) -> str:
@@ -73,20 +61,23 @@ class GuessEvent(ReplayEvent):
             text
             .replace("{pluck}", format_pluck(self.current_pluck))
             .replace("{pluck_diff}", format_pluck(self.pluck_delta))
-            .replace("{mine}", format_probability_percent(self.mine_probability))
+            .replace("{mine}", format_probability_percent(self.mine_probability()))
             .replace("{minimum}", format_probability_percent(self.global_min_probability))
             .replace("{density}", format_probability_percent(self.non_frontier_probability))
         )
 
     def severity(self) -> str:
-        return _guess_event_severity(
-            self.mine_probability,
-            self.global_min_probability,
-            self.non_frontier_probability,
-        )
+        mine_probability = 1 - 10 ** (-self.pluck_delta)
+        if math.isclose(mine_probability, self.global_min_probability):
+            return "success"
+        if mine_probability > self.non_frontier_probability:
+            return "warning"
+        if math.isclose(self.global_min_probability, 0.0):
+            return "warning"
+        return "info"
 
     def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
-        return ((self.row, self.column),)
+        return (self.coordinate,) if self.coordinate is not None else ()
 
 
 @register_replay_event_manager
@@ -112,8 +103,6 @@ class GuessEventManager(ReplayEventManager):
 
         self.prior_game_board = self._extract_prior_game_board(context)
         self.prior_possibility_board = self._extract_prior_possibility_board(context)
-        safe_probability = _safe_probability_from_pluck_delta(pluck_delta)
-        mine_probability = 1 - safe_probability
         global_min_probability = _global_min_probability(
             self.prior_game_board,
             self.prior_possibility_board,
@@ -126,7 +115,6 @@ class GuessEventManager(ReplayEventManager):
             GuessEvent(
                 event_index=context.index,
                 time=context.time,
-                mine_probability=mine_probability,
                 pluck_delta=pluck_delta,
                 global_min_probability=global_min_probability,
                 non_frontier_probability=non_frontier_probability,
@@ -181,12 +169,6 @@ def _restore_video_current_event_index(video: Any, event_index: Any) -> None:
         setattr(video, "current_event_id", event_index)
     except (AttributeError, RuntimeError):
         return
-
-
-def _safe_probability_from_pluck_delta(pluck_delta: float) -> float:
-    if math.isinf(pluck_delta):
-        return 0.0
-    return 10 ** (-pluck_delta)
 
 
 def _global_min_probability(
@@ -255,17 +237,3 @@ def _min_probability(probabilities: Iterable[float]) -> float:
     if not probabilities:
         return math.nan
     return min(probabilities)
-
-
-def _guess_event_severity(
-    mine_probability: float,
-    global_min_probability: float,
-    non_frontier_probability: float,
-) -> str:
-    if math.isclose(mine_probability, global_min_probability, rel_tol=0.0, abs_tol=1e-12):
-        return "success"
-    if not math.isnan(non_frontier_probability) and mine_probability > non_frontier_probability:
-        return "warning"
-    if math.isclose(global_min_probability, 0.0, rel_tol=0.0, abs_tol=1e-12):
-        return "warning"
-    return "info"

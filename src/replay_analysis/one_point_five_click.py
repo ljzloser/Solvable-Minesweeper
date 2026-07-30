@@ -32,12 +32,10 @@ class OnePointFiveClickEvent(ReplayEvent):
         self.right_left_interval = right_left_interval
         self.flag_double_interval = flag_double_interval
         self.right_cell = right_cell
-        self.double_cell = double_cell
         super().__init__(
             event_index=event_index,
             time=time,
             coordinate=double_cell,
-            params=(right_left_interval, flag_double_interval),
         )
 
     def type_text(self) -> str:
@@ -55,7 +53,7 @@ class OnePointFiveClickEvent(ReplayEvent):
         )
 
     def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
-        return _unique_cells(self.right_cell, self.double_cell)
+        return _unique_cells(self.right_cell, self.coordinate)
 
 
 @register_replay_event_manager

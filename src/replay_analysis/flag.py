@@ -35,14 +35,11 @@ class FlagEvent(ReplayEvent):
     def __init__(self, flag: FlagContribution):
         self.dce = flag.dce
         self.bbbv_solved = flag.bbbv_solved
-        self.row = flag.row
-        self.column = flag.column
         self.dce_cells = flag.dce_cells
         super().__init__(
             event_index=flag.event_index,
             time=flag.time,
             coordinate=(flag.row, flag.column),
-            params=(flag.dce, flag.bbbv_solved),
         )
 
     def type_text(self) -> str:
@@ -57,10 +54,18 @@ class FlagEvent(ReplayEvent):
         )
 
     def severity(self) -> str:
-        return _flag_event_severity(self.dce, self.bbbv_solved)
+        if self.bbbv_solved == 0:
+            return "error"
+        if self.bbbv_solved > self.dce + 1:
+            return "success"
+        if self.bbbv_solved < self.dce + 1:
+            return "warning"
+        return "info"
 
     def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
-        return ((self.row, self.column), *self.dce_cells)
+        if self.coordinate is None:
+            return self.dce_cells
+        return (self.coordinate, *self.dce_cells)
 
 
 @register_replay_event_manager
@@ -171,13 +176,3 @@ def _append_unique_cell(cells: Tuple[Cell, ...], cell: Cell) -> Tuple[Cell, ...]
     if cell in cells:
         return cells
     return (*cells, cell)
-
-
-def _flag_event_severity(dce: float, bbbv_solved: float) -> str:
-    if bbbv_solved == 0:
-        return "error"
-    if bbbv_solved > dce + 1:
-        return "success"
-    if bbbv_solved < dce + 1:
-        return "warning"
-    return "info"

@@ -22,19 +22,10 @@ _translate = QCoreApplication.translate
 class ComboClickEvent(ReplayEvent):
     def __init__(self, clicks: List[ComboClick]):
         self.clicks = tuple(clicks)
-        intervals = [
-            clicks[index][2] - clicks[index - 1][2]
-            for index in range(1, len(clicks))
-        ]
-        self.length = len(clicks)
-        self.max_interval = max(intervals)
-        self.min_interval = min(intervals)
-        self.average_interval = sum(intervals) / len(intervals)
         super().__init__(
             event_index=clicks[-1][0],
             time=clicks[-1][2],
             coordinate=(clicks[-1][3], clicks[-1][4]),
-            params=(self.length, self.max_interval, self.min_interval, self.average_interval),
         )
 
     def type_text(self) -> str:
@@ -47,10 +38,19 @@ class ComboClickEvent(ReplayEvent):
         )
         return (
             text
-            .replace("{length}", str(self.length))
-            .replace("{max_interval}", format_interval_ms(self.max_interval))
-            .replace("{min_interval}", format_interval_ms(self.min_interval))
-            .replace("{average_interval}", format_interval_ms(self.average_interval))
+            .replace("{length}", str(len(self.clicks)))
+            .replace("{max_interval}", format_interval_ms(max(self.intervals())))
+            .replace("{min_interval}", format_interval_ms(min(self.intervals())))
+            .replace("{average_interval}", format_interval_ms(self.average_interval()))
+        )
+
+    def average_interval(self) -> float:
+        return (self.clicks[-1][2] - self.clicks[0][2]) / (len(self.clicks) - 1)
+
+    def intervals(self) -> Tuple[float, ...]:
+        return tuple(
+            self.clicks[index][2] - self.clicks[index - 1][2]
+            for index in range(1, len(self.clicks))
         )
 
     def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
