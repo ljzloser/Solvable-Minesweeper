@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import sys
-from typing import Any, Iterable, Iterator, List, Optional, Tuple
+from typing import Any, Iterable, Iterator, Optional, Tuple
 
 from PyQt5.QtCore import QCoreApplication
 
@@ -195,14 +195,11 @@ def _non_frontier_probability(
 ) -> float:
     if game_board is None or possibility_board is None:
         return math.nan
-    cells = _non_frontier_cells(game_board)
-    if not cells:
-        return math.nan
-    probabilities = [
-        _cell_probability(possibility_board, row, column)
-        for row, column in cells
-    ]
-    return _mean_probability(probabilities)
+    row_count, column_count = board_size(game_board)
+    for row, column in _unknown_cells(game_board):
+        if not _touches_number_cell(game_board, row, column, row_count, column_count):
+            return _cell_probability(possibility_board, row, column)
+    return math.nan
 
 
 def _cell_probability(board: Board, row: int, column: int) -> float:
@@ -220,17 +217,6 @@ def _unknown_cells(game_board: Optional[Board]) -> Iterator[Tuple[int, int]]:
         for column in range(column_count):
             if cell_at(game_board, row, column) == CELL_UNOPENED:
                 yield row, column
-
-
-def _non_frontier_cells(game_board: Optional[Board]) -> List[Tuple[int, int]]:
-    if game_board is None:
-        return []
-    row_count, column_count = board_size(game_board)
-    return [
-        (row, column)
-        for row, column in _unknown_cells(game_board)
-        if not _touches_number_cell(game_board, row, column, row_count, column_count)
-    ]
 
 
 def _touches_number_cell(
@@ -255,21 +241,10 @@ def _is_number_cell(value: Any) -> bool:
 
 
 def _min_probability(probabilities: Iterable[float]) -> float:
-    valid_probabilities = [p for p in probabilities if _is_valid_probability(p)]
+    valid_probabilities = [p for p in probabilities if not math.isnan(p)]
     if not valid_probabilities:
         return math.nan
     return min(valid_probabilities)
-
-
-def _mean_probability(probabilities: Iterable[float]) -> float:
-    valid_probabilities = [p for p in probabilities if _is_valid_probability(p)]
-    if not valid_probabilities:
-        return math.nan
-    return sum(valid_probabilities) / len(valid_probabilities)
-
-
-def _is_valid_probability(value: float) -> bool:
-    return math.isfinite(value) and value >= 0
 
 
 def _guess_event_severity(
@@ -277,25 +252,13 @@ def _guess_event_severity(
     global_min_probability: float,
     non_frontier_probability: float,
 ) -> str:
-    if _same_probability(mine_probability, global_min_probability):
+    if math.isclose(mine_probability, global_min_probability):
         return "success"
-    if _is_valid_probability(non_frontier_probability) and mine_probability > non_frontier_probability:
+    if mine_probability > non_frontier_probability:
         return "warning"
-    if _same_probability(global_min_probability, 0.0):
+    if math.isclose(global_min_probability, 0.0):
         return "warning"
     return "info"
-
-
-def _same_probability(left: float, right: float) -> bool:
-    if not math.isfinite(left) or not math.isfinite(right):
-        return False
-    return math.isclose(left, right, rel_tol=0.0, abs_tol=1e-12)
-
-
-def _format_cell_prefix(context: ReplayEventContext) -> str:
-    if context.mouse is None or context.mouse.row is None or context.mouse.column is None:
-        return ""
-    return f"{context.mouse.row + 1},{context.mouse.column + 1}，"
 
 
 def _format_pluck(value: float) -> str:
