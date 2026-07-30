@@ -5,13 +5,29 @@ from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
-    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox, QGridLayout
+    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox, QGridLayout, QSizeGrip, QComboBox
 
 from replay_analysis import analyse_replay_events, unwrap_board_event, unwrap_mouse_event
 from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from utils.app_logger import logger
 from utils.path_utils import resource_path
+
+
+class VideoControlWindow(RoundQWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.size_grip = QSizeGrip(self)
+        self.size_grip.setFixedSize(16, 16)
+        self.size_grip.raise_()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        grip_size = self.size_grip.sizeHint()
+        self.size_grip.move(
+            self.width() - grip_size.width() - 8,
+            self.height() - grip_size.height() - 8,
+        )
 
 
 class CommentCheckBox(QWidget):
@@ -62,6 +78,9 @@ class CommentLabel(QLabel):
     # Release = QtCore.pyqtSignal(int)
     clicked = pyqtSignal()  # 单击信号
     doubleClicked = pyqtSignal()  # 双击信号
+    hovered = pyqtSignal()
+    unhovered = pyqtSignal()
+
     def __init__(self, parent, text, middle = True):
         super(CommentLabel, self).__init__(parent)
         if not isinstance(text, str):
@@ -88,6 +107,14 @@ class CommentLabel(QLabel):
         if event.button() == Qt.LeftButton:
             self.doubleClicked.emit()  # 发射双击信号
         super().mouseDoubleClickEvent(event)
+
+    def enterEvent(self, event):
+        self.hovered.emit()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.unhovered.emit()
+        super().leaveEvent(event)
        
 
 class VideoSetTabWidget(QWidget):
@@ -284,6 +311,8 @@ class VideoTabWidget(QWidget):
         self.tab_name = tab_name
         self.file_name = file_name
         self.video = video
+        self.event_rows = []
+        self.event_types = set()
         self.setup_ui()
     
     def setup_ui(self):
@@ -335,9 +364,15 @@ class VideoTabWidget(QWidget):
         self.label_position = self._make_table_label(_translate("Form", "坐标"), font)
         self.label_position.setObjectName("label_position")
 
-        # 类型标签
-        self.label_event = self._make_table_label(_translate("Form", "类型"), font)
+        # 类型筛选
+        self.label_event = QComboBox(self.scrollAreaWidgetContents)
+        self.label_event.setFont(font)
         self.label_event.setObjectName("label_event")
+        self.label_event.setMinimumHeight(42)
+        self.label_event.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.label_event.setStyleSheet(self._row_style())
+        self.label_event.addItem(_translate("Form", "类型"))
+        self.label_event.currentTextChanged.connect(self._apply_event_type_filter)
         
         # 分类标签
         self.label_tag = self._make_table_label(_translate("Form", "标签"), font)
@@ -380,7 +415,7 @@ class VideoTabWidget(QWidget):
     
     def set_event_label(self, text):
         """设置事件标签文本"""
-        self.label_event.setText(text)
+        self.label_event.setItemText(0, text)
         self.event_label = text
     
     def set_tag_label(self, text):
@@ -394,7 +429,7 @@ class VideoTabWidget(QWidget):
     
     def get_event_label(self):
         """获取事件标签文本"""
-        return self.label_event.text()
+        return self.label_event.currentText()
     
     def get_tag_label(self):
         """获取分类标签文本"""
@@ -430,10 +465,38 @@ class VideoTabWidget(QWidget):
         self.tableLayout.addWidget(coordinate_label, row_index, 1)
         self.tableLayout.addWidget(event_type_label, row_index, 2)
         self.tableLayout.addWidget(tag_label, row_index, 3)
+        row_widgets = (time_label, coordinate_label, event_type_label, tag_label)
+        self.event_rows.append((event_type_text, row_widgets))
+        self._add_event_type_filter_option(event_type_text)
+        self._set_event_row_visible(row_widgets, self._event_type_filter_accepts(event_type_text))
         return time_label, coordinate_label, event_type_label, tag_label
+
+    def _add_event_type_filter_option(self, event_type_text):
+        if not event_type_text or event_type_text in self.event_types:
+            return
+        self.event_types.add(event_type_text)
+        self.label_event.addItem(event_type_text)
+
+    def _apply_event_type_filter(self, selected_type):
+        for event_type_text, row_widgets in self.event_rows:
+            self._set_event_row_visible(
+                row_widgets,
+                self._event_type_filter_accepts(event_type_text, selected_type),
+            )
+
+    def _event_type_filter_accepts(self, event_type_text, selected_type=None):
+        if selected_type is None:
+            selected_type = self.label_event.currentText()
+        return selected_type == self.label_event.itemText(0) or event_type_text == selected_type
+
+    def _set_event_row_visible(self, row_widgets, visible):
+        for widget in row_widgets:
+            widget.setVisible(visible)
     
     def clear_events(self):
         """清除所有事件行（保留标题行）"""
+        self.event_rows = []
+        self.event_types = set()
         for index in reversed(range(self.tableLayout.count())):
             item = self.tableLayout.itemAt(index)
             widget = item.widget()
@@ -445,6 +508,8 @@ class VideoTabWidget(QWidget):
             ]:
                 self.tableLayout.removeWidget(widget)
                 widget.deleteLater()
+        while self.label_event.count() > 1:
+            self.label_event.removeItem(1)
     
     def set_tab_text(self, text):
         """设置标签页显示文本"""
@@ -461,14 +526,22 @@ class ui_Form(QWidget, Ui_Form):
     videoSetTimePeriod = QtCore.pyqtSignal(int)
     videoTabClicked = QtCore.pyqtSignal(str, int)
     videoTabDoubleClicked = QtCore.pyqtSignal(str, int)
+    videoCellHovered = QtCore.pyqtSignal(int, int)
+    videoCellHoverCleared = QtCore.pyqtSignal()
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
     def __init__(self, game_setting, parent):
         super (ui_Form, self).__init__()
         self.tab_id = 0
-        self.QWidget = RoundQWidget(parent)
+        self.QWidget = VideoControlWindow(parent)
         self.setupUi(self.QWidget)
+        self.QWidget.setMinimumSize(QtCore.QSize(480, 360))
+        self.QWidget.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.QWidget.resize(
+            game_setting.value("DEFAULT/videocontrolwidth", 520, int),
+            game_setting.value("DEFAULT/videocontrolheight", 640, int),
+        )
         self.game_setting = game_setting
 
         m = resource_path('media').as_posix()
@@ -505,7 +578,8 @@ class ui_Form(QWidget, Ui_Form):
         comment_row = 1
         for time, event_index, annotations in comments:
             time_value = int(time * 1000)
-            coordinate_text = self._event_coordinate_text(video, event_index)
+            coordinate = self._event_coordinate(video, event_index)
+            coordinate_text = self._event_coordinate_text(coordinate)
             for annotation in annotations:
                 status = self._normalise_event_status(annotation.severity)
                 event_type_text = self._event_type_text(video, event_index, annotation)
@@ -522,6 +596,10 @@ class ui_Form(QWidget, Ui_Form):
                 c2.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
                 c3.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
                 c4.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                if coordinate is not None:
+                    row, column = coordinate
+                    c2.hovered.connect(lambda r=row, c=column: self.videoCellHovered.emit(r, c))
+                    c2.unhovered.connect(self.videoCellHoverCleared.emit)
         
         self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
         ...
@@ -536,21 +614,27 @@ class ui_Form(QWidget, Ui_Form):
             return "error"
         return "info"
 
-    def _event_coordinate_text(self, video, event_index):
+    def _event_coordinate(self, video, event_index):
         record = self._video_event_record(video, event_index)
         if record is None:
-            return ""
+            return None
 
         event = getattr(record, "event", None)
         mouse = unwrap_mouse_event(event, getattr(video, "pix_size", 0))
         if mouse is not None and mouse.row is not None and mouse.column is not None:
-            return f"{mouse.row + 1},{mouse.column + 1}"
+            return mouse.row, mouse.column
 
         board_event = unwrap_board_event(event)
         if board_event is not None:
-            return f"{board_event.row + 1},{board_event.column + 1}"
+            return board_event.row, board_event.column
 
-        return ""
+        return None
+
+    def _event_coordinate_text(self, coordinate):
+        if coordinate is None:
+            return ""
+        row, column = coordinate
+        return f"{row + 1},{column + 1}"
 
     def _event_type_text(self, video, event_index, annotation):
         if annotation.key:
@@ -631,5 +715,7 @@ class ui_Form(QWidget, Ui_Form):
         self.tab_id = 0
         self.game_setting.set_value("DEFAULT/videocontroltop", self.QWidget.x())
         self.game_setting.set_value("DEFAULT/videocontrolleft", self.QWidget.y())
+        self.game_setting.set_value("DEFAULT/videocontrolwidth", self.QWidget.width())
+        self.game_setting.set_value("DEFAULT/videocontrolheight", self.QWidget.height())
         self.game_setting.sync()
 

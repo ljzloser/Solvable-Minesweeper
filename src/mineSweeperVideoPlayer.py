@@ -32,6 +32,8 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
         self.ui_video_control.videoTabDoubleClicked.connect(
             lambda a, b: self.play_video_tab_name_id(a, b, True))
+        self.ui_video_control.videoCellHovered.connect(self.highlight_video_cell)
+        self.ui_video_control.videoCellHoverCleared.connect(self.clear_video_cell_highlight)
         self.show_path_trace = False
         self.mouse_trace_points = []
         self.path_trace_left_clicks = set()
@@ -292,6 +294,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
         video.video_playing_pix_size = self.label.pixSize
         self.label.ms_board = video
+        self.label.clear_highlight_cell()
         # 改成录像的标识
         # print(self.label.ms_board.player_identifier)
         self.label_info.setText(self.label.ms_board.player_identifier)
@@ -372,6 +375,12 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def toggle_op(self, checked):
         self.label.show_opening = checked
         self.label.update()
+
+    def highlight_video_cell(self, row, column):
+        self.label.highlight_cell(row, column)
+
+    def clear_video_cell_highlight(self):
+        self.label.clear_highlight_cell()
 
     def video_playing_step(self):
         # 播放录像时定时器的回调

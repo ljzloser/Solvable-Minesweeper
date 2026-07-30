@@ -29,27 +29,36 @@ def guess_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
     if context.mouse is None:
         return None
 
-    pluck_delta = _pluck_delta_from_previous_mouse_event(context)
+    pluck_change = _pluck_change_from_previous_mouse_event(context)
+    if pluck_change is None:
+        return None
+    current_pluck, pluck_delta = pluck_change
     if pluck_delta is None or pluck_delta <= _PLUCK_DELTA_EPSILON:
         return None
 
     prior_game_board = context.prior_game_board()
     possibility_board = context.prior_possibility_board()
-    log10_probability = _log10_probability(pluck_delta)
+    safe_probability = _safe_probability_from_pluck_delta(pluck_delta)
+    mine_probability = 1 - safe_probability
     global_min_probability = _global_min_probability(prior_game_board, possibility_board)
     non_frontier_probability = _non_frontier_probability(prior_game_board, possibility_board)
 
     return ReplayEventAnnotation(
-        severity="warning",
+        severity=_guess_event_severity(
+            mine_probability,
+            global_min_probability,
+            non_frontier_probability,
+        ),
         key="guess",
         text=(
-            f"猜雷（{_format_cell_prefix(context)}安全概率 log10 "
-            f"{_format_probability_log10(log10_probability)}，"
-            f"全局最小雷概率 {_format_probability(global_min_probability)}，"
-            f"非前沿区雷概率 {_format_probability(non_frontier_probability)}）"
+            f"pluck={_format_pluck(current_pluck)}"
+            f"(+{_format_pluck(pluck_delta)})，"
+            f"雷{_format_probability_percent(mine_probability)}，"
+            f"最小{_format_probability_percent(global_min_probability)}，"
+            f"密度{_format_probability_percent(non_frontier_probability)}"
         ),
         params=(
-            log10_probability,
+            mine_probability,
             pluck_delta,
             global_min_probability,
             non_frontier_probability,
@@ -59,9 +68,9 @@ def guess_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
     )
 
 
-def _pluck_delta_from_previous_mouse_event(
+def _pluck_change_from_previous_mouse_event(
     context: ReplayEventContext,
-) -> Optional[float]:
+) -> Optional[Tuple[float, float]]:
     current_pluck = _context_pluck(context)
     previous_pluck = _previous_mouse_pluck(context)
     if current_pluck is None or previous_pluck is None:
@@ -69,10 +78,10 @@ def _pluck_delta_from_previous_mouse_event(
     if _is_max_pluck(previous_pluck):
         return None
     if _is_max_pluck(current_pluck):
-        return math.inf
+        return current_pluck, math.inf
     if not math.isfinite(current_pluck) or not math.isfinite(previous_pluck):
         return None
-    return current_pluck - previous_pluck
+    return current_pluck, current_pluck - previous_pluck
 
 
 def _previous_mouse_pluck(context: ReplayEventContext) -> Optional[float]:
@@ -144,10 +153,10 @@ def _is_max_pluck(value: float) -> bool:
     return value >= _MAX_PLUCK_SENTINEL
 
 
-def _log10_probability(pluck_delta: float) -> float:
+def _safe_probability_from_pluck_delta(pluck_delta: float) -> float:
     if math.isinf(pluck_delta):
-        return -math.inf
-    return -pluck_delta
+        return 0.0
+    return 10 ** (-pluck_delta)
 
 
 def _global_min_probability(
@@ -246,21 +255,43 @@ def _is_valid_probability(value: float) -> bool:
     return math.isfinite(value) and value >= 0
 
 
+def _guess_event_severity(
+    mine_probability: float,
+    global_min_probability: float,
+    non_frontier_probability: float,
+) -> str:
+    if _same_probability(mine_probability, global_min_probability):
+        return "success"
+    if _is_valid_probability(non_frontier_probability) and mine_probability > non_frontier_probability:
+        return "warning"
+    if _same_probability(global_min_probability, 0.0):
+        return "warning"
+    return "info"
+
+
+def _same_probability(left: float, right: float) -> bool:
+    if not math.isfinite(left) or not math.isfinite(right):
+        return False
+    return math.isclose(left, right, rel_tol=0.0, abs_tol=1e-12)
+
+
 def _format_cell_prefix(context: ReplayEventContext) -> str:
     if context.mouse is None or context.mouse.row is None or context.mouse.column is None:
         return ""
     return f"{context.mouse.row + 1},{context.mouse.column + 1}，"
 
 
-def _format_probability(value: float) -> str:
+def _format_pluck(value: float) -> str:
     if math.isnan(value):
         return "nan"
-    return f"{value:.3f}"
-
-
-def _format_probability_log10(value: float) -> str:
     if math.isinf(value):
         return "-inf" if value < 0 else "inf"
+    return f"{value:.3f}"
+
+
+def _format_probability_percent(value: float) -> str:
     if math.isnan(value):
         return "nan"
-    return f"{value:.3f}"
+    if math.isinf(value):
+        return "-inf%" if value < 0 else "inf%"
+    return f"{value * 100:.2f}%"
