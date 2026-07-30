@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+from PyQt5.QtCore import QCoreApplication
+
 from .core import (
     ReplayAnalysisResult,
     ReplayEventAnnotation,
@@ -14,6 +16,7 @@ from .core import (
 
 
 Cell = Tuple[int, int]
+_translate = QCoreApplication.translate
 
 
 @dataclass
@@ -25,7 +28,7 @@ class FlagContribution:
     dce_cells: Tuple[Cell, ...] = ()
 
 
-_FLAG_EVENT_CACHE: Dict[int, Tuple[int, int, Dict[int, ReplayEventAnnotation]]] = {}
+_FLAG_EVENT_CACHE: Dict[int, Tuple[int, int, str, Dict[int, ReplayEventAnnotation]]] = {}
 
 
 @register_replay_analysis_rule
@@ -36,12 +39,23 @@ def flag_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
 
 def _flag_event_annotations(context: ReplayEventContext) -> Dict[int, ReplayEventAnnotation]:
     records_key = id(context.records)
+    language_marker = _translate("ReplayAnalysis", "标雷")
     cached = _FLAG_EVENT_CACHE.get(id(context.video))
-    if cached is not None and cached[0] == records_key and cached[1] == len(context.records):
-        return cached[2]
+    if (
+        cached is not None
+        and cached[0] == records_key
+        and cached[1] == len(context.records)
+        and cached[2] == language_marker
+    ):
+        return cached[3]
 
     annotations = _build_flag_event_annotations(context)
-    _FLAG_EVENT_CACHE[id(context.video)] = (records_key, len(context.records), annotations)
+    _FLAG_EVENT_CACHE[id(context.video)] = (
+        records_key,
+        len(context.records),
+        language_marker,
+        annotations,
+    )
     return annotations
 
 
@@ -100,10 +114,12 @@ def _annotation_for_flag(
 ) -> ReplayEventAnnotation:
     dce_text = _format_number(flag.dce)
     bbbv_text = _format_number(flag.bbbv_solved)
+    text = _translate("ReplayAnalysis", "双击{dce}次，解决{bbbv}bv")
+    text = text.replace("{dce}", dce_text).replace("{bbbv}", bbbv_text)
     return ReplayEventAnnotation(
         severity=_flag_event_severity(flag.dce, flag.bbbv_solved),
-        key="标雷",
-        text=f"dce{dce_text}，bbbv_solved{bbbv_text}",
+        key=_translate("ReplayAnalysis", "标雷"),
+        text=text,
         params=(flag.dce, flag.bbbv_solved),
         event_index=event_index,
         highlight_cells=((flag.row, flag.column), *flag.dce_cells),

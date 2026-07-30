@@ -2420,19 +2420,24 @@ Bild</translation>
         <translation>Export selected replays</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="346"/>
-        <source>时间</source>
-        <translation>Time</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="354"/>
-        <source>事件</source>
-        <translation>Event</translation>
-    </message>
-    <message>
         <location filename="../dialogs/videoControl.py" line="362"/>
-        <source>标签</source>
-        <translation>Label</translation>
+        <source>时间</source>
+        <translation>Zeit</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="366"/>
+        <source>坐标</source>
+        <translation>Koordinate</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="376"/>
+        <source>类型</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="380"/>
+        <source>详情</source>
+        <translation>Details</translation>
     </message>
     <message>
         <location filename="../dialogs/videoControl.py" line="554"/>
@@ -3390,6 +3395,116 @@ Plugins werden deaktiviert.</translation>
         <location filename="../dialogs/videoControl.py" line="40"/>
         <source>教科书式的FL局部（{0} 步）</source>
         <translation>Textbook FL local ({0} steps)</translation>
+    </message>
+</context>
+<context>
+    <name>VideoLoadProgress</name>
+    <message>
+        <source>打开录像</source>
+        <translation>Replay öffnen</translation>
+    </message>
+    <message>
+        <source>正在打开录像...</source>
+        <translation>Replay wird geöffnet...</translation>
+    </message>
+    <message>
+        <source>正在创建录像对象...</source>
+        <translation>Replay-Objekt wird erstellt...</translation>
+    </message>
+    <message>
+        <source>正在解析录像集...</source>
+        <translation>Replay-Sammlung wird geparst...</translation>
+    </message>
+    <message>
+        <source>录像集解析完成</source>
+        <translation>Replay-Sammlung geparst</translation>
+    </message>
+    <message>
+        <source>正在分析录像集...</source>
+        <translation>Replay-Sammlung wird analysiert...</translation>
+    </message>
+    <message>
+        <source>录像集分析完成</source>
+        <translation>Replay-Sammlung analysiert</translation>
+    </message>
+    <message>
+        <source>正在计算 pluck...</source>
+        <translation>pluck wird berechnet...</translation>
+    </message>
+    <message>
+        <source>正在解析录像...</source>
+        <translation>Replay wird geparst...</translation>
+    </message>
+    <message>
+        <source>录像解析完成</source>
+        <translation>Replay geparst</translation>
+    </message>
+    <message>
+        <source>正在分析录像...</source>
+        <translation>Replay wird analysiert...</translation>
+    </message>
+    <message>
+        <source>录像分析完成</source>
+        <translation>Replay analysiert</translation>
+    </message>
+    <message>
+        <source>正在创建录像目录...</source>
+        <translation>Replay-Verzeichnis wird erstellt...</translation>
+    </message>
+    <message>
+        <source>录像加载完成</source>
+        <translation>Replay geladen</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件...</source>
+        <translation>Lokale Ereignisse werden analysiert...</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件... ({current}/{total})</source>
+        <translation>Lokale Ereignisse werden analysiert... ({current}/{total})</translation>
+    </message>
+    <message>
+        <source>事件列表创建完成</source>
+        <translation>Ereignisliste erstellt</translation>
+    </message>
+    <message>
+        <source>打开录像失败</source>
+        <translation>Replay konnte nicht geöffnet werden</translation>
+    </message>
+    <message>
+        <source>录像解析失败：</source>
+        <translation>Replay konnte nicht geparst werden: </translation>
+    </message>
+</context>
+<context>
+    <name>ReplayAnalysis</name>
+    <message>
+        <source>猜雷</source>
+        <translation>Raten</translation>
+    </message>
+    <message>
+        <source>连击</source>
+        <translation>Klickserie</translation>
+    </message>
+    <message>
+        <source>标雷</source>
+        <translation>Flagge</translation>
+    </message>
+    <message>
+        <source>pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}</source>
+        <translation>pluck={pluck}(+{pluck_diff}), Mine {mine}, Minimum {minimum}, Dichte {density}</translation>
+    </message>
+    <message>
+        <source>右左间隔{right_left}，标双间隔{flag_double}</source>
+        <translation>R-L-Intervall {right_left}, Flagge-Doppelklick-Intervall {flag_double}</translation>
+    </message>
+    <message>
+        <source>长度{length}，间隔最大{max_interval}，最小{min_interval}，平均{average_interval}</source>
+        <translation>Länge {length}, max. Intervall {max_interval}, min. {min_interval}, Durchschnitt {average_interval}</translation>
+    </message>
+    <message>
+        <source>双击{dce}次，解决{bbbv}bv</source>
+        <translation>Doppelklick {dce} mal, {bbbv}bv gelöst</translation>
     </message>
 </context>
 <context>

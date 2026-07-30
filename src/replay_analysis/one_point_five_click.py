@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Optional, Tuple
 
+from PyQt5.QtCore import QCoreApplication
+
 from .core import (
     ReplayAnalysisResult,
     ReplayEventAnnotation,
@@ -10,6 +12,9 @@ from .core import (
     register_replay_analysis_rule,
     unwrap_mouse_event,
 )
+
+
+_translate = QCoreApplication.translate
 
 
 @register_replay_analysis_rule
@@ -37,13 +42,20 @@ def one_point_five_click_event_rule(context: ReplayEventContext) -> ReplayAnalys
     right_left_interval = left_press[3] - right_press[3]
     flag_double_interval = context.time - right_press[3]
 
+    text = _translate(
+        "ReplayAnalysis",
+        "右左间隔{right_left}，标双间隔{flag_double}",
+    )
+    text = (
+        text
+        .replace("{right_left}", _format_interval_ms(right_left_interval))
+        .replace("{flag_double}", _format_interval_ms(flag_double_interval))
+    )
+
     return ReplayEventAnnotation(
         severity="info",
         key="1.5click",
-        text=(
-            f"右左间隔{_format_interval_ms(right_left_interval)}，"
-            f"标双间隔{_format_interval_ms(flag_double_interval)}"
-        ),
+        text=text,
         params=(right_left_interval, flag_double_interval),
         highlight_cells=_unique_cells(
             (right_press[4], right_press[5]),

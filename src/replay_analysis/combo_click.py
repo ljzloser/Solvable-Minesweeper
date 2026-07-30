@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple
 
+from PyQt5.QtCore import QCoreApplication
+
 from .core import (
     ReplayAnalysisResult,
     ReplayEventAnnotation,
@@ -13,6 +15,7 @@ from .core import (
 
 
 ComboClick = Tuple[int, Any, float, int, int]
+_translate = QCoreApplication.translate
 
 
 @register_replay_analysis_rule
@@ -35,15 +38,22 @@ def combo_click_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
     max_interval = max(intervals)
     average_interval = sum(intervals) / len(intervals)
 
+    text = _translate(
+        "ReplayAnalysis",
+        "长度{length}，间隔最大{max_interval}，最小{min_interval}，平均{average_interval}",
+    )
+    text = (
+        text
+        .replace("{length}", str(len(clicks)))
+        .replace("{max_interval}", _format_interval_ms(max_interval))
+        .replace("{min_interval}", _format_interval_ms(min_interval))
+        .replace("{average_interval}", _format_interval_ms(average_interval))
+    )
+
     return ReplayEventAnnotation(
         severity="info",
-        key="连击",
-        text=(
-            f"长度{len(clicks)}，"
-            f"间隔最大{_format_interval_ms(max_interval)}，"
-            f"最小{_format_interval_ms(min_interval)}，"
-            f"平均{_format_interval_ms(average_interval)}"
-        ),
+        key=_translate("ReplayAnalysis", "连击"),
+        text=text,
         params=(len(clicks), max_interval, min_interval, average_interval),
         highlight_cells=tuple((row, column) for _, _, _, row, column in clicks),
     )

@@ -13,6 +13,9 @@ from mainWindowGUI import MainWindow
 from utils.app_logger import logger
 
 
+_translate = QCoreApplication.translate
+
+
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):
         super(MineSweeperVideoPlayer, self).__init__(MainWindow, args)
@@ -75,31 +78,31 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self._video_load_file_name = openfile_name
         self._show_video_load_progress(openfile_name)
         try:
-            self._on_video_load_progress(0, 100, "正在创建录像对象...")
+            self._on_video_load_progress(0, 100, _translate("VideoLoadProgress", "正在创建录像对象..."))
             video, video_set = self._create_video(openfile_name)
 
             if video_set:
-                self._on_video_load_progress(5, 100, "正在解析录像集...")
+                self._on_video_load_progress(5, 100, _translate("VideoLoadProgress", "正在解析录像集..."))
                 video_set.parse()
-                self._on_video_load_progress(35, 100, "录像集解析完成")
+                self._on_video_load_progress(35, 100, _translate("VideoLoadProgress", "录像集解析完成"))
 
-                self._on_video_load_progress(40, 100, "正在分析录像集...")
+                self._on_video_load_progress(40, 100, _translate("VideoLoadProgress", "正在分析录像集..."))
                 video_set.analyse()
-                self._on_video_load_progress(75, 100, "录像集分析完成")
+                self._on_video_load_progress(75, 100, _translate("VideoLoadProgress", "录像集分析完成"))
 
-                self._on_video_load_progress(80, 100, "正在计算 pluck...")
+                self._on_video_load_progress(80, 100, _translate("VideoLoadProgress", "正在计算 pluck..."))
                 video_set.analyse_for_features(["pluck"])
                 video = video_set[0].evf_video
             else:
-                self._on_video_load_progress(5, 100, "正在解析录像...")
+                self._on_video_load_progress(5, 100, _translate("VideoLoadProgress", "正在解析录像..."))
                 video.parse()
-                self._on_video_load_progress(35, 100, "录像解析完成")
+                self._on_video_load_progress(35, 100, _translate("VideoLoadProgress", "录像解析完成"))
 
-                self._on_video_load_progress(40, 100, "正在分析录像...")
+                self._on_video_load_progress(40, 100, _translate("VideoLoadProgress", "正在分析录像..."))
                 video.analyse()
-                self._on_video_load_progress(75, 100, "录像分析完成")
+                self._on_video_load_progress(75, 100, _translate("VideoLoadProgress", "录像分析完成"))
 
-                self._on_video_load_progress(80, 100, "正在计算 pluck...")
+                self._on_video_load_progress(80, 100, _translate("VideoLoadProgress", "正在计算 pluck..."))
                 video.analyse_for_features(["pluck"])
 
             self._on_video_load_finished(video, video_set)
@@ -125,21 +128,20 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         raise ValueError(f"Unsupported video file type: {openfile_name}")
 
     def _show_video_load_progress(self, openfile_name):
-        _translate = QCoreApplication.translate
         dialog = QProgressDialog(
-            _translate("Form", "正在打开录像..."),
+            _translate("VideoLoadProgress", "正在打开录像..."),
             "",
             0,
             0,
             self.mainWindow,
         )
-        dialog.setWindowTitle(_translate("Form", "打开录像"))
+        dialog.setWindowTitle(_translate("VideoLoadProgress", "打开录像"))
         dialog.setCancelButton(None)
         dialog.setMinimumDuration(0)
         dialog.setAutoClose(False)
         dialog.setAutoReset(False)
         dialog.setWindowModality(Qt.WindowModal)
-        dialog.setLabelText(_translate("Form", "正在打开录像...") + f"\n{openfile_name}")
+        dialog.setLabelText(_translate("VideoLoadProgress", "正在打开录像...") + f"\n{openfile_name}")
         dialog.show()
         self._video_load_progress_dialog = dialog
 
@@ -160,7 +162,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
     def _on_video_load_finished(self, video, video_set):
         if video_set:
-            self._on_video_load_progress(95, 100, "正在创建录像目录...")
+            self._on_video_load_progress(95, 100, _translate("VideoLoadProgress", "正在创建录像目录..."))
             self.ui_video_control.add_new_video_set_tab(video_set)
             # self.tab_data.append(video_set)
         else:
@@ -168,7 +170,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             # self.tab_data.append(video)
         tab_count = self.ui_video_control.tabWidget.count()
         self.ui_video_control.tabWidget.setCurrentIndex(tab_count - 1)
-        self._on_video_load_progress(100, 100, "录像加载完成")
+        self._on_video_load_progress(100, 100, _translate("VideoLoadProgress", "录像加载完成"))
         if self._video_load_progress_dialog:
             self._video_load_progress_dialog.close()
             self._video_load_progress_dialog = None
@@ -183,12 +185,12 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
             created_dialog = True
 
         try:
-            self._on_video_load_progress(85, 100, "正在分析本地事件...")
+            self._on_video_load_progress(85, 100, _translate("VideoLoadProgress", "正在分析本地事件..."))
             self.ui_video_control.add_new_video_tab(
                 video,
                 progress_callback=self._on_local_event_analysis_progress,
             )
-            self._on_video_load_progress(97, 100, "事件列表创建完成")
+            self._on_video_load_progress(97, 100, _translate("VideoLoadProgress", "事件列表创建完成"))
         finally:
             if created_dialog and self._video_load_progress_dialog:
                 self._video_load_progress_dialog.close()
@@ -198,22 +200,25 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def _on_local_event_analysis_progress(self, current, total):
         if total <= 0:
             value = 97
-            text = "正在分析本地事件..."
+            text = _translate("VideoLoadProgress", "正在分析本地事件...")
         else:
             current = min(current, total)
             value = 85 + int((97 - 85) * current / total)
-            text = f"正在分析本地事件... ({current}/{total})"
+            text = _translate(
+                "VideoLoadProgress",
+                "正在分析本地事件... ({current}/{total})",
+            )
+            text = text.replace("{current}", str(current)).replace("{total}", str(total))
         self._on_video_load_progress(value, 100, text)
 
     def _on_video_load_failed(self, message):
         if self._video_load_progress_dialog:
             self._video_load_progress_dialog.close()
             self._video_load_progress_dialog = None
-        _translate = QCoreApplication.translate
         QMessageBox.warning(
             self.mainWindow,
-            _translate("Form", "打开录像失败"),
-            _translate("Form", "录像解析失败：") + message,
+            _translate("VideoLoadProgress", "打开录像失败"),
+            _translate("VideoLoadProgress", "录像解析失败：") + message,
         )
 
 

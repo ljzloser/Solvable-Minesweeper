@@ -4,6 +4,8 @@ import math
 import sys
 from typing import Any, Iterable, Iterator, List, Optional, Tuple
 
+from PyQt5.QtCore import QCoreApplication
+
 from config.constants import CELL_UNOPENED
 
 from .core import (
@@ -22,6 +24,7 @@ from .core import (
 _PLUCK_DELTA_EPSILON = 1e-12
 _MAX_PLUCK_SENTINEL = sys.float_info.max / 2
 _MISSING = object()
+_translate = QCoreApplication.translate
 
 
 @register_replay_analysis_rule
@@ -43,20 +46,27 @@ def guess_event_rule(context: ReplayEventContext) -> ReplayAnalysisResult:
     global_min_probability = _global_min_probability(prior_game_board, possibility_board)
     non_frontier_probability = _non_frontier_probability(prior_game_board, possibility_board)
 
+    text = _translate(
+        "ReplayAnalysis",
+        "pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}",
+    )
+    text = (
+        text
+        .replace("{pluck}", _format_pluck(current_pluck))
+        .replace("{pluck_diff}", _format_pluck(pluck_delta))
+        .replace("{mine}", _format_probability_percent(mine_probability))
+        .replace("{minimum}", _format_probability_percent(global_min_probability))
+        .replace("{density}", _format_probability_percent(non_frontier_probability))
+    )
+
     return ReplayEventAnnotation(
         severity=_guess_event_severity(
             mine_probability,
             global_min_probability,
             non_frontier_probability,
         ),
-        key="guess",
-        text=(
-            f"pluck={_format_pluck(current_pluck)}"
-            f"(+{_format_pluck(pluck_delta)})，"
-            f"雷{_format_probability_percent(mine_probability)}，"
-            f"最小{_format_probability_percent(global_min_probability)}，"
-            f"密度{_format_probability_percent(non_frontier_probability)}"
-        ),
+        key=_translate("ReplayAnalysis", "猜雷"),
+        text=text,
         params=(
             mine_probability,
             pluck_delta,

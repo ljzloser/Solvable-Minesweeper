@@ -376,8 +376,8 @@ class VideoTabWidget(QWidget):
         self.label_event.addItem(_translate("Form", "类型"))
         self.label_event.currentTextChanged.connect(self._apply_event_type_filter)
         
-        # 分类标签
-        self.label_tag = self._make_table_label(_translate("Form", "标签"), font)
+        # 详情标签
+        self.label_tag = self._make_table_label(_translate("Form", "详情"), font)
         self.label_tag.setObjectName("label_tag")
         self.label_tag.setWordWrap(True)
 
@@ -410,6 +410,15 @@ class VideoTabWidget(QWidget):
         }
         background = colors.get(status, "#f0f0f0")
         return f"background-color: {background}; border: 1px solid #ddd;"
+
+    def retranslate_headers(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.label_time.setText(_translate("Form", "时间"))
+        self.label_position.setText(_translate("Form", "坐标"))
+        self.label_event.blockSignals(True)
+        self.label_event.setItemText(0, _translate("Form", "类型"))
+        self.label_event.blockSignals(False)
+        self.label_tag.setText(_translate("Form", "详情"))
     
     # 公共方法 - 标签文本设置
     def set_time_label(self, text):
@@ -588,16 +597,26 @@ class ui_Form(QWidget, Ui_Form):
         
     def add_new_video_tab(self, video, progress_callback=None):
         _translate = QtCore.QCoreApplication.translate
-        comments = []
-        for row in analyse_replay_events(video, progress_callback=progress_callback):
-            if row.annotations:
-                comments.append((row.time, row.event_index, row.annotations))
+        comments = self._analyse_video_comments(video, progress_callback)
                 
         
         self.tab_id += 1
         tab = VideoTabWidget(self, video=video, tab_name=f"tab_{self.tab_id}", file_name=video.file_name)
         tab.setAttribute(Qt.WA_DeleteOnClose)
         
+        self._populate_video_event_tab(tab, video, comments)
+
+        self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
+        ...
+
+    def _analyse_video_comments(self, video, progress_callback=None):
+        comments = []
+        for row in analyse_replay_events(video, progress_callback=progress_callback):
+            if row.annotations:
+                comments.append((row.time, row.event_index, row.annotations))
+        return comments
+
+    def _populate_video_event_tab(self, tab, video, comments):
         comment_row = 1
         for time, event_index, annotations in comments:
             time_value = int(time * 1000)
@@ -626,9 +645,19 @@ class ui_Form(QWidget, Ui_Form):
                             lambda cells=highlight_cells: self.videoCellsHovered.emit(cells)
                         )
                         cell.unhovered.connect(self.videoCellHoverCleared.emit)
-        
-        self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
-        ...
+
+    def retranslate_dynamic_ui(self):
+        _translate = QtCore.QCoreApplication.translate
+        for index in range(self.tabWidget.count()):
+            tab = self.tabWidget.widget(index)
+            if isinstance(tab, VideoTabWidget):
+                tab.retranslate_headers()
+                tab.clear_events()
+                comments = self._analyse_video_comments(tab.video)
+                self._populate_video_event_tab(tab, tab.video, comments)
+                self.tabWidget.setTabText(index, _translate("Form", "录像") + f"({tab.tab_name.split('_')[-1]})")
+            elif isinstance(tab, VideoSetTabWidget):
+                self.tabWidget.setTabText(index, _translate("Form", "目录") + f"({tab.tab_name.split('_')[-1]})")
 
     def _normalise_event_status(self, severity):
         status = str(severity or "info").strip().lower()

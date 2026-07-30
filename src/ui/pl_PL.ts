@@ -2420,19 +2420,24 @@ nieśmiertelnego ciała</translation>
         <translation>Export selected replays</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="346"/>
-        <source>时间</source>
-        <translation>Time</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="354"/>
-        <source>事件</source>
-        <translation>Event</translation>
-    </message>
-    <message>
         <location filename="../dialogs/videoControl.py" line="362"/>
-        <source>标签</source>
-        <translation>Label</translation>
+        <source>时间</source>
+        <translation>Czas</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="366"/>
+        <source>坐标</source>
+        <translation>Współrzędne</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="376"/>
+        <source>类型</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="380"/>
+        <source>详情</source>
+        <translation>Szczegóły</translation>
     </message>
     <message>
         <location filename="../dialogs/videoControl.py" line="554"/>
@@ -3390,6 +3395,116 @@ Wtyczki zostaną wyłączone.</translation>
         <location filename="../dialogs/videoControl.py" line="40"/>
         <source>教科书式的FL局部（{0} 步）</source>
         <translation>Textbook FL local ({0} steps)</translation>
+    </message>
+</context>
+<context>
+    <name>VideoLoadProgress</name>
+    <message>
+        <source>打开录像</source>
+        <translation>Otwórz powtórkę</translation>
+    </message>
+    <message>
+        <source>正在打开录像...</source>
+        <translation>Otwieranie powtórki...</translation>
+    </message>
+    <message>
+        <source>正在创建录像对象...</source>
+        <translation>Tworzenie obiektu powtórki...</translation>
+    </message>
+    <message>
+        <source>正在解析录像集...</source>
+        <translation>Parsowanie zestawu powtórek...</translation>
+    </message>
+    <message>
+        <source>录像集解析完成</source>
+        <translation>Zestaw powtórek sparsowany</translation>
+    </message>
+    <message>
+        <source>正在分析录像集...</source>
+        <translation>Analizowanie zestawu powtórek...</translation>
+    </message>
+    <message>
+        <source>录像集分析完成</source>
+        <translation>Zestaw powtórek przeanalizowany</translation>
+    </message>
+    <message>
+        <source>正在计算 pluck...</source>
+        <translation>Obliczanie pluck...</translation>
+    </message>
+    <message>
+        <source>正在解析录像...</source>
+        <translation>Parsowanie powtórki...</translation>
+    </message>
+    <message>
+        <source>录像解析完成</source>
+        <translation>Powtórka sparsowana</translation>
+    </message>
+    <message>
+        <source>正在分析录像...</source>
+        <translation>Analizowanie powtórki...</translation>
+    </message>
+    <message>
+        <source>录像分析完成</source>
+        <translation>Powtórka przeanalizowana</translation>
+    </message>
+    <message>
+        <source>正在创建录像目录...</source>
+        <translation>Tworzenie katalogu powtórek...</translation>
+    </message>
+    <message>
+        <source>录像加载完成</source>
+        <translation>Powtórka załadowana</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件...</source>
+        <translation>Analizowanie lokalnych zdarzeń...</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件... ({current}/{total})</source>
+        <translation>Analizowanie lokalnych zdarzeń... ({current}/{total})</translation>
+    </message>
+    <message>
+        <source>事件列表创建完成</source>
+        <translation>Lista zdarzeń utworzona</translation>
+    </message>
+    <message>
+        <source>打开录像失败</source>
+        <translation>Nie udało się otworzyć powtórki</translation>
+    </message>
+    <message>
+        <source>录像解析失败：</source>
+        <translation>Nie udało się sparsować powtórki: </translation>
+    </message>
+</context>
+<context>
+    <name>ReplayAnalysis</name>
+    <message>
+        <source>猜雷</source>
+        <translation>Zgadywanie</translation>
+    </message>
+    <message>
+        <source>连击</source>
+        <translation>Seria kliknięć</translation>
+    </message>
+    <message>
+        <source>标雷</source>
+        <translation>Flaga</translation>
+    </message>
+    <message>
+        <source>pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}</source>
+        <translation>pluck={pluck}(+{pluck_diff}), mina {mine}, minimum {minimum}, gęstość {density}</translation>
+    </message>
+    <message>
+        <source>右左间隔{right_left}，标双间隔{flag_double}</source>
+        <translation>odstęp P-L {right_left}, odstęp flaga-dwuklik {flag_double}</translation>
+    </message>
+    <message>
+        <source>长度{length}，间隔最大{max_interval}，最小{min_interval}，平均{average_interval}</source>
+        <translation>długość {length}, maks. odstęp {max_interval}, min. {min_interval}, średnio {average_interval}</translation>
+    </message>
+    <message>
+        <source>双击{dce}次，解决{bbbv}bv</source>
+        <translation>dwuklik {dce} razy, rozwiązano {bbbv}bv</translation>
     </message>
 </context>
 <context>
