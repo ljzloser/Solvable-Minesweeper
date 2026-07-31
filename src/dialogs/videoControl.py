@@ -1,67 +1,33 @@
 import os
-import re
 from pathlib import Path
 
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QCheckBox,\
-    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox
+    QSizePolicy, QHBoxLayout, QMenu, QAction, QMessageBox, QGridLayout, QSizeGrip, QComboBox, QSpacerItem
 
-import ms_toollib as ms
+from replay_analysis import analyse_replay_events, unwrap_board_event, unwrap_mouse_event
 from ui.uiComponents import RoundQWidget
 from ui.ui_video_control import Ui_Form
 from utils.app_logger import logger
 from utils.path_utils import resource_path
 
-_translate = QtCore.QCoreApplication.translate
 
-# ── 评论翻译 ──────────────────────────────────────────────
-# severity + key → 中文原文（默认），国际化引擎翻译为其他语言
-_COMMENT_TEMPLATES: dict[tuple[str, str], str] = {
-    ("error", "high_risk_guess"):        "危险的猜雷（正确概率 {0}）",
-    ("feature", "hard_judgment"):        "高难度的判雷（{0}）",
-    ("warning", "needless_guess"):       "可以判雷时选择猜雷",
-    ("error", "mouse_trace_too_curved"): "鼠标轨迹过于弯曲（{0}%）",
-    ("warning", "mouse_trace_curved"):   "鼠标轨迹弯曲（{0}%）",
-    ("suspect", "mouse_trace_straight"): "笔直的鼠标轨迹",
-    ("warning", "vision_transfer"):      "可以判雷时视野的转移",
-    ("feature", "fl_local"):             "教科书式的FL局部（{0} 步）",
-}
-# pylupdate5 提取目标字符串（必须使用字符串字面量，不能用变量）
-# fmt: off
-_COMMENT_TEMPLATES_EXTRACT = [
-    _translate("VideoControl", "危险的猜雷（正确概率 {0}）"),
-    _translate("VideoControl", "高难度的判雷（{0}）"),
-    _translate("VideoControl", "可以判雷时选择猜雷"),
-    _translate("VideoControl", "鼠标轨迹过于弯曲（{0}%）"),
-    _translate("VideoControl", "鼠标轨迹弯曲（{0}%）"),
-    _translate("VideoControl", "笔直的鼠标轨迹"),
-    _translate("VideoControl", "可以判雷时视野的转移"),
-    _translate("VideoControl", "教科书式的FL局部（{0} 步）"),
-]
-# fmt: on
+class VideoControlWindow(RoundQWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.size_grip = QSizeGrip(self)
+        self.size_grip.setFixedSize(16, 16)
+        self.size_grip.raise_()
 
-def _translate_comments(comments: str) -> list[tuple[str, str]]:
-    if not comments:
-        return []
-    result: list[tuple[str, str]] = []
-    for seg in comments.split(";"):
-        seg = seg.strip()
-        if not seg:
-            continue
-        m = re.match(r"^(\w+):(\w+):(.+)$", seg)
-        if m:
-            severity, key, params = m.group(1), m.group(2), m.group(3).strip()
-            template = _COMMENT_TEMPLATES.get((severity, key))
-            if template:
-                try:
-                    params = f"{float(params):.3f}"
-                except ValueError:
-                    pass
-                text = _translate("VideoControl", template).format(params)
-                result.append((severity, text))
-    return result
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        grip_size = self.size_grip.sizeHint()
+        self.size_grip.move(
+            self.width() - grip_size.width() - 8,
+            self.height() - grip_size.height() - 8,
+        )
 
 
 class CommentCheckBox(QWidget):
@@ -112,6 +78,9 @@ class CommentLabel(QLabel):
     # Release = QtCore.pyqtSignal(int)
     clicked = pyqtSignal()  # 单击信号
     doubleClicked = pyqtSignal()  # 双击信号
+    hovered = pyqtSignal()
+    unhovered = pyqtSignal()
+
     def __init__(self, parent, text, middle = True):
         super(CommentLabel, self).__init__(parent)
         if not isinstance(text, str):
@@ -138,6 +107,14 @@ class CommentLabel(QLabel):
         if event.button() == Qt.LeftButton:
             self.doubleClicked.emit()  # 发射双击信号
         super().mouseDoubleClickEvent(event)
+
+    def enterEvent(self, event):
+        self.hovered.emit()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.unhovered.emit()
+        super().leaveEvent(event)
        
 
 class VideoSetTabWidget(QWidget):
@@ -182,10 +159,15 @@ class VideoSetTabWidget(QWidget):
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 457, 459))
         self.scrollAreaWidgetContents.setMinimumSize(QSize(0, 0))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.tableLayout = QGridLayout(self.scrollAreaWidgetContents)
+        self.tableLayout.setContentsMargins(0, 0, 0, 0)
+        self.tableLayout.setSpacing(0)
+        self.tableLayout.setColumnMinimumWidth(0, 91)
+        self.tableLayout.setColumnStretch(0, 0)
+        self.tableLayout.setColumnStretch(1, 1)
         
         # 视频标题标签
         self.label_video = QLabel(self.scrollAreaWidgetContents)
-        self.label_video.setGeometry(QRect(120, 0, 367, 42))
         font = QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
@@ -196,17 +178,22 @@ class VideoSetTabWidget(QWidget):
         
         # 选择复选框
         self.checkBox_choose = QCheckBox(self.scrollAreaWidgetContents)
-        self.checkBox_choose.setGeometry(QRect(10, 0, 91, 42))
         font = QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(12)
         self.checkBox_choose.setFont(font)
         self.checkBox_choose.setObjectName("checkBox_choose")
         self.checkBox_choose.setText(_translate("Form", "全选"))
+        self.checkBox_choose.setMinimumHeight(42)
+        self.checkBox_choose.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.label_video.setMinimumHeight(42)
+        self.label_video.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         
         # 确保控件层次正确
         self.checkBox_choose.raise_()
         self.label_video.raise_()
+        self.tableLayout.addWidget(self.checkBox_choose, 0, 0)
+        self.tableLayout.addWidget(self.label_video, 0, 1)
         
         # 设置滚动区域的内容
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
@@ -229,8 +216,8 @@ class VideoSetTabWidget(QWidget):
         """导出数据的具体实现"""
         checkboxes = self.scrollAreaWidgetContents.findChildren(CommentCheckBox)  # 请将CommentCheckBox替换为你的实际复选框类名
     
-        # 按控件在父容器中的y坐标（垂直位置）进行排序
-        ordered_checkboxes = sorted(checkboxes, key=lambda cb: cb.y())
+        # 布局会动态撑高行，导出顺序按录像集索引确定。
+        ordered_checkboxes = sorted(checkboxes, key=lambda cb: cb.signal_int)
         
         # self.video_set.file_name是带evfs后缀的绝对路径
         path = Path(self.video_set.file_name)
@@ -291,6 +278,25 @@ class VideoSetTabWidget(QWidget):
     def connect_checkbox_changed(self, callback):
         """连接复选框状态改变信号"""
         self.checkBox_choose.stateChanged.connect(callback)
+
+    def add_video_row(self, index, video_name, row_index):
+        font = QFont()
+        font.setFamily("微软雅黑")
+        font.setPointSize(12)
+
+        checkbox = CommentCheckBox(self.scrollAreaWidgetContents, index)
+        checkbox.setMinimumHeight(42)
+        checkbox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+
+        label = CommentLabel(self.scrollAreaWidgetContents, video_name, middle=False)
+        label.setFont(font)
+        label.setWordWrap(True)
+        label.setMinimumHeight(42)
+        label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+
+        self.tableLayout.addWidget(checkbox, row_index, 0)
+        self.tableLayout.addWidget(label, row_index, 1)
+        return checkbox, label
         
 
 
@@ -305,6 +311,11 @@ class VideoTabWidget(QWidget):
         self.tab_name = tab_name
         self.file_name = file_name
         self.video = video
+        self.event_rows = []
+        self.replay_comments = []
+        self.event_types = set()
+        self.bottom_spacer = None
+        self.bottom_spacer_row = 1
         self.setup_ui()
     
     def setup_ui(self):
@@ -332,6 +343,16 @@ class VideoTabWidget(QWidget):
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 457, 448))
         self.scrollAreaWidgetContents.setMinimumSize(QSize(0, 0))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.tableLayout = QGridLayout(self.scrollAreaWidgetContents)
+        self.tableLayout.setContentsMargins(0, 0, 0, 0)
+        self.tableLayout.setSpacing(0)
+        self.tableLayout.setColumnMinimumWidth(0, 68)
+        self.tableLayout.setColumnMinimumWidth(1, 70)
+        self.tableLayout.setColumnMinimumWidth(2, 72)
+        self.tableLayout.setColumnStretch(0, 0)
+        self.tableLayout.setColumnStretch(1, 0)
+        self.tableLayout.setColumnStretch(2, 0)
+        self.tableLayout.setColumnStretch(3, 1)
         
         # 创建标题栏字体
         font = QFont()
@@ -339,32 +360,66 @@ class VideoTabWidget(QWidget):
         font.setPointSize(12)
         
         # 时间标签
-        self.label_time = QLabel(self.scrollAreaWidgetContents)
-        self.label_time.setGeometry(QRect(0, 0, 68, 42))
-        self.label_time.setFont(font)
-        self.label_time.setAlignment(Qt.AlignCenter)
+        self.label_time = self._make_table_label(_translate("Form", "时间"), font)
         self.label_time.setObjectName("label_time")
-        self.label_time.setText(_translate("Form", "时间"))
         
-        # 事件标签
-        self.label_event = QLabel(self.scrollAreaWidgetContents)
-        self.label_event.setGeometry(QRect(68, 0, 90, 42))
+        # 坐标标签
+        self.label_position = self._make_table_label(_translate("Form", "坐标"), font)
+        self.label_position.setObjectName("label_position")
+
+        # 类型筛选
+        self.label_event = QComboBox(self.scrollAreaWidgetContents)
         self.label_event.setFont(font)
-        self.label_event.setAlignment(Qt.AlignCenter)
         self.label_event.setObjectName("label_event")
-        self.label_event.setText(_translate("Form", "事件"))
+        self.label_event.setMinimumHeight(42)
+        self.label_event.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.label_event.setStyleSheet(self._row_style())
+        self.label_event.addItem(_translate("Form", "类型"))
+        self.label_event.currentTextChanged.connect(self._apply_event_type_filter)
         
-        # 分类标签
-        self.label_tag = QLabel(self.scrollAreaWidgetContents)
-        self.label_tag.setGeometry(QRect(158, 0, 300, 42))
-        self.label_tag.setFont(font)
-        self.label_tag.setAlignment(Qt.AlignCenter)
+        # 详情标签
+        self.label_tag = self._make_table_label(_translate("Form", "详情"), font)
         self.label_tag.setObjectName("label_tag")
-        self.label_tag.setText(_translate("Form", "标签"))
+        self.label_tag.setWordWrap(True)
+
+        self.tableLayout.addWidget(self.label_time, 0, 0)
+        self.tableLayout.addWidget(self.label_position, 0, 1)
+        self.tableLayout.addWidget(self.label_event, 0, 2)
+        self.tableLayout.addWidget(self.label_tag, 0, 3)
+        self.tableLayout.setRowStretch(0, 0)
+        self._place_bottom_spacer(1)
         
         # 设置滚动区域的内容
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_4.addWidget(self.scrollArea)
+
+    def _make_table_label(self, text, font, status=None):
+        label = CommentLabel(self.scrollAreaWidgetContents, text)
+        label.setFont(font)
+        label.setAlignment(Qt.AlignCenter)
+        label.setMinimumHeight(42)
+        label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        label.setStyleSheet(self._row_style(status))
+        return label
+
+    def _row_style(self, status=None):
+        colors = {
+            "success": "#e8f5e9",
+            "info": "#eef4ff",
+            "warning": "#fff8df",
+            "error": "#fdecec",
+        }
+        background = colors.get(status, "#f0f0f0")
+        return f"background-color: {background}; border: 1px solid #ddd;"
+
+    def retranslate_headers(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.label_time.setText(_translate("Form", "时间"))
+        self.label_position.setText(_translate("Form", "坐标"))
+        self.label_event.blockSignals(True)
+        self.label_event.setItemText(0, _translate("Form", "类型"))
+        self.label_event.blockSignals(False)
+        self.label_tag.setText(_translate("Form", "详情"))
     
     # 公共方法 - 标签文本设置
     def set_time_label(self, text):
@@ -374,7 +429,7 @@ class VideoTabWidget(QWidget):
     
     def set_event_label(self, text):
         """设置事件标签文本"""
-        self.label_event.setText(text)
+        self.label_event.setItemText(0, text)
         self.event_label = text
     
     def set_tag_label(self, text):
@@ -388,62 +443,106 @@ class VideoTabWidget(QWidget):
     
     def get_event_label(self):
         """获取事件标签文本"""
-        return self.label_event.text()
+        return self.label_event.currentText()
     
     def get_tag_label(self):
         """获取分类标签文本"""
         return self.label_tag.text()
     
     # 公共方法 - 动态添加事件行
-    def add_event_row(self, time_text, event_text, tag_text, row_height=42, row_index=1):
+    def add_event_row(
+        self,
+        time_text,
+        coordinate_text,
+        event_type_text,
+        tag_text,
+        status="info",
+        row_height=42,
+        row_index=1,
+    ):
         """
         动态添加事件行
         row_index: 行索引（从1开始，0被标题占用）
         """
-        # 计算Y坐标位置
-        y_position = row_index * row_height
-        
-        # 创建时间标签
-        time_label = QLabel(time_text, self.scrollAreaWidgetContents)
-        time_label.setGeometry(QRect(0, y_position, 68, row_height))
         font = QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(10)
-        time_label.setFont(font)
-        time_label.setAlignment(Qt.AlignCenter)
-        time_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #ddd;")
-        
-        # 创建事件标签
-        event_label = QLabel(event_text, self.scrollAreaWidgetContents)
-        event_label.setGeometry(QRect(68, y_position, 90, row_height))
-        event_label.setFont(font)
-        event_label.setAlignment(Qt.AlignCenter)
-        event_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #ddd;")
-        
-        # 创建分类标签
-        tag_label = QLabel(tag_text, self.scrollAreaWidgetContents)
-        tag_label.setGeometry(QRect(158, y_position, 300, row_height))
-        tag_label.setFont(font)
-        tag_label.setAlignment(Qt.AlignCenter)
-        tag_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #ddd;")
-        
-        # 调整滚动区域内容的高度
-        current_height = self.scrollAreaWidgetContents.height()
-        new_height = max(current_height, y_position + row_height + 10)
-        self.scrollAreaWidgetContents.setMinimumHeight(new_height)
+        time_label = self._make_table_label(time_text, font, status)
+        coordinate_label = self._make_table_label(coordinate_text, font, status)
+        event_type_label = self._make_table_label(event_type_text, font, status)
+        tag_label = self._make_table_label(tag_text, font, status)
+        tag_label.setWordWrap(True)
+        tag_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        tag_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self._remove_bottom_spacer()
+        self.tableLayout.addWidget(time_label, row_index, 0)
+        self.tableLayout.addWidget(coordinate_label, row_index, 1)
+        self.tableLayout.addWidget(event_type_label, row_index, 2)
+        self.tableLayout.addWidget(tag_label, row_index, 3)
+        self.tableLayout.setRowStretch(row_index, 0)
+        self._place_bottom_spacer(row_index + 1)
+
+        row_widgets = (time_label, coordinate_label, event_type_label, tag_label)
+        self.event_rows.append((event_type_text, row_widgets))
+        self._add_event_type_filter_option(event_type_text)
+        self._set_event_row_visible(row_widgets, self._event_type_filter_accepts(event_type_text))
+        return time_label, coordinate_label, event_type_label, tag_label
+
+    def _place_bottom_spacer(self, row_index):
+        if self.bottom_spacer is None:
+            self.bottom_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.bottom_spacer_row = row_index
+        self.tableLayout.addItem(self.bottom_spacer, row_index, 0, 1, 4)
+        self.tableLayout.setRowStretch(row_index, 1)
+
+    def _remove_bottom_spacer(self):
+        if self.bottom_spacer is None:
+            return
+        self.tableLayout.setRowStretch(self.bottom_spacer_row, 0)
+        self.tableLayout.removeItem(self.bottom_spacer)
+
+    def _add_event_type_filter_option(self, event_type_text):
+        if not event_type_text or event_type_text in self.event_types:
+            return
+        self.event_types.add(event_type_text)
+        self.label_event.addItem(event_type_text)
+
+    def _apply_event_type_filter(self, selected_type):
+        for event_type_text, row_widgets in self.event_rows:
+            self._set_event_row_visible(
+                row_widgets,
+                self._event_type_filter_accepts(event_type_text, selected_type),
+            )
+
+    def _event_type_filter_accepts(self, event_type_text, selected_type=None):
+        if selected_type is None:
+            selected_type = self.label_event.currentText()
+        return selected_type == self.label_event.itemText(0) or event_type_text == selected_type
+
+    def _set_event_row_visible(self, row_widgets, visible):
+        for widget in row_widgets:
+            widget.setVisible(visible)
     
     def clear_events(self):
         """清除所有事件行（保留标题行）"""
-        # 获取所有子控件
-        children = self.scrollAreaWidgetContents.children()
-        for child in children:
-            # 只删除动态添加的事件行，保留标题标签
-            if (isinstance(child, QLabel) and 
-                child not in [self.label_time, self.label_event, self.label_tag]):
-                child.deleteLater()
-        
-        # 重置内容区域高度
-        self.scrollAreaWidgetContents.setMinimumHeight(448)
+        self.event_rows = []
+        self.event_types = set()
+        self._remove_bottom_spacer()
+        for index in reversed(range(self.tableLayout.count())):
+            item = self.tableLayout.itemAt(index)
+            widget = item.widget()
+            if widget and widget not in [
+                self.label_time,
+                self.label_position,
+                self.label_event,
+                self.label_tag,
+            ]:
+                self.tableLayout.removeWidget(widget)
+                widget.deleteLater()
+        while self.label_event.count() > 1:
+            self.label_event.removeItem(1)
+        self._place_bottom_spacer(1)
     
     def set_tab_text(self, text):
         """设置标签页显示文本"""
@@ -460,14 +559,22 @@ class ui_Form(QWidget, Ui_Form):
     videoSetTimePeriod = QtCore.pyqtSignal(int)
     videoTabClicked = QtCore.pyqtSignal(str, int)
     videoTabDoubleClicked = QtCore.pyqtSignal(str, int)
+    videoCellsHovered = QtCore.pyqtSignal(object)
+    videoCellHoverCleared = QtCore.pyqtSignal()
     # barSetMineNumCalPoss = QtCore.pyqtSignal(int)
     # time_current = 0.0
     
     def __init__(self, game_setting, parent):
         super (ui_Form, self).__init__()
         self.tab_id = 0
-        self.QWidget = RoundQWidget(parent)
+        self.QWidget = VideoControlWindow(parent)
         self.setupUi(self.QWidget)
+        self.QWidget.setMinimumSize(QtCore.QSize(480, 360))
+        self.QWidget.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.QWidget.resize(
+            game_setting.value("DEFAULT/videocontrolwidth", 520, int),
+            game_setting.value("DEFAULT/videocontrolheight", 640, int),
+        )
         self.game_setting = game_setting
 
         m = resource_path('media').as_posix()
@@ -489,45 +596,135 @@ class ui_Form(QWidget, Ui_Form):
         self.tabWidget.tabCloseRequested.connect(self.close_tab)
         
         
-    def add_new_video_tab(self, video):
+    def add_new_video_tab(self, video, progress_callback=None):
         _translate = QtCore.QCoreApplication.translate
-        # 组织录像评论
-        comments = []
-        for event in video.events:
-            t = event.time
-            parsed = _translate_comments(event.comments)
-            if parsed:
-                comments.append((t, parsed))
+        comments = self._analyse_video_comments(video, progress_callback)
                 
         
         self.tab_id += 1
         tab = VideoTabWidget(self, video=video, tab_name=f"tab_{self.tab_id}", file_name=video.file_name)
         tab.setAttribute(Qt.WA_DeleteOnClose)
-        
-        comment_row = 1
-        for comment in comments:
-            time_value = int(comment[0] * 1000)
-            c1 = CommentLabel(tab.scrollAreaWidgetContents, comment[0])
-            c1.setGeometry(QtCore.QRect(0, 42 * comment_row, 68, 42))
-            c1.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
-            for severity, text in comment[1]:
-                c2 = CommentLabel(tab.scrollAreaWidgetContents, severity)
-                c2.setGeometry(QtCore.QRect(68, 42 * comment_row, 90, 42))
-                c3 = CommentLabel(tab.scrollAreaWidgetContents, text)
-                c3.setGeometry(QtCore.QRect(158, 42 * comment_row, 300, 42))
-                c3.setWordWrap(True)
-                comment_row += 1
-                c2.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
-                c3.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
-            
-            
-        tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
-        
+        tab.replay_comments = comments
+
+        self._populate_video_event_tab(tab, video, comments)
+
         self.tabWidget.addTab(tab, _translate("Form", "录像") + f"({self.tab_id})")
         ...
+
+    def _analyse_video_comments(self, video, progress_callback=None):
+        comments = []
+        for row in analyse_replay_events(video, progress_callback=progress_callback):
+            if row.annotations:
+                comments.append((row.time, row.event_index, row.events or row.annotations))
+        return comments
+
+    def _populate_video_event_tab(self, tab, video, comments):
+        comment_row = 1
+        for time, event_index, annotations in comments:
+            time_value = int(time * 1000)
+            coordinate = self._event_coordinate(video, event_index)
+            coordinate_text = self._event_coordinate_text(coordinate)
+            for replay_event in annotations:
+                annotation = (
+                    replay_event.to_annotation()
+                    if hasattr(replay_event, "to_annotation")
+                    else replay_event
+                )
+                status = self._normalise_event_status(annotation.severity)
+                event_type_text = self._event_type_text(video, event_index, annotation)
+                c1, c2, c3, c4 = tab.add_event_row(
+                    time,
+                    coordinate_text,
+                    event_type_text,
+                    annotation.text,
+                    status=status,
+                    row_index=comment_row,
+                )
+                comment_row += 1
+                c1.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                c2.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                c3.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                c4.clicked.connect(lambda t=time_value: self.videoSetTimePeriod.emit(t))
+                highlight_cells = tuple(getattr(annotation, "highlight_cells", ()) or ())
+                if highlight_cells:
+                    for cell in (c1, c2, c3, c4):
+                        cell.hovered.connect(
+                            lambda cells=highlight_cells: self.videoCellsHovered.emit(cells)
+                        )
+                        cell.unhovered.connect(self.videoCellHoverCleared.emit)
+
+    def retranslate_dynamic_ui(self):
+        _translate = QtCore.QCoreApplication.translate
+        for index in range(self.tabWidget.count()):
+            tab = self.tabWidget.widget(index)
+            if isinstance(tab, VideoTabWidget):
+                tab.retranslate_headers()
+                tab.clear_events()
+                self._populate_video_event_tab(tab, tab.video, tab.replay_comments)
+                self.tabWidget.setTabText(index, _translate("Form", "录像") + f"({tab.tab_name.split('_')[-1]})")
+            elif isinstance(tab, VideoSetTabWidget):
+                self.tabWidget.setTabText(index, _translate("Form", "目录") + f"({tab.tab_name.split('_')[-1]})")
+
+    def _normalise_event_status(self, severity):
+        status = str(severity or "info").strip().lower()
+        if status in {"success", "info", "warning", "error"}:
+            return status
+        if status in {"warn"}:
+            return "warning"
+        if status in {"fail", "failure", "danger"}:
+            return "error"
+        return "info"
+
+    def _event_coordinate(self, video, event_index):
+        record = self._video_event_record(video, event_index)
+        if record is None:
+            return None
+
+        event = getattr(record, "event", None)
+        mouse = unwrap_mouse_event(event, getattr(video, "pix_size", 0))
+        if mouse is not None and mouse.row is not None and mouse.column is not None:
+            return mouse.row, mouse.column
+
+        board_event = unwrap_board_event(event)
+        if board_event is not None:
+            return board_event.row, board_event.column
+
+        return None
+
+    def _event_coordinate_text(self, coordinate):
+        if coordinate is None:
+            return ""
+        row, column = coordinate
+        return f"{row + 1},{column + 1}"
+
+    def _event_type_text(self, video, event_index, annotation):
+        if annotation.key:
+            return annotation.key
+
+        record = self._video_event_record(video, event_index)
+        if record is None:
+            return ""
+
+        event = getattr(record, "event", None)
+        mouse = unwrap_mouse_event(event, getattr(video, "pix_size", 0))
+        if mouse is not None:
+            return mouse.mouse
+
+        board_event = unwrap_board_event(event)
+        if board_event is not None:
+            return board_event.board
+
+        return ""
+
+    def _video_event_record(self, video, event_index):
+        try:
+            return video.events[event_index]
+        except (AttributeError, IndexError, TypeError):
+            return None
         
         
     def add_new_video_set_tab(self, video_set):
+        _translate = QtCore.QCoreApplication.translate
         self.tab_id += 1
         tab_name = f"tab_{self.tab_id}"
         tab = VideoSetTabWidget(self, video_set=video_set, tab_name=tab_name, file_name=video_set.file_name)
@@ -537,11 +734,11 @@ class ui_Form(QWidget, Ui_Form):
         for idv in range(video_set.len()):
             cell = video_set[idv]
             video = cell.evf_video
-            c1 = CommentCheckBox(tab.scrollAreaWidgetContents, idv)
-            c1.setGeometry(QtCore.QRect(0, 42 * comment_row, 91, 42))
-            c2 = CommentLabel(tab.scrollAreaWidgetContents,
-                              video.file_name.split("\\")[-1] + ".evf", middle=False)
-            c2.setGeometry(QtCore.QRect(91, 42 * comment_row, 367, 42))
+            c1, c2 = tab.add_video_row(
+                idv,
+                video.file_name.split("\\")[-1] + ".evf",
+                comment_row,
+            )
             # video_labels.append((idv, c2))
             c2.clicked.connect(lambda v=idv: self.videoTabClicked.emit(tab_name, v))
             c2.doubleClicked.connect(lambda v=idv: self.videoTabDoubleClicked.emit(tab_name, v))
@@ -551,9 +748,6 @@ class ui_Form(QWidget, Ui_Form):
         #     video_label.clicked.connect(lambda: self.videoTabClicked.emit(idv))
             # video_label.mouseReleaseEvent.connect(self.videoTabDoubleClicked.emit)
             
-        tab.scrollAreaWidgetContents.setFixedHeight(42 * (comment_row + 1))
-        
-        
         self.tabWidget.addTab(tab, _translate("Form", "目录") + f"({self.tab_id})")
 
 
@@ -582,5 +776,7 @@ class ui_Form(QWidget, Ui_Form):
         self.tab_id = 0
         self.game_setting.set_value("DEFAULT/videocontroltop", self.QWidget.x())
         self.game_setting.set_value("DEFAULT/videocontrolleft", self.QWidget.y())
+        self.game_setting.set_value("DEFAULT/videocontrolwidth", self.QWidget.width())
+        self.game_setting.set_value("DEFAULT/videocontrolheight", self.QWidget.height())
         self.game_setting.sync()
 

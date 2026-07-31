@@ -473,16 +473,27 @@ class Ui_MainWindow(Ui_MainWindow):
             app.installTranslator(self.trans)
             self.retranslateUi(self.mainWindow)
             self.score_board_manager.retranslateUi(self.score_board_manager.ui.QWidget)
+            self._retranslate_video_control()
         else:
             app.removeTranslator(self.trans)
             self.retranslateUi(self.mainWindow)
             self.score_board_manager.retranslateUi(self.score_board_manager.ui.QWidget)
+            self._retranslate_video_control()
         self.game_setting.set_value("DEFAULT/language", language)
         self.game_setting.sync()
         # mm.updata_ini(self.game_setting_path, [("DEFAULT", "language", language)])
         if language != self.language:
             self.language = language
             GameServerBridge.instance().send_event(LanguageChangeEvent(language=language))
+
+    def _retranslate_video_control(self):
+        if not hasattr(self, "ui_video_control"):
+            return
+        try:
+            self.ui_video_control.retranslateUi(self.ui_video_control.QWidget)
+            self.ui_video_control.retranslate_dynamic_ui()
+        except (AttributeError, RuntimeError):
+            return
 
 
     def read_or_create_game_setting(self):
