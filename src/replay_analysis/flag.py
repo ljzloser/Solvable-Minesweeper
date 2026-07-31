@@ -68,11 +68,27 @@ class FlagEvent(ReplayEvent):
         return (self.coordinate, *self.dce_cells)
 
 
+class FlagCancelEvent(ReplayEvent):
+    def type_text(self) -> str:
+        return _translate("ReplayAnalysis", "标雷")
+
+    def detail_text(self) -> str:
+        return _translate("ReplayAnalysis", "取消标雷")
+
+    def severity(self) -> str:
+        return "error"
+
+    def highlight_cells(self) -> Tuple[Tuple[int, int], ...]:
+        if self.coordinate is None:
+            return ()
+        return (self.coordinate,)
+
+
 @register_replay_event_manager
 class FlagEventManager(ReplayEventManager):
     def reset(self, context: ReplayEventContext) -> None:
         self.flags_by_index: Dict[int, FlagContribution] = {}
-        self.active_flags: List[Tuple[int, Cell]] = []
+        self.flags_by_cell: Dict[Cell, FlagContribution] = {}
         self.previous_mouse_record: Optional[Any] = context.record
 
     def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
@@ -80,38 +96,48 @@ class FlagEventManager(ReplayEventManager):
         if mouse_event is None:
             return ()
 
+        emitted: Tuple[ReplayEvent, ...] = ()
         _mouse_name, row, column = mouse_event
-        if _counter_delta(self.previous_mouse_record, context.record, "flag") > 0:
-            flag = FlagContribution(
-                event_index=context.index,
-                time=context.time,
-                row=row,
-                column=column,
+        cell = (row, column)
+        flag_delta = _counter_delta(self.previous_mouse_record, context.record, "flag")
+        if flag_delta > 0:
+            flag = self.flags_by_cell.get(cell)
+            if flag is None:
+                flag = FlagContribution(
+                    event_index=context.index,
+                    time=context.time,
+                    row=row,
+                    column=column,
+                )
+                self.flags_by_index[context.index] = flag
+                self.flags_by_cell[cell] = flag
+        elif flag_delta < 0:
+            emitted = (
+                FlagCancelEvent(
+                    event_index=context.index,
+                    time=context.time,
+                    coordinate=cell,
+                ),
             )
-            self.flags_by_index[context.index] = flag
-            self.active_flags.append((context.index, (row, column)))
-        elif _counter_delta(self.previous_mouse_record, context.record, "flag") < 0:
-            _remove_active_flag(self.active_flags, row, column)
 
         dce_delta = _counter_delta(self.previous_mouse_record, context.record, "dce")
         if dce_delta > 0:
             bbbv_delta = _counter_delta(self.previous_mouse_record, context.record, "bbbv_solved")
             nearby_flags = [
-                flag_index
-                for flag_index, flag_cell in self.active_flags
-                if _is_nearby(flag_cell, (row, column))
+                flag
+                for flag_cell, flag in self.flags_by_cell.items()
+                if _is_nearby(flag_cell, cell)
             ]
             if nearby_flags:
                 dce_share = dce_delta / len(nearby_flags)
                 bbbv_share = bbbv_delta / len(nearby_flags)
-                for flag_index in nearby_flags:
-                    flag = self.flags_by_index[flag_index]
+                for flag in nearby_flags:
                     flag.dce += dce_share
                     flag.bbbv_solved += bbbv_share
                     flag.dce_cells = _append_unique_cell(flag.dce_cells, (row, column))
 
         self.previous_mouse_record = context.record
-        return ()
+        return emitted
 
     def finish(self) -> Tuple[ReplayEvent, ...]:
         return tuple(
@@ -150,13 +176,6 @@ def _record_counter(record: Optional[Any], counter_name: str) -> int:
     if record is None:
         return 0
     return getattr(record.key_dynamic_params, counter_name)
-
-
-def _remove_active_flag(active_flags: List[Tuple[int, Cell]], row: int, column: int) -> None:
-    for index in range(len(active_flags) - 1, -1, -1):
-        if active_flags[index][1] == (row, column):
-            del active_flags[index]
-            return
 
 
 def _is_nearby(left: Cell, right: Cell) -> bool:

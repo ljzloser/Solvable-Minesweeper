@@ -68,7 +68,7 @@ class ComboClickEventManager(ReplayEventManager):
     def reset(self, context: ReplayEventContext) -> None:
         self.sequence: List[ComboClick] = []
         self.lce = context.key_dynamic_params.lce
-        self.ce = context.key_dynamic_params.ce
+        self.rdce = context.key_dynamic_params.rce + context.key_dynamic_params.dce
 
     def handle(self, context: ReplayEventContext) -> Tuple[ReplayEvent, ...]:
         if context.mouse is None or context.mouse.is_mouse("mv", "mc", "mr"):
@@ -78,15 +78,14 @@ class ComboClickEventManager(ReplayEventManager):
         params = context.key_dynamic_params
         if params.lce > self.lce:
             self.lce = params.lce
-            self.ce = params.ce
             emitted = self._handle_click(ComboClick(
                 event_index=context.index,
                 time=context.time,
                 row=context.mouse.row,
                 column=context.mouse.column,
             ))
-        elif params.ce > self.ce:
-            self.ce = params.ce
+        elif (rdce := params.rce + params.dce) > self.rdce:
+            self.rdce = rdce
             emitted = self._flush_sequence()
         return emitted
 

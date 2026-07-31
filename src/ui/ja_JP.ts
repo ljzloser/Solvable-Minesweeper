@@ -3506,6 +3506,10 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <source>双击{dce}次，解决{bbbv}bv</source>
         <translation>ダブルクリック{dce}回、解決{bbbv}bv</translation>
     </message>
+    <message>
+        <source>取消标雷</source>
+        <translation>旗を解除</translation>
+    </message>
 </context>
 <context>
     <name>ReleaseFrame</name>

@@ -3506,6 +3506,10 @@ Wtyczki zostaną wyłączone.</translation>
         <source>双击{dce}次，解决{bbbv}bv</source>
         <translation>dwuklik {dce} razy, rozwiązano {bbbv}bv</translation>
     </message>
+    <message>
+        <source>取消标雷</source>
+        <translation>Usuń flagę</translation>
+    </message>
 </context>
 <context>
     <name>ReleaseFrame</name>
