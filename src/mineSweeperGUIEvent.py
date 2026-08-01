@@ -55,13 +55,12 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
             if not self.pos_is_in_board(i, j):
                 self._step_and_send('lr', i, j)
             else:
-                used_pending = False
                 if self.label.ms_board.mouse_state == MouseState.DownUp.value and\
                         self.label.ms_board.game_board[i // self.pixSize][j // self.pixSize] == CELL_UNOPENED:
                     # 正式埋雷开始
-                    used_pending = self.layMine(i // self.pixSize, j // self.pixSize)
+                    self.layMine(i // self.pixSize, j // self.pixSize)
 
-                    if any((used_pending, self.board_constraint, self._allowed_controls)):
+                    if any((self.board_constraint, self._allowed_controls)):
                         self.game_state = JOKING
                     else:
                         self.game_state = PLAYING
@@ -82,8 +81,8 @@ class MineSweeperGUIEvent(superGUI.Ui_MainWindow):
                     # 禁用双击修改指标名称公式
                     self.score_board_manager.editing_row = -2
 
-                # 回放局面时，第一次点击的位置可能原本就是雷，需要 ai 介入重新排雷
-                if used_pending:
+                # F3等upk局面时，第一次点击的位置可能原本就是雷，需要 ai 介入重新排雷
+                if self.engine.use_pending_boards_flag:
                     self.ai(i // self.pixSize, j // self.pixSize)
 
                 self._step_and_send('lr', i, j)
