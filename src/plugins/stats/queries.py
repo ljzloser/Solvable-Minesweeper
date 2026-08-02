@@ -67,7 +67,7 @@ FROM history
 
 SQL_SUMMARY_PARAMS = (
     GameBoardState.Win.value, GameBoardState.Fail.value,
-    GameBoardState.Win.value, GameBoardState.Jowin.value,
+    GameBoardState.Win.value, GameBoardState.Win.value,
     GameBoardState.Win.value, GameBoardState.Win.value,
     GameBoardState.Win.value,
     GameBoardState.Win.value, GameBoardState.Win.value,

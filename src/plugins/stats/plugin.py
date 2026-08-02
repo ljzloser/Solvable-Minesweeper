@@ -99,8 +99,8 @@ class StatsPlugin(BasePlugin[StatsConfig]):
 
     def __init__(self, info):
         super().__init__(info)
-        self._bridge: StatsBridge | None = None
-        self._quick_widget: QQuickWidget | None = None
+        self._bridge: StatsBridge = None  # type: ignore
+        self._quick_widget: QQuickWidget = None  # type: ignore
 
     def _setup_subscriptions(self) -> None:
         self.subscribe(GameFinishedEvent, self._on_game_finished)

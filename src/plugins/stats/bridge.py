@@ -224,7 +224,7 @@ class StatsBridge(QObject):
 
     # ── BV 范围配置属性 ──────────────────────────────────
 
-    @pyqtProperty(int, notify=bvBeginnerMinChanged)
+    @pyqtProperty(int, notify=bvBeginnerMinChanged)  # type: ignore
     def bvBeginnerMin(self) -> int:
         return self._bv_beginner_min
 
@@ -234,7 +234,7 @@ class StatsBridge(QObject):
             self._bv_beginner_min = v
             self.bvBeginnerMinChanged.emit()
 
-    @pyqtProperty(int, notify=bvBeginnerMaxChanged)
+    @pyqtProperty(int, notify=bvBeginnerMaxChanged)  # type: ignore
     def bvBeginnerMax(self) -> int:
         return self._bv_beginner_max
 
@@ -244,7 +244,7 @@ class StatsBridge(QObject):
             self._bv_beginner_max = v
             self.bvBeginnerMaxChanged.emit()
 
-    @pyqtProperty(int, notify=bvIntermediateMinChanged)
+    @pyqtProperty(int, notify=bvIntermediateMinChanged)  # type: ignore
     def bvIntermediateMin(self) -> int:
         return self._bv_intermediate_min
 
@@ -254,7 +254,7 @@ class StatsBridge(QObject):
             self._bv_intermediate_min = v
             self.bvIntermediateMinChanged.emit()
 
-    @pyqtProperty(int, notify=bvIntermediateMaxChanged)
+    @pyqtProperty(int, notify=bvIntermediateMaxChanged)  # type: ignore
     def bvIntermediateMax(self) -> int:
         return self._bv_intermediate_max
 
@@ -264,7 +264,7 @@ class StatsBridge(QObject):
             self._bv_intermediate_max = v
             self.bvIntermediateMaxChanged.emit()
 
-    @pyqtProperty(int, notify=bvExpertMinChanged)
+    @pyqtProperty(int, notify=bvExpertMinChanged)  # type: ignore
     def bvExpertMin(self) -> int:
         return self._bv_expert_min
 
@@ -274,7 +274,7 @@ class StatsBridge(QObject):
             self._bv_expert_min = v
             self.bvExpertMinChanged.emit()
 
-    @pyqtProperty(int, notify=bvExpertMaxChanged)
+    @pyqtProperty(int, notify=bvExpertMaxChanged)  # type: ignore
     def bvExpertMax(self) -> int:
         return self._bv_expert_max
 
@@ -304,7 +304,7 @@ class StatsBridge(QObject):
         try:
             win_states = (
                 GameBoardState.Win.value,
-                GameBoardState.Jowin.value,
+                GameBoardState.Win.value,
             )
             extra = []
             extra_params: list[int] = []
