@@ -249,6 +249,19 @@ ORDER BY start_time
 """
 
 
+# ── BV 分布 ──────────────────────────────────────────────
+
+SQL_BV_DISTRIBUTION = """
+SELECT
+    bbbv,
+    COUNT(*) AS count
+FROM history
+{where}
+GROUP BY bbbv
+ORDER BY bbbv
+"""
+
+
 # ── WHERE 构建器 ──────────────────────────────────────────
 
 def build_where(
