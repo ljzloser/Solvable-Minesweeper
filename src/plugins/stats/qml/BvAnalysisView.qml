@@ -33,19 +33,22 @@ Rectangle {
     property var expertData: ({})
 
     // ── 颜色档位 ──
-    readonly property var colorLevels: [
-        "#e0e0e0",   // 0次：灰色
-        "#c8e6c9",   // 1-9次：浅绿
-        "#66bb6a",   // 10-49次：中绿
-        "#2e7d32",   // 50-99次：深绿
-        "#1b5e20"    // ≥100次：极深绿
+    readonly property var colorLevels: ["#e0e0e0"   // 0次：灰色
+        , "#c8e6c9"   // 1-9次：浅绿
+        , "#66bb6a"   // 10-49次：中绿
+        , "#2e7d32"   // 50-99次：深绿
+        , "#1b5e20"    // ≥100次：极深绿
     ]
 
     function countToColorIndex(count) {
-        if (count === 0) return 0;
-        if (count < 10) return 1;
-        if (count < 50) return 2;
-        if (count < 100) return 3;
+        if (count === 0)
+            return 0;
+        if (count < 10)
+            return 1;
+        if (count < 50)
+            return 2;
+        if (count < 100)
+            return 3;
         return 4;
     }
 
@@ -144,7 +147,9 @@ Rectangle {
                         var names = JSON.parse(bridge.getModeNames());
                         var items = ["全部"];
                         var values = [-1];
-                        var keys = Object.keys(names).map(Number).sort(function (a, b) { return a - b; });
+                        var keys = Object.keys(names).map(Number).sort(function (a, b) {
+                            return a - b;
+                        });
                         for (var i = 0; i < keys.length; i++) {
                             items.push(names[keys[i]]);
                             values.push(keys[i]);
@@ -197,7 +202,9 @@ Rectangle {
                 onCheckedChanged: root.showCount = checked
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             // ── 图例 ──
             RowLayout {
@@ -206,11 +213,26 @@ Rectangle {
 
                 Repeater {
                     model: [
-                        { label: "0", color: root.colorLevels[0] },
-                        { label: "1-9", color: root.colorLevels[1] },
-                        { label: "10-49", color: root.colorLevels[2] },
-                        { label: "50-99", color: root.colorLevels[3] },
-                        { label: "≥100", color: root.colorLevels[4] }
+                        {
+                            label: "0",
+                            color: root.colorLevels[0]
+                        },
+                        {
+                            label: "1-9",
+                            color: root.colorLevels[1]
+                        },
+                        {
+                            label: "10-49",
+                            color: root.colorLevels[2]
+                        },
+                        {
+                            label: "50-99",
+                            color: root.colorLevels[3]
+                        },
+                        {
+                            label: "≥100",
+                            color: root.colorLevels[4]
+                        }
                     ]
 
                     delegate: RowLayout {
@@ -323,10 +345,14 @@ Rectangle {
                         property int bvValue: section.bvMin + model.index
                         property int count: section.dataMap[String(bvValue)] || 0
                         property int colorIdx: {
-                            if (count === 0) return 0;
-                            if (count < 10) return 1;
-                            if (count < 50) return 2;
-                            if (count < 100) return 3;
+                            if (count === 0)
+                                return 0;
+                            if (count < 10)
+                                return 1;
+                            if (count < 50)
+                                return 2;
+                            if (count < 100)
+                                return 3;
                             return 4;
                         }
 

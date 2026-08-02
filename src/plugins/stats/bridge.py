@@ -309,7 +309,8 @@ class StatsBridge(QObject):
             extra = []
             extra_params: list[int] = []
             if winsOnly:
-                extra.append(f"game_state IN ({', '.join('?' * len(win_states))})")
+                extra.append(
+                    f"game_state IN ({', '.join('?' * len(win_states))})")
                 extra_params.extend(win_states)
             where, params = build_where(
                 level=level,

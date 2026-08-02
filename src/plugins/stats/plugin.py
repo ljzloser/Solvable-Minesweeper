@@ -161,12 +161,18 @@ class StatsPlugin(BasePlugin[StatsConfig]):
             top_n = self.other_info.top_n
             self.run_on_gui(lambda: self._bridge.setTopN(top_n))
             cfg = self.other_info
-            self.run_on_gui(lambda: self._bridge.setBvBeginnerMin(cfg.bv_beginner_min))
-            self.run_on_gui(lambda: self._bridge.setBvBeginnerMax(cfg.bv_beginner_max))
-            self.run_on_gui(lambda: self._bridge.setBvIntermediateMin(cfg.bv_intermediate_min))
-            self.run_on_gui(lambda: self._bridge.setBvIntermediateMax(cfg.bv_intermediate_max))
-            self.run_on_gui(lambda: self._bridge.setBvExpertMin(cfg.bv_expert_min))
-            self.run_on_gui(lambda: self._bridge.setBvExpertMax(cfg.bv_expert_max))
+            self.run_on_gui(
+                lambda: self._bridge.setBvBeginnerMin(cfg.bv_beginner_min))
+            self.run_on_gui(
+                lambda: self._bridge.setBvBeginnerMax(cfg.bv_beginner_max))
+            self.run_on_gui(lambda: self._bridge.setBvIntermediateMin(
+                cfg.bv_intermediate_min))
+            self.run_on_gui(lambda: self._bridge.setBvIntermediateMax(
+                cfg.bv_intermediate_max))
+            self.run_on_gui(
+                lambda: self._bridge.setBvExpertMin(cfg.bv_expert_min))
+            self.run_on_gui(
+                lambda: self._bridge.setBvExpertMax(cfg.bv_expert_max))
 
     def _on_config_changed(self, name: str, value: Any) -> None:
         """配置变化时同步到 bridge 并刷新。"""
@@ -189,7 +195,8 @@ class StatsPlugin(BasePlugin[StatsConfig]):
     def _on_game_finished(self, event: GameFinishedEvent) -> None:
         """游戏结束后延迟刷新统计数据，等待录像保存完成"""
         if self._bridge:
-            self.run_on_gui(lambda: QTimer.singleShot(2000, self._bridge.refresh))
+            self.run_on_gui(lambda: QTimer.singleShot(
+                2000, self._bridge.refresh))
 
     def _on_language_change(self, event: LanguageChangeEvent) -> None:
         """语言变化时重新加载 QML"""

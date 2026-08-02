@@ -20,8 +20,14 @@ Rectangle {
     // ── 导航数据 ──
     ListModel {
         id: navModel
-        ListElement { name: "综合统计"; icon: "\u{1F4CA}" }
-        ListElement { name: "BV分析"; icon: "\u{26A1}" }
+        ListElement {
+            name: "综合统计"
+            icon: "\u{1F4CA}"
+        }
+        ListElement {
+            name: "BV分析"
+            icon: "\u{26A1}"
+        }
     }
 
     property int currentNavIndex: 0
