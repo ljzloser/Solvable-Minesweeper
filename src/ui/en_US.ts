@@ -2420,19 +2420,24 @@ Image</translation>
         <translation>Export selected replays</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="346"/>
+        <location filename="../dialogs/videoControl.py" line="362"/>
         <source>时间</source>
         <translation>Time</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="354"/>
-        <source>事件</source>
-        <translation>Event</translation>
+        <location filename="../dialogs/videoControl.py" line="366"/>
+        <source>坐标</source>
+        <translation>Coordinate</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="362"/>
-        <source>标签</source>
-        <translation>Label</translation>
+        <location filename="../dialogs/videoControl.py" line="376"/>
+        <source>类型</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="380"/>
+        <source>详情</source>
+        <translation>Detail</translation>
     </message>
     <message>
         <location filename="../dialogs/videoControl.py" line="554"/>
@@ -3390,6 +3395,120 @@ Plugins will be disabled.</translation>
         <location filename="../dialogs/videoControl.py" line="40"/>
         <source>教科书式的FL局部（{0} 步）</source>
         <translation>Textbook FL local ({0} steps)</translation>
+    </message>
+</context>
+<context>
+    <name>VideoLoadProgress</name>
+    <message>
+        <source>打开录像</source>
+        <translation>Open Replay</translation>
+    </message>
+    <message>
+        <source>正在打开录像...</source>
+        <translation>Opening replay...</translation>
+    </message>
+    <message>
+        <source>正在创建录像对象...</source>
+        <translation>Creating replay object...</translation>
+    </message>
+    <message>
+        <source>正在解析录像集...</source>
+        <translation>Parsing replay set...</translation>
+    </message>
+    <message>
+        <source>录像集解析完成</source>
+        <translation>Replay set parsed</translation>
+    </message>
+    <message>
+        <source>正在分析录像集...</source>
+        <translation>Analyzing replay set...</translation>
+    </message>
+    <message>
+        <source>录像集分析完成</source>
+        <translation>Replay set analyzed</translation>
+    </message>
+    <message>
+        <source>正在计算 pluck...</source>
+        <translation>Calculating pluck...</translation>
+    </message>
+    <message>
+        <source>正在解析录像...</source>
+        <translation>Parsing replay...</translation>
+    </message>
+    <message>
+        <source>录像解析完成</source>
+        <translation>Replay parsed</translation>
+    </message>
+    <message>
+        <source>正在分析录像...</source>
+        <translation>Analyzing replay...</translation>
+    </message>
+    <message>
+        <source>录像分析完成</source>
+        <translation>Replay analyzed</translation>
+    </message>
+    <message>
+        <source>正在创建录像目录...</source>
+        <translation>Creating replay directory...</translation>
+    </message>
+    <message>
+        <source>录像加载完成</source>
+        <translation>Replay loaded</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件...</source>
+        <translation>Analyzing local events...</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件... ({current}/{total})</source>
+        <translation>Analyzing local events... ({current}/{total})</translation>
+    </message>
+    <message>
+        <source>事件列表创建完成</source>
+        <translation>Event list created</translation>
+    </message>
+    <message>
+        <source>打开录像失败</source>
+        <translation>Failed to open replay</translation>
+    </message>
+    <message>
+        <source>录像解析失败：</source>
+        <translation>Failed to parse replay: </translation>
+    </message>
+</context>
+<context>
+    <name>ReplayAnalysis</name>
+    <message>
+        <source>猜雷</source>
+        <translation>Guess</translation>
+    </message>
+    <message>
+        <source>连击</source>
+        <translation>Combo</translation>
+    </message>
+    <message>
+        <source>标雷</source>
+        <translation>Flag</translation>
+    </message>
+    <message>
+        <source>pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}</source>
+        <translation>pluck={pluck}(+{pluck_diff}), mine {mine}, min {minimum}, density {density}</translation>
+    </message>
+    <message>
+        <source>右左间隔{right_left}，标双间隔{flag_double}</source>
+        <translation>R-L interval {right_left}, flag-chord interval {flag_double}</translation>
+    </message>
+    <message>
+        <source>长度{length}，间隔最大{max_interval}，最小{min_interval}，平均{average_interval}</source>
+        <translation>length {length}, max interval {max_interval}, min {min_interval}, avg {average_interval}</translation>
+    </message>
+    <message>
+        <source>双击{dce}次，解决{bbbv}bv</source>
+        <translation>chord {dce} times, solved {bbbv}bv</translation>
+    </message>
+    <message>
+        <source>取消标雷</source>
+        <translation>Unflag</translation>
     </message>
 </context>
 <context>

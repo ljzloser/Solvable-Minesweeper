@@ -2420,19 +2420,24 @@ li { margin: 6px 0; }
         <translation>Export selected replays</translation>
     </message>
     <message>
-        <location filename="../dialogs/videoControl.py" line="346"/>
-        <source>时间</source>
-        <translation>Time</translation>
-    </message>
-    <message>
-        <location filename="../dialogs/videoControl.py" line="354"/>
-        <source>事件</source>
-        <translation>Event</translation>
-    </message>
-    <message>
         <location filename="../dialogs/videoControl.py" line="362"/>
-        <source>标签</source>
-        <translation>Label</translation>
+        <source>时间</source>
+        <translation>時間</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="366"/>
+        <source>坐标</source>
+        <translation>座標</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="376"/>
+        <source>类型</source>
+        <translation>種類</translation>
+    </message>
+    <message>
+        <location filename="../dialogs/videoControl.py" line="380"/>
+        <source>详情</source>
+        <translation>詳細</translation>
     </message>
     <message>
         <location filename="../dialogs/videoControl.py" line="554"/>
@@ -3390,6 +3395,120 @@ th { background: #F3E5F5; color: #6A1B9A; }
         <location filename="../dialogs/videoControl.py" line="40"/>
         <source>教科书式的FL局部（{0} 步）</source>
         <translation>Textbook FL local ({0} steps)</translation>
+    </message>
+</context>
+<context>
+    <name>VideoLoadProgress</name>
+    <message>
+        <source>打开录像</source>
+        <translation>リプレイを開く</translation>
+    </message>
+    <message>
+        <source>正在打开录像...</source>
+        <translation>リプレイを開いています...</translation>
+    </message>
+    <message>
+        <source>正在创建录像对象...</source>
+        <translation>リプレイオブジェクトを作成しています...</translation>
+    </message>
+    <message>
+        <source>正在解析录像集...</source>
+        <translation>リプレイセットを解析しています...</translation>
+    </message>
+    <message>
+        <source>录像集解析完成</source>
+        <translation>リプレイセットの解析が完了しました</translation>
+    </message>
+    <message>
+        <source>正在分析录像集...</source>
+        <translation>リプレイセットを分析しています...</translation>
+    </message>
+    <message>
+        <source>录像集分析完成</source>
+        <translation>リプレイセットの分析が完了しました</translation>
+    </message>
+    <message>
+        <source>正在计算 pluck...</source>
+        <translation>pluck を計算しています...</translation>
+    </message>
+    <message>
+        <source>正在解析录像...</source>
+        <translation>リプレイを解析しています...</translation>
+    </message>
+    <message>
+        <source>录像解析完成</source>
+        <translation>リプレイの解析が完了しました</translation>
+    </message>
+    <message>
+        <source>正在分析录像...</source>
+        <translation>リプレイを分析しています...</translation>
+    </message>
+    <message>
+        <source>录像分析完成</source>
+        <translation>リプレイの分析が完了しました</translation>
+    </message>
+    <message>
+        <source>正在创建录像目录...</source>
+        <translation>リプレイディレクトリを作成しています...</translation>
+    </message>
+    <message>
+        <source>录像加载完成</source>
+        <translation>リプレイの読み込みが完了しました</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件...</source>
+        <translation>ローカルイベントを分析しています...</translation>
+    </message>
+    <message>
+        <source>正在分析本地事件... ({current}/{total})</source>
+        <translation>ローカルイベントを分析しています... ({current}/{total})</translation>
+    </message>
+    <message>
+        <source>事件列表创建完成</source>
+        <translation>イベントリストを作成しました</translation>
+    </message>
+    <message>
+        <source>打开录像失败</source>
+        <translation>リプレイを開けませんでした</translation>
+    </message>
+    <message>
+        <source>录像解析失败：</source>
+        <translation>リプレイの解析に失敗しました: </translation>
+    </message>
+</context>
+<context>
+    <name>ReplayAnalysis</name>
+    <message>
+        <source>猜雷</source>
+        <translation>推測</translation>
+    </message>
+    <message>
+        <source>连击</source>
+        <translation>連続クリック</translation>
+    </message>
+    <message>
+        <source>标雷</source>
+        <translation>旗立て</translation>
+    </message>
+    <message>
+        <source>pluck={pluck}(+{pluck_diff})，雷{mine}，最小{minimum}，密度{density}</source>
+        <translation>pluck={pluck}(+{pluck_diff})、地雷{mine}、最小{minimum}、密度{density}</translation>
+    </message>
+    <message>
+        <source>右左间隔{right_left}，标双间隔{flag_double}</source>
+        <translation>右左間隔{right_left}、旗-ダブル間隔{flag_double}</translation>
+    </message>
+    <message>
+        <source>长度{length}，间隔最大{max_interval}，最小{min_interval}，平均{average_interval}</source>
+        <translation>長さ{length}、最大間隔{max_interval}、最小{min_interval}、平均{average_interval}</translation>
+    </message>
+    <message>
+        <source>双击{dce}次，解决{bbbv}bv</source>
+        <translation>ダブルクリック{dce}回、解決{bbbv}bv</translation>
+    </message>
+    <message>
+        <source>取消标雷</source>
+        <translation>旗を解除</translation>
     </message>
 </context>
 <context>

@@ -46,6 +46,7 @@ class mineLabel(QtWidgets.QLabel):
         self.opening_ops = []
         self.opening_ops2 = []
         self.opening_count = 0
+        self.hover_highlight_cells = ()
 
     def setPath(self):
         m = resource_path('media')
@@ -72,6 +73,7 @@ class mineLabel(QtWidgets.QLabel):
         # 即使只改pixSize，工具箱里的这些变量也要改，没有简便的接口，一步不能少。
         self.row = row
         self.column = column
+        self.hover_highlight_cells = ()
         if self.paintProbability:
             # self.ms_board = utils.abstract_game_board()
             self.ms_board = utils.CoreBaseVideo([[0] * column for _ in range(row)], pixSize)
@@ -313,6 +315,34 @@ class mineLabel(QtWidgets.QLabel):
                 painter.drawText(QRect(cx, cy, pix_size, pix_size),
                                  Qt.AlignCenter, str(k + 1))
 
+    def highlight_cells(self, cells):
+        valid_cells = tuple(
+            (row, column)
+            for row, column in cells
+            if 0 <= row < self.row and 0 <= column < self.column
+        )
+        if valid_cells != self.hover_highlight_cells:
+            self.hover_highlight_cells = valid_cells
+            self.update()
+
+    def clear_highlight_cell(self):
+        if self.hover_highlight_cells:
+            self.hover_highlight_cells = ()
+            self.update()
+
+    def draw_hover_highlight(self, painter):
+        if not self.hover_highlight_cells:
+            return
+
+        pix_size = self.pixSize
+        painter.save()
+        painter.setBrush(QColor(255, 235, 59, 90))
+        painter.setPen(QPen(QColor("#ff9800"), max(2, pix_size // 12)))
+        for row, column in self.hover_highlight_cells:
+            painter.drawRect(column * pix_size + 1, row * pix_size + 1,
+                             max(1, pix_size - 2), max(1, pix_size - 2))
+        painter.restore()
+
     def paintEvent(self, event):
         super().paintEvent(event)
         pix_size = self.pixSize
@@ -392,6 +422,7 @@ class mineLabel(QtWidgets.QLabel):
                         painter.setBrush(QColor(0, 255, 0))
                         painter.drawEllipse(QPoint(px, py), 4, 4)
                 painter.restore()
+        self.draw_hover_highlight(painter)
         # 画光标
         if self.paint_cursor:
             painter.translate(x, y)

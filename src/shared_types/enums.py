@@ -148,6 +148,7 @@ class GameMode(BaseDiaPlayEnum):
     这些魔数遵循 evf 标准（ms_toollib 也是遵循 evf 标准）。
     """
     Standard = 0
+    UPK = 1
     Win7 = 4
     ClassicNoGuess = 5
     StrictNoGuess = 6
@@ -156,11 +157,14 @@ class GameMode(BaseDiaPlayEnum):
     GuessableNoGuess = 9
     LuckyMode = 10
 
+
     @property
     def display_name(self) -> str:
         match self:
             case GameMode.Standard:
                 return _translate("Form", "标准")
+            case GameMode.UPK:
+                return _translate("Form", "UPK")
             case GameMode.Win7:
                 return _translate("Form", "win7")
             case GameMode.ClassicNoGuess:

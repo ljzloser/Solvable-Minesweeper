@@ -7,6 +7,7 @@ from textdistance import length
 from dialogs import gameDefinedParameter
 from plugin_sdk.server_bridge import GameServerBridge
 from shared_types.events import GameFinishedEvent, BoardUpdateEvent, GameStatusChangeEvent, CloseEvent, ShowPluginManagerEvent
+from shared_types.enums import GameMode, ButtonEventType, MouseState
 import superGUI
 from dialogs import gameAbout
 from dialogs import gameSettings
@@ -463,11 +464,9 @@ class MineSweeperGUI(MainWindowGUIImportExport):
 
     def layMine(self, i, j):
         self._sync_engine()
-        used_pending = self.engine.layMine(i, j)
-        if used_pending:
-            self.game_state = JOKING
+        self.engine.layMine(i, j)
+        if self.engine.use_pending_boards_flag:
             self.gameMode = self.engine.gameMode
-        return used_pending
 
     def timeCount(self):
         # 10ms时间步进的回调，改计数器、改右上角时间
@@ -633,6 +632,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         # self.label.paint_cursor = False
         # self.label.setMouseTracking(False) # 鼠标未按下时，组织移动事件回调
 
+    # F3快捷键的回调
     def replay_current_board(self):
         if self.game_state not in (WIN, FAIL, DISPLAY, SHOW_DISPLAY, JOWIN, JOFAIL):
             return
@@ -722,7 +722,10 @@ class MineSweeperGUI(MainWindowGUIImportExport):
                 self.label.ms_board.is_official = self.is_official()
 
                 self.label.ms_board.software = superGUI.version
-                self.label.ms_board.mode = self.gameMode
+                if self.engine.use_pending_boards_flag:
+                    self.label.ms_board.mode = GameMode.UPK.value
+                else:
+                    self.label.ms_board.mode = self.gameMode
                 self.label.ms_board.player_identifier = self.player_identifier
                 self.label.ms_board.race_identifier = self.race_identifier
                 self.label.ms_board.unique_identifier = self.unique_identifier
@@ -830,8 +833,8 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         del_items = []
         nf_items = []
         b = self.label.ms_board
-        if b.level == 6:
-            # 自定义不弹窗
+        if b.level == 6 or self.gameMode == GameMode.UPK.value:
+            # 自定义、UPK不弹窗
             return
         if b.level == 3:
             record_key = "B"
@@ -848,32 +851,32 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         _translate = QtCore.QCoreApplication.translate
 
         # 上方的模式，标准和盲扫都是标准
-        if self.gameMode == 0:
+        if self.gameMode == GameMode.Standard.value:
             record_key += "FLAG"
             mode_text = _translate("Form", "标准")
             if b.rce == 0:
                 mode_text = _translate("Form", "标准（盲扫）")
             else:
                 mode_text = _translate("Form", "标准")
-        elif self.gameMode == 4:
+        elif self.gameMode == GameMode.Win7.value:
             record_key += "WIN7"
             mode_text = _translate("Form", "Win7")
-        elif self.gameMode == 5:
+        elif self.gameMode == GameMode.ClassicNoGuess.value:
             record_key += "CS"
             mode_text = _translate("Form", "经典无猜")
-        elif self.gameMode == 6:
+        elif self.gameMode == GameMode.StrictNoGuess.value:
             record_key += "SS"
             mode_text = _translate("Form", "强无猜")
-        elif self.gameMode == 7:
+        elif self.gameMode == GameMode.WeakNoGuess.value:
             record_key += "WS"
             mode_text = _translate("Form", "弱无猜")
-        elif self.gameMode == 8:
+        elif self.gameMode == GameMode.BlessingMode.value:
             record_key += "TBS"
             mode_text = _translate("Form", "准无猜")
-        elif self.gameMode == 9:
+        elif self.gameMode == GameMode.GuessableNoGuess.value:
             record_key += "SG"
             mode_text = _translate("Form", "强可猜")
-        elif self.gameMode == 10:
+        elif self.gameMode == GameMode.LuckyMode.value:
             record_key += "WG"
             mode_text = _translate("Form", "弱可猜")
         else:
@@ -1111,9 +1114,7 @@ class MineSweeperGUI(MainWindowGUIImportExport):
         video = ms.EvfVideo("virtual_preview.evf", raw_data)
         video.parse()
         video.analyse()
-        video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                    "mouse_trace", "vision_transfer", "pluck",
-                                    "super_fl_local"])
+        video.analyse_for_features(["pluck"])
         self.play_video(video, True)
 
     def action_CEvent(self):

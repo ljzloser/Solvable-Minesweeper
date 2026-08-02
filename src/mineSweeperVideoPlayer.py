@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QCoreApplication, Qt, QRect
 from PyQt5.QtGui import QPixmap
 
-from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QProgressDialog, QWidget
 from dialogs import gameDefinedParameter
 from dialogs import videoControl
 import ms_toollib as ms
@@ -11,6 +11,10 @@ from shared_types.enums import MouseState
 from mineSweeperGUIEvent import MineSweeperGUIEvent
 from mainWindowGUI import MainWindow
 from utils.app_logger import logger
+
+
+_translate = QCoreApplication.translate
+
 
 class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def __init__(self, MainWindow: MainWindow, args):
@@ -28,6 +32,11 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.ui_video_control.tabWidget.tabBar().tabBarClicked.connect(self.on_tab_clicked)
         self.ui_video_control.pushButton_path.clicked[bool].connect(self.toggle_path_trace)
         self.ui_video_control.pushButton_op.clicked[bool].connect(self.toggle_op)
+        self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
+        self.ui_video_control.videoTabDoubleClicked.connect(
+            lambda a, b: self.play_video_tab_name_id(a, b, True))
+        self.ui_video_control.videoCellsHovered.connect(self.highlight_video_cells)
+        self.ui_video_control.videoCellHoverCleared.connect(self.clear_video_cell_highlight)
         self.show_path_trace = False
         self.mouse_trace_points = []
         self.path_trace_left_clicks = set()
@@ -36,10 +45,19 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
         self.original_pix_size = 0
         self.timer_video = QTimer()
         self.timer_video.timeout.connect(self.video_playing_step)
+        self._video_loading = False
+        self._video_load_file_name = ""
+        self._video_load_progress_dialog = None
     
     
     # 打开录像文件的回调
     def action_OpenFile(self, openfile_name=None):
+        if self._video_loading:
+            if self._video_load_progress_dialog:
+                self._video_load_progress_dialog.show()
+                self._video_load_progress_dialog.raise_()
+            return
+
         self.unlimit_cursor()
         if not openfile_name:
             _translate = QCoreApplication.translate
@@ -53,56 +71,156 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                 self.limit_cursor()
             return
         self.set_face(FACE_SMILE)
+        self._start_video_load(openfile_name)
 
-        video_set = None
+    def _start_video_load(self, openfile_name):
+        self._video_loading = True
+        self._video_load_file_name = openfile_name
+        self._show_video_load_progress(openfile_name)
         try:
-            if openfile_name[-3:] == "avf":
-                video = ms.AvfVideo(openfile_name)
-            elif openfile_name[-3:] == "rmv":
-                video = ms.RmvVideo(openfile_name)
-            elif openfile_name[-3:] == "evf":
-                video = ms.EvfVideo(openfile_name)
-            elif openfile_name[-3:] == "mvf":
-                video = ms.MvfVideo(openfile_name)
-            elif openfile_name[-4:] == "evfs":
-                video_set = ms.Evfs(openfile_name)
-                # 包含对每个evf的parse
-                # video_set.parse()
-                # video = video_set[0].evf_video
+            self._on_video_load_progress(0, 100, _translate("VideoLoadProgress", "正在创建录像对象..."))
+            video, video_set = self._create_video(openfile_name)
+
+            if video_set:
+                self._on_video_load_progress(5, 100, _translate("VideoLoadProgress", "正在解析录像集..."))
+                video_set.parse()
+                self._on_video_load_progress(35, 100, _translate("VideoLoadProgress", "录像集解析完成"))
+
+                self._on_video_load_progress(40, 100, _translate("VideoLoadProgress", "正在分析录像集..."))
+                video_set.analyse()
+                self._on_video_load_progress(75, 100, _translate("VideoLoadProgress", "录像集分析完成"))
+
+                self._on_video_load_progress(80, 100, _translate("VideoLoadProgress", "正在计算 pluck..."))
+                video_set.analyse_for_features(["pluck"])
+                video = video_set[0].evf_video
             else:
-                return
-        except Exception:
-            logger.warning(f"Failed to open video file: {openfile_name}")
+                self._on_video_load_progress(5, 100, _translate("VideoLoadProgress", "正在解析录像..."))
+                video.parse()
+                self._on_video_load_progress(35, 100, _translate("VideoLoadProgress", "录像解析完成"))
+
+                self._on_video_load_progress(40, 100, _translate("VideoLoadProgress", "正在分析录像..."))
+                video.analyse()
+                self._on_video_load_progress(75, 100, _translate("VideoLoadProgress", "录像分析完成"))
+
+                self._on_video_load_progress(80, 100, _translate("VideoLoadProgress", "正在计算 pluck..."))
+                video.analyse_for_features(["pluck"])
+
+            self._on_video_load_finished(video, video_set)
+        except Exception as exc:
+            logger.exception(f"Failed to load video file: {openfile_name}")
+            self._on_video_load_failed(str(exc))
+        finally:
+            self._video_loading = False
+            self._video_load_file_name = ""
+
+    def _create_video(self, openfile_name):
+        name = openfile_name.lower()
+        if name.endswith(".avf"):
+            return ms.AvfVideo(openfile_name), None
+        if name.endswith(".rmv"):
+            return ms.RmvVideo(openfile_name), None
+        if name.endswith(".evf"):
+            return ms.EvfVideo(openfile_name), None
+        if name.endswith(".mvf"):
+            return ms.MvfVideo(openfile_name), None
+        if name.endswith(".evfs"):
+            return None, ms.Evfs(openfile_name)
+        raise ValueError(f"Unsupported video file type: {openfile_name}")
+
+    def _show_video_load_progress(self, openfile_name):
+        dialog = QProgressDialog(
+            _translate("VideoLoadProgress", "正在打开录像..."),
+            "",
+            0,
+            0,
+            self.mainWindow,
+        )
+        dialog.setWindowTitle(_translate("VideoLoadProgress", "打开录像"))
+        dialog.setCancelButton(None)
+        dialog.setMinimumDuration(0)
+        dialog.setAutoClose(False)
+        dialog.setAutoReset(False)
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setLabelText(_translate("VideoLoadProgress", "正在打开录像...") + f"\n{openfile_name}")
+        dialog.show()
+        self._video_load_progress_dialog = dialog
+
+    def _on_video_load_progress(self, value, maximum, text):
+        dialog = self._video_load_progress_dialog
+        if not dialog:
             return
-        
-        
-        # 每个标签的数据都存在这里
-        # self.tab_data = []
-        if video_set:
-            # 包含对每个evf的parse
-            video_set.parse()
-            video_set.analyse()
-            video_set.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                            "mouse_trace", "vision_transfer", "pluck",
-                                            "super_fl_local"])
-            self.ui_video_control.add_new_video_set_tab(video_set)
-            self.ui_video_control.videoTabClicked.connect(self.play_video_tab_name_id)
-            self.ui_video_control.videoTabDoubleClicked.connect(
-                lambda a, b: self.play_video_tab_name_id(a, b, True))
-            # self.tab_data.append(video_set)
-            video = video_set[0].evf_video
+        if self._video_load_file_name:
+            dialog.setLabelText(f"{text}\n{self._video_load_file_name}")
         else:
-            video.parse()
-            video.analyse()
-            video.analyse_for_features(["high_risk_guess", "jump_judge", "needless_guess",
-                                        "mouse_trace", "vision_transfer", "pluck",
-                                        "super_fl_local"])
-            self.ui_video_control.add_new_video_tab(video)
+            dialog.setLabelText(text)
+        if maximum <= 0:
+            dialog.setRange(0, 0)
+        else:
+            dialog.setRange(0, maximum)
+            dialog.setValue(min(value, maximum))
+        QApplication.processEvents()
+
+    def _on_video_load_finished(self, video, video_set):
+        if video_set:
+            self._on_video_load_progress(95, 100, _translate("VideoLoadProgress", "正在创建录像目录..."))
+            self.ui_video_control.add_new_video_set_tab(video_set)
+            # self.tab_data.append(video_set)
+        else:
+            self._add_new_video_tab_with_progress(video)
             # self.tab_data.append(video)
         tab_count = self.ui_video_control.tabWidget.count()
         self.ui_video_control.tabWidget.setCurrentIndex(tab_count - 1)
+        self._on_video_load_progress(100, 100, _translate("VideoLoadProgress", "录像加载完成"))
+        if self._video_load_progress_dialog:
+            self._video_load_progress_dialog.close()
+            self._video_load_progress_dialog = None
         self.play_video(video)
-        
+
+    def _add_new_video_tab_with_progress(self, video):
+        created_dialog = False
+        previous_file_name = self._video_load_file_name
+        if not self._video_load_progress_dialog:
+            self._video_load_file_name = getattr(video, "file_name", "")
+            self._show_video_load_progress(self._video_load_file_name)
+            created_dialog = True
+
+        try:
+            self._on_video_load_progress(85, 100, _translate("VideoLoadProgress", "正在分析本地事件..."))
+            self.ui_video_control.add_new_video_tab(
+                video,
+                progress_callback=self._on_local_event_analysis_progress,
+            )
+            self._on_video_load_progress(97, 100, _translate("VideoLoadProgress", "事件列表创建完成"))
+        finally:
+            if created_dialog and self._video_load_progress_dialog:
+                self._video_load_progress_dialog.close()
+                self._video_load_progress_dialog = None
+                self._video_load_file_name = previous_file_name
+
+    def _on_local_event_analysis_progress(self, current, total):
+        if total <= 0:
+            value = 97
+            text = _translate("VideoLoadProgress", "正在分析本地事件...")
+        else:
+            current = min(current, total)
+            value = 85 + int((97 - 85) * current / total)
+            text = _translate(
+                "VideoLoadProgress",
+                "正在分析本地事件... ({current}/{total})",
+            )
+            text = text.replace("{current}", str(current)).replace("{total}", str(total))
+        self._on_video_load_progress(value, 100, text)
+
+    def _on_video_load_failed(self, message):
+        if self._video_load_progress_dialog:
+            self._video_load_progress_dialog.close()
+            self._video_load_progress_dialog = None
+        QMessageBox.warning(
+            self.mainWindow,
+            _translate("VideoLoadProgress", "打开录像失败"),
+            _translate("VideoLoadProgress", "录像解析失败：") + message,
+        )
+
 
     # 播放新录像，调整局面尺寸等
     # 控制台中，不添加新标签、连接信号。假如关闭就展示
@@ -122,7 +240,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
                     self.ui_video_control.tabWidget.setCurrentIndex(index)
                     break
             else:
-                self.ui_video_control.add_new_video_tab(video)
+                self._add_new_video_tab_with_progress(video)
                 self.ui_video_control.tabWidget.setCurrentIndex(tab_count)
 
         
@@ -181,6 +299,7 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
 
         video.video_playing_pix_size = self.label.pixSize
         self.label.ms_board = video
+        self.label.clear_highlight_cell()
         # 改成录像的标识
         # print(self.label.ms_board.player_identifier)
         self.label_info.setText(self.label.ms_board.player_identifier)
@@ -261,6 +380,12 @@ class MineSweeperVideoPlayer(MineSweeperGUIEvent):
     def toggle_op(self, checked):
         self.label.show_opening = checked
         self.label.update()
+
+    def highlight_video_cells(self, cells):
+        self.label.highlight_cells(cells)
+
+    def clear_video_cell_highlight(self):
+        self.label.clear_highlight_cell()
 
     def video_playing_step(self):
         # 播放录像时定时器的回调
